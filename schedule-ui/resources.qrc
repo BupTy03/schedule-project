@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/add_professor.ico</file>
+        <file>img/start.ico</file>
+        <file>img/table.ico</file>
+        <file>img/add.ico</file>
+        <file>img/remove.ico</file>
+        <file>img/left_arrow.ico</file>
+        <file>img/right_arrow.ico</file>
+        <file>img/remove_professor.ico</file>
+    </qresource>
+</RCC>
