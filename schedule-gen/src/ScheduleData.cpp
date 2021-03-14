@@ -1,7 +1,10 @@
 #include "ScheduleData.h"
 
 
-std::string ScheduleData::Name() const
+const std::size_t SCHEDULE_DAYS_COUNT = 12;
+
+
+WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum)
 {
-    return "ScheduleData";
+    return static_cast<WeekDay>(dayNum % 6);
 }

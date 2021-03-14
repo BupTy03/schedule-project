@@ -5,7 +5,7 @@ else()
   include(${CONAN_CATCH2_ROOT}/lib/cmake/Catch2/Catch.cmake)
 endif()
 
-add_library(catch_main STATIC catch_main.cpp)
+add_library(catch_main STATIC catch_main.cpp ../include/ScheduleGenerator.h)
 target_link_libraries(catch_main PUBLIC CONAN_PKG::catch2)
 
 add_executable(Catch_test_schedule_gen test_schedule_gen.cpp)
