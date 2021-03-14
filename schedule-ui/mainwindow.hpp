@@ -37,6 +37,7 @@ private:
     QToolBar* toolBar_;
     QStringListModel groupsListModel_;
     QStringListModel professorsListModel_;
+    QStringListModel classroomsListModel_;
     AddDisciplineDialog* addDisciplineDialog_;
     std::unique_ptr<CurrentTabStrategy> tabStrategy_;
     std::unique_ptr<ScheduleDataStorage> scheduleData_;

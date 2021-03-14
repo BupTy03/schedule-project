@@ -50,6 +50,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="classroomsTab">
+       <attribute name="title">
+        <string>Аудитории</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_5">
+        <item row="0" column="0">
+         <widget class="QListView" name="classroomsListView"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>

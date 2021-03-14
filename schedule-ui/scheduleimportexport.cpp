@@ -157,6 +157,7 @@ ScheduleDataJsonFile::ScheduleDataJsonFile(QString filename)
     const auto docObject = document.object();
     groups_ = RemoveDuplicatesAndSort(ToStringList(docObject["groups"].toArray()));
     professors_ = RemoveDuplicatesAndSort(ToStringList(docObject["professors"].toArray()));
+    classrooms_ = RemoveDuplicatesAndSort(ToStringList(docObject["classrooms"].toArray()));
     disciplines_ = ParseDisciplines(docObject["disciplines"].toArray());
 }
 
@@ -171,6 +172,7 @@ ScheduleDataJsonFile::~ScheduleDataJsonFile()
 
     QJsonDocument document(QJsonObject({ { "groups", QJsonArray::fromStringList(groups_) },
                                          { "professors", QJsonArray::fromStringList(professors_) },
+                                         { "classrooms", QJsonArray::fromStringList(classrooms_) },
                                          { "disciplines", ToJson(disciplines_) } }));
 
     file.write(document.toJson(QJsonDocument::JsonFormat::Indented));
@@ -194,6 +196,16 @@ QStringList ScheduleDataJsonFile::professors() const
 void ScheduleDataJsonFile::saveProfessors(const QStringList& professors)
 {
     professors_ = RemoveDuplicatesAndSort(professors);
+}
+
+QStringList ScheduleDataJsonFile::classrooms() const
+{
+    return classrooms_;
+}
+
+void ScheduleDataJsonFile::saveClassrooms(const QStringList& classrooms)
+{
+    classrooms_ = classrooms;
 }
 
 std::vector<Discipline> ScheduleDataJsonFile::disciplines() const

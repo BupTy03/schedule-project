@@ -12,7 +12,8 @@ enum class CurrentTabType
 {
     Disciplines,
     Groups,
-    Professors
+    Professors,
+    Classrooms
 };
 
 
@@ -59,6 +60,16 @@ class ProfessorsTabStrategy : public AbstractTabStrategy
 {
 public:
     explicit ProfessorsTabStrategy(QAbstractItemView* view);
+
+    QString addActionToolTip() const override;
+    QString removeActionToolTip() const override;
+};
+
+
+class ClassroomsTabStrategy : public AbstractTabStrategy
+{
+public:
+    explicit ClassroomsTabStrategy(QAbstractItemView* view);
 
     QString addActionToolTip() const override;
     QString removeActionToolTip() const override;

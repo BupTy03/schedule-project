@@ -86,6 +86,22 @@ QString ProfessorsTabStrategy::removeActionToolTip() const
 }
 
 
+ClassroomsTabStrategy::ClassroomsTabStrategy(QAbstractItemView* view)
+    : AbstractTabStrategy(view)
+{
+}
+
+QString ClassroomsTabStrategy::addActionToolTip() const
+{
+    return QObject::tr("Добавить аудиторию");
+}
+
+QString ClassroomsTabStrategy::removeActionToolTip() const
+{
+    return QObject::tr("Удалить аудиторию");
+}
+
+
 DisciplinesTabStrategy::DisciplinesTabStrategy(AddDisciplineDialog* addDisciplineWidget,
                                                DisciplinesModel* disciplinesModel,
                                                QTableView* disciplinesView)
@@ -110,7 +126,7 @@ QString DisciplinesTabStrategy::removeActionToolTip() const
 
 void DisciplinesTabStrategy::onAddItem()
 {
-    if(addDisciplineWidget_->exec() != QDialog::DialogCode::Accepted)
+    if (addDisciplineWidget_->exec() != QDialog::DialogCode::Accepted)
         return;
 
     disciplinesModel_->addDiscipline(addDisciplineWidget_->discipline());

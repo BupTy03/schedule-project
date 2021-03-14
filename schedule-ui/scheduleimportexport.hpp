@@ -53,6 +53,9 @@ public:
     virtual QStringList professors() const = 0;
     virtual void saveProfessors(const QStringList& professors) = 0;
 
+    virtual QStringList classrooms() const = 0;
+    virtual void saveClassrooms(const QStringList& classrooms) = 0;
+
     virtual std::vector<Discipline> disciplines() const = 0;
     virtual void saveDisciplines(const std::vector<Discipline>& disciplines) = 0;
 };
@@ -70,6 +73,9 @@ public:
     QStringList professors() const override;
     void saveProfessors(const QStringList& professors) override;
 
+    QStringList classrooms() const override;
+    void saveClassrooms(const QStringList& classrooms) override;
+
     std::vector<Discipline> disciplines() const override;
     void saveDisciplines(const std::vector<Discipline>& disciplines) override;
 
@@ -77,6 +83,7 @@ private:
     QString filename_;
     QStringList groups_;
     QStringList professors_;
+    QStringList classrooms_;
     std::vector<Discipline> disciplines_;
 };
 

@@ -19,6 +19,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     , toolBar_(nullptr)
     , groupsListModel_()
     , professorsListModel_()
+    , classroomsListModel_()
     , addDisciplineDialog_(new AddDisciplineDialog(&groupsListModel_, &professorsListModel_, this))
     , tabStrategy_()
     , scheduleData_(std::move(scheduleData))
@@ -48,6 +49,10 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     ui->professorsListView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
     ui->professorsListView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
 
+    ui->classroomsListView->setModel(&classroomsListModel_);
+    ui->classroomsListView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+    ui->classroomsListView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
+
     ui->disciplinesTableView->setModel(disciplinesModel_.get());
     ui->disciplinesTableView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
     ui->disciplinesTableView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
@@ -56,6 +61,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
 
     groupsListModel_.setStringList(scheduleData_->groups());
     professorsListModel_.setStringList(scheduleData_->professors());
+    classroomsListModel_.setStringList(scheduleData_->classrooms());
     disciplinesModel_->setDisciplines(scheduleData_->disciplines());
 
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
@@ -65,6 +71,7 @@ MainWindow::~MainWindow()
 {
     scheduleData_->saveGroups(groupsListModel_.stringList());
     scheduleData_->saveProfessors(professorsListModel_.stringList());
+    scheduleData_->saveClassrooms(classroomsListModel_.stringList());
     scheduleData_->saveDisciplines(disciplinesModel_->disciplines());
     delete ui;
 }
@@ -82,6 +89,8 @@ void MainWindow::onTabChanged(int current)
     case CurrentTabType::Professors:
         tabStrategy_ = std::make_unique<ProfessorsTabStrategy>(ui->professorsListView);
         break;
+    case CurrentTabType::Classrooms:
+        tabStrategy_ = std::make_unique<ClassroomsTabStrategy>(ui->classroomsListView);
     }
 
     const auto actions = toolBar_->actions();
