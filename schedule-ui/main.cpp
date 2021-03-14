@@ -1,6 +1,6 @@
 #include "mainwindow.hpp"
 #include "scheduleimportexport.hpp"
-#include "ScheduleCommon.h"
+#include "ScheduleCommon.hpp"
 
 #include <QApplication>
 #include <QDebug>

@@ -1,4 +1,4 @@
-#include "ScheduleGenerator.h"
+#include "ScheduleGenerator.hpp"
 
 
 

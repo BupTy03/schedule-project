@@ -1,6 +1,6 @@
 #pragma once
-#include "ScheduleData.h"
-#include "ScheduleResult.h"
+#include "ScheduleData.hpp"
+#include "ScheduleResult.hpp"
 
 
 /**

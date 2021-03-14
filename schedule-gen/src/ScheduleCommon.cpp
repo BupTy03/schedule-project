@@ -1,4 +1,4 @@
-#include "ScheduleCommon.h"
+#include "ScheduleCommon.hpp"
 
 
 const std::size_t SCHEDULE_DAYS_COUNT = 12;

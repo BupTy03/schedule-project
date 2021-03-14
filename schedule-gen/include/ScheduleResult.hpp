@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ScheduleCommon.h"
+#include "ScheduleCommon.hpp"
 #include <cstdint>
 #include <vector>
 #include <optional>
@@ -22,7 +22,8 @@ public:
     using Group = std::vector<Day>;
 
     explicit ScheduleResult(std::vector<Group> groups)
-            : groups_(std::move(groups)) {
+        : groups_(std::move(groups))
+    {
         if (groups.empty())
             throw std::invalid_argument("Groups are empty");
 
@@ -32,11 +33,11 @@ public:
 
     Lesson At(std::size_t group,
               std::size_t day,
-              std::size_t lesson) const {
+              std::size_t lesson) const
+    {
         return groups_.at(group).at(day).at(lesson);
     }
 
 private:
     std::vector<Group> groups_;
 };
-

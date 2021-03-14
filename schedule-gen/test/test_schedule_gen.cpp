@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include "ScheduleCommon.h"
+#include "ScheduleCommon.hpp"
 #include <array>
 
 

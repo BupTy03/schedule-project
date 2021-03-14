@@ -1,5 +1,5 @@
 #pragma once
-#include "ScheduleCommon.h"
+#include "ScheduleCommon.hpp"
 #include <string>
 #include <cstdint>
 #include <map>
