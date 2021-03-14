@@ -33,46 +33,23 @@ public:
 };
 
 
-class AbstractTabStrategy : public CurrentTabStrategy
+class GeneralTabStrategy : public CurrentTabStrategy
 {
 public:
-    explicit AbstractTabStrategy(QAbstractItemView* view);
+    explicit GeneralTabStrategy(QAbstractItemView* view,
+                                 QString addActionToolTip,
+                                 QString removeActionToolTip);
+
+    QString addActionToolTip() const override;
+    QString removeActionToolTip() const override;
 
     void onAddItem() override;
     void onRemoveItem() override;
 
 private:
     QAbstractItemView* view_;
-};
-
-
-class GroupsTabStrategy : public AbstractTabStrategy
-{
-public:
-    explicit GroupsTabStrategy(QAbstractItemView* view);
-
-    QString addActionToolTip() const override;
-    QString removeActionToolTip() const override;
-};
-
-
-class ProfessorsTabStrategy : public AbstractTabStrategy
-{
-public:
-    explicit ProfessorsTabStrategy(QAbstractItemView* view);
-
-    QString addActionToolTip() const override;
-    QString removeActionToolTip() const override;
-};
-
-
-class ClassroomsTabStrategy : public AbstractTabStrategy
-{
-public:
-    explicit ClassroomsTabStrategy(QAbstractItemView* view);
-
-    QString addActionToolTip() const override;
-    QString removeActionToolTip() const override;
+    QString addActionToolTip_;
+    QString removeActionToolTip_;
 };
 
 

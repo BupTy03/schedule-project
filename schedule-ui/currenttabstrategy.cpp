@@ -23,13 +23,25 @@ QIcon CurrentTabStrategy::removeActionIcon() const
 }
 
 
-AbstractTabStrategy::AbstractTabStrategy(QAbstractItemView* view)
+GeneralTabStrategy::GeneralTabStrategy(QAbstractItemView* view, QString addActionToolTip, QString removeActionToolTip)
     : view_(view)
+    , addActionToolTip_(std::move(addActionToolTip))
+    , removeActionToolTip_(std::move(removeActionToolTip))
 {
     assert(view_ != nullptr);
 }
 
-void AbstractTabStrategy::onAddItem()
+QString GeneralTabStrategy::addActionToolTip() const
+{
+    return addActionToolTip_;
+}
+
+QString GeneralTabStrategy::removeActionToolTip() const
+{
+    return removeActionToolTip_;
+}
+
+void GeneralTabStrategy::onAddItem()
 {
     auto model = view_->model();
     assert(model != nullptr);
@@ -39,7 +51,7 @@ void AbstractTabStrategy::onAddItem()
     view_->edit(model->index(currentRow, 0));
 }
 
-void AbstractTabStrategy::onRemoveItem()
+void GeneralTabStrategy::onRemoveItem()
 {
     auto model = view_->model();
     assert(model != nullptr);
@@ -51,54 +63,6 @@ void AbstractTabStrategy::onRemoveItem()
     std::sort(selectedRows.begin(), selectedRows.end(), QModelIndexGreaterByRow());
     for (const auto& selected : selectedRows)
         model->removeRow(selected.row());
-}
-
-
-GroupsTabStrategy::GroupsTabStrategy(QAbstractItemView* view)
-    : AbstractTabStrategy(view)
-{
-}
-
-QString GroupsTabStrategy::addActionToolTip() const
-{
-    return QObject::tr("Добавить группу");
-}
-
-QString GroupsTabStrategy::removeActionToolTip() const
-{
-    return QObject::tr("Удалить группу");
-}
-
-
-ProfessorsTabStrategy::ProfessorsTabStrategy(QAbstractItemView* view)
-    : AbstractTabStrategy(view)
-{
-}
-
-QString ProfessorsTabStrategy::addActionToolTip() const
-{
-    return QObject::tr("Добавить преподавателя");
-}
-
-QString ProfessorsTabStrategy::removeActionToolTip() const
-{
-    return QObject::tr("Удалить преподавателя");
-}
-
-
-ClassroomsTabStrategy::ClassroomsTabStrategy(QAbstractItemView* view)
-    : AbstractTabStrategy(view)
-{
-}
-
-QString ClassroomsTabStrategy::addActionToolTip() const
-{
-    return QObject::tr("Добавить аудиторию");
-}
-
-QString ClassroomsTabStrategy::removeActionToolTip() const
-{
-    return QObject::tr("Удалить аудиторию");
 }
 
 

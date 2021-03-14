@@ -84,13 +84,13 @@ void MainWindow::onTabChanged(int current)
         tabStrategy_ = std::make_unique<DisciplinesTabStrategy>(addDisciplineDialog_, disciplinesModel_.get(), ui->disciplinesTableView);
         break;
     case CurrentTabType::Groups:
-        tabStrategy_ = std::make_unique<GroupsTabStrategy>(ui->groupsListView);
+        tabStrategy_ = std::make_unique<GeneralTabStrategy>(ui->groupsListView, tr("Добавить группу"), tr("Удалить группу"));
         break;
     case CurrentTabType::Professors:
-        tabStrategy_ = std::make_unique<ProfessorsTabStrategy>(ui->professorsListView);
+        tabStrategy_ = std::make_unique<GeneralTabStrategy>(ui->professorsListView, tr("Добавить преподавателя"), tr("Удалить преподавателя"));
         break;
     case CurrentTabType::Classrooms:
-        tabStrategy_ = std::make_unique<ClassroomsTabStrategy>(ui->classroomsListView);
+        tabStrategy_ = std::make_unique<GeneralTabStrategy>(ui->classroomsListView, tr("Добавить аудиторию"), tr("Удалить аудиторию"));
     }
 
     const auto actions = toolBar_->actions();
