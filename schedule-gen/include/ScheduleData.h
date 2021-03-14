@@ -1,25 +1,10 @@
 #pragma once
+#include "ScheduleCommon.h"
 #include <string>
 #include <cstdint>
 #include <map>
 #include <set>
 #include <vector>
-
-
-extern const std::size_t SCHEDULE_DAYS_COUNT;
-
-enum class WeekDay : std::uint8_t
-{
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday,
-    Sunday
-};
-
-WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
 
 
 class SubjectRequest

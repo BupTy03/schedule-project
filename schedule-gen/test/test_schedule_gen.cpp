@@ -1,7 +1,5 @@
 #include <catch2/catch.hpp>
-
-#include "ScheduleData.h"
-
+#include "ScheduleCommon.h"
 #include <array>
 
 

@@ -8,7 +8,7 @@ endif()
 add_library(catch_main STATIC catch_main.cpp ../include/ScheduleGenerator.h)
 target_link_libraries(catch_main PUBLIC CONAN_PKG::catch2)
 
-add_executable(Catch_test_schedule_gen test_schedule_gen.cpp)
+add_executable(Catch_test_schedule_gen test_schedule_gen.cpp ../src/ScheduleCommon.cpp)
 
 target_include_directories(Catch_test_schedule_gen PRIVATE ../include)
 target_link_libraries(Catch_test_schedule_gen PRIVATE catch_main schedule-gen)
