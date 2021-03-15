@@ -15,6 +15,7 @@ QT_END_NAMESPACE
 class QToolBar;
 
 class AddDisciplineDialog;
+class ShowScheduleDialog;
 class CurrentTabStrategy;
 class ScheduleDataStorage;
 class DisciplinesModel;
@@ -31,6 +32,7 @@ public:
 
 private slots:
     void onTabChanged(int current);
+    void genetateSchedule();
 
 private:
     Ui::MainWindow* ui;
@@ -39,6 +41,7 @@ private:
     QStringListModel professorsListModel_;
     QStringListModel classroomsListModel_;
     AddDisciplineDialog* addDisciplineDialog_;
+    ShowScheduleDialog* showScheduleDialog_;
     std::unique_ptr<CurrentTabStrategy> tabStrategy_;
     std::unique_ptr<ScheduleDataStorage> scheduleData_;
     std::unique_ptr<DisciplinesModel> disciplinesModel_;

@@ -51,6 +51,8 @@ static std::unique_ptr<QStandardItemModel> BuildWeekDayHeaderModel()
 ShowScheduleDialog::ShowScheduleDialog(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::ShowScheduleDialog)
+    , evenScheduleModel_()
+    , oddScheduleModel_()
 {
     ui->setupUi(this);
     setWindowTitle(tr("Расписание"));
@@ -62,34 +64,36 @@ ShowScheduleDialog::ShowScheduleDialog(QWidget* parent)
     ui->tabWidget->setTabText(0, tr("Числитель"));
     ui->tabWidget->setTabText(1, tr("Знаменатель"));
 
-    ScheduleItem math{ 234, "Profi", "Math" };
-    ScheduleItem physics{ 123, "ProfiPhysics", "Physics" };
+    auto evenView = new QTableView;
+    evenView->setModel(&evenScheduleModel_);
 
-    const std::vector<GroupSchedule> scheduleData = {
-        GroupSchedule{
-            DaySchedule{ math, physics, ScheduleItem(), ScheduleItem(), ScheduleItem(), ScheduleItem() },
-            DaySchedule{ math, math, math, ScheduleItem(), ScheduleItem(), ScheduleItem() },
-            DaySchedule{ physics, physics, physics, physics, ScheduleItem(), ScheduleItem() },
-            DaySchedule{ physics, math, physics, ScheduleItem(), ScheduleItem(), ScheduleItem() },
-            DaySchedule{ physics, math, math, math, ScheduleItem(), ScheduleItem() },
-            DaySchedule{ math, physics, physics, physics, physics, ScheduleItem() } }
-    };
+    auto evenWdhw = new HierarchicalHeaderView(Qt::Orientation::Vertical, BuildWeekDayHeaderModel());
+    evenView->setVerticalHeader(evenWdhw);
 
-    auto model = new ScheduleModel(this);
-    model->setGroups(scheduleData);
+    auto evenLayout = new QGridLayout;
+    evenLayout->addWidget(evenView);
+    ui->evenTab->setLayout(evenLayout);
 
-    auto view = new QTableView;
-    view->setModel(model);
 
-    auto wdhw = new HierarchicalHeaderView(Qt::Orientation::Vertical, BuildWeekDayHeaderModel());
-    view->setVerticalHeader(wdhw);
+    auto oddView = new QTableView;
+    oddView->setModel(&oddScheduleModel_);
 
-    auto layout = new QGridLayout;
-    layout->addWidget(view);
-    ui->evenTab->setLayout(layout);
+    auto oddWdhw = new HierarchicalHeaderView(Qt::Orientation::Vertical, BuildWeekDayHeaderModel());
+    oddView->setVerticalHeader(oddWdhw);
+
+    auto oddLayout = new QGridLayout;
+    oddLayout->addWidget(oddView);
+    ui->oddTab->setLayout(oddLayout);
 }
 
 ShowScheduleDialog::~ShowScheduleDialog()
 {
     delete ui;
+}
+
+void ShowScheduleDialog::setSchedule(const std::vector<GroupSchedule>& evenSchedule,
+                                     const std::vector<GroupSchedule>& oddSchedule)
+{
+    evenScheduleModel_.setGroups(evenSchedule);
+    oddScheduleModel_.setGroups(oddSchedule);
 }

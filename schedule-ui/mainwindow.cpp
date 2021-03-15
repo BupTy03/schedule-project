@@ -21,6 +21,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     , professorsListModel_()
     , classroomsListModel_()
     , addDisciplineDialog_(new AddDisciplineDialog(&groupsListModel_, &professorsListModel_, this))
+    , showScheduleDialog_(new ShowScheduleDialog(this))
     , tabStrategy_()
     , scheduleData_(std::move(scheduleData))
     , disciplinesModel_(std::make_unique<DisciplinesModel>())
@@ -34,9 +35,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     toolBar_->addAction(QString(), [this]() { tabStrategy_->onAddItem(); });
     toolBar_->addAction(QString(), [this]() { tabStrategy_->onRemoveItem(); });
     toolBar_->addSeparator();
-    toolBar_->addAction(QIcon(":/img/start.ico"), tr("Сгенерировать расписание"), [this]() {
-        (new ShowScheduleDialog(this))->show();
-    });
+    toolBar_->addAction(QIcon(":/img/start.ico"), tr("Сгенерировать расписание"), this, &MainWindow::genetateSchedule);
 
     onTabChanged(0);
     addToolBar(Qt::ToolBarArea::TopToolBarArea, toolBar_);
@@ -101,4 +100,9 @@ void MainWindow::onTabChanged(int current)
     auto removeAction = actions.at(1);
     removeAction->setIcon(tabStrategy_->removeActionIcon());
     removeAction->setToolTip(tabStrategy_->removeActionToolTip());
+}
+
+void MainWindow::genetateSchedule()
+{
+    showScheduleDialog_->show();
 }
