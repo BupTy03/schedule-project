@@ -9,9 +9,15 @@
 
 struct ScheduleItem
 {
+    explicit ScheduleItem(std::size_t subject, std::size_t professor, std::size_t classroom)
+        : Subject(subject)
+        , Professor(professor)
+        , Classroom(classroom)
+    {}
+
     std::size_t Subject = 0;
     std::size_t Professor = 0;
-    std::size_t ClassRoom = 0;
+    std::size_t Classroom = 0;
 };
 
 class ScheduleResult
