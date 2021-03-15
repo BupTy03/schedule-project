@@ -90,6 +90,7 @@ void MainWindow::onTabChanged(int current)
         break;
     case CurrentTabType::Classrooms:
         tabStrategy_ = std::make_unique<GeneralTabStrategy>(ui->classroomsListView, tr("Добавить аудиторию"), tr("Удалить аудиторию"));
+        break;
     }
 
     const auto actions = toolBar_->actions();
