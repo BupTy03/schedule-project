@@ -7,9 +7,14 @@
 #include "scheduleimportexport.hpp"
 #include "disciplinesmodel.hpp"
 
+#include "SATScheduleGenerator.hpp"
+
 #include <QAction>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QPushButton>
+
+
+static const auto DEFAULT_LESSONS_PER_DAY_COUNT = 3;
 
 
 MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
@@ -103,7 +108,100 @@ void MainWindow::onTabChanged(int current)
     removeAction->setToolTip(tabStrategy_->removeActionToolTip());
 }
 
+static std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays)
+{
+    std::set<WeekDay> result;
+    for (std::size_t w = 0; w < weekDays.size(); ++w)
+    {
+        if (weekDays.at(w))
+            result.emplace(static_cast<WeekDay>(w));
+    }
+
+    return result;
+}
+
 void MainWindow::genetateSchedule()
 {
+    const auto groups = groupsListModel_.stringList();
+    const auto professors = professorsListModel_.stringList();
+    const auto classrooms = classroomsListModel_.stringList();
+    const auto disciplines = disciplinesModel_->disciplines();
+
+    std::vector<QString> subjects;
+    std::vector<SubjectRequest> subjectRequests;
+    for (auto&& discipline : disciplines)
+    {
+        auto professor = professors.indexOf(discipline.Professor);
+        assert(professor >= 0);
+
+        for (auto&& lesson : discipline.Lessons)
+        {
+            subjects.emplace_back(discipline.Name + " (" + lesson.Name + ')');
+            subjectRequests.emplace_back(professor,
+                                         lesson.CountHoursPerWeek,
+                                         ToWeekDaysSet(lesson.WeekDays),
+                                         std::set<std::size_t>({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }));
+        }
+    }
+
+    ScheduleData scheduleData(DEFAULT_LESSONS_PER_DAY_COUNT,
+                              static_cast<std::size_t>(groups.size()),
+                              static_cast<std::size_t>(professors.size()),
+                              static_cast<std::size_t>(classrooms.size()),
+                              std::move(subjectRequests));
+
+    SATScheduleGenerator generator;
+    const auto resultSchedule = generator.Genetate(scheduleData);
+
+    std::vector<GroupSchedule> evenSchedule;
+    std::vector<GroupSchedule> oddSchedule;
+    for (std::size_t g = 0; g < groups.size(); ++g)
+    {
+        GroupSchedule evenSchedule;
+        for (std::size_t d = 0; d < 6; ++d)
+        {
+            DaySchedule& daySchedule = evenSchedule.at(d);
+            for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
+            {
+                const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
+                if (resultLesson)
+                {
+                    ScheduleModelItem item;
+                    item.ClassRoom = resultLesson->Classroom;
+                    item.Professor = professors.at(resultLesson->Professor);
+                    item.Subject = subjects.at(resultLesson->Subject);
+                    daySchedule.at(l) = item;
+                }
+                else
+                {
+                    daySchedule.at(l) = ScheduleModelItem{};
+                }
+            }
+        }
+
+        GroupSchedule oddSchedule;
+        for (std::size_t d = 6; d < SCHEDULE_DAYS_COUNT; ++d)
+        {
+            DaySchedule& daySchedule = oddSchedule.at(d);
+            for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
+            {
+                const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
+                if (resultLesson)
+                {
+                    ScheduleModelItem item;
+                    item.ClassRoom = resultLesson->Classroom;
+                    item.Professor = professors.at(resultLesson->Professor);
+                    item.Subject = subjects.at(resultLesson->Subject);
+                    daySchedule.at(l) = item;
+                }
+                else
+                {
+                    daySchedule.at(l) = ScheduleModelItem{};
+                }
+            }
+        }
+    }
+
+    showScheduleDialog_->setSchedule(evenSchedule, oddSchedule);
     showScheduleDialog_->show();
 }

@@ -2,7 +2,7 @@
 #include <QStringBuilder>
 
 
-QString ToString(const ScheduleItem& item)
+QString ToString(const ScheduleModelItem& item)
 {
     if (item.ClassRoom == 0 && item.Professor.isEmpty() && item.Subject.isEmpty())
         return {};

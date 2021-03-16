@@ -10,17 +10,17 @@
 static constexpr int MAX_DAYS_PER_WEEK = 6;
 static constexpr int MAX_LESSONS_PER_DAY_COUNT = 6;
 
-struct ScheduleItem
+struct ScheduleModelItem
 {
     int ClassRoom = 0;
     QString Professor;
     QString Subject;
 };
 
-QString ToString(const ScheduleItem& item);
+QString ToString(const ScheduleModelItem& item);
 
 
-using DaySchedule = std::array<ScheduleItem, MAX_LESSONS_PER_DAY_COUNT>;
+using DaySchedule = std::array<ScheduleModelItem, MAX_LESSONS_PER_DAY_COUNT>;
 using GroupSchedule = std::array<DaySchedule, MAX_DAYS_PER_WEEK>;
 
 
