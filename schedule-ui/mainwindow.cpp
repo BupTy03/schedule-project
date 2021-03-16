@@ -152,15 +152,17 @@ void MainWindow::genetateSchedule()
 
     SATScheduleGenerator generator;
     const auto resultSchedule = generator.Genetate(scheduleData);
+    if(resultSchedule.Empty())
+        return;
 
-    std::vector<GroupSchedule> evenSchedule;
-    std::vector<GroupSchedule> oddSchedule;
+    std::vector<GroupSchedule> evenGroupsSchedule;
+    std::vector<GroupSchedule> oddGroupsSchedule;
     for (std::size_t g = 0; g < groups.size(); ++g)
     {
         GroupSchedule evenSchedule;
         for (std::size_t d = 0; d < 6; ++d)
         {
-            DaySchedule& daySchedule = evenSchedule.at(d);
+            DaySchedule daySchedule = evenSchedule.at(d);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
@@ -182,7 +184,7 @@ void MainWindow::genetateSchedule()
         GroupSchedule oddSchedule;
         for (std::size_t d = 6; d < SCHEDULE_DAYS_COUNT; ++d)
         {
-            DaySchedule& daySchedule = oddSchedule.at(d);
+            DaySchedule& daySchedule = oddSchedule.at(d - 6);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
@@ -200,8 +202,11 @@ void MainWindow::genetateSchedule()
                 }
             }
         }
+
+        evenGroupsSchedule.push_back(evenSchedule);
+        oddGroupsSchedule.push_back(oddSchedule);
     }
 
-    showScheduleDialog_->setSchedule(evenSchedule, oddSchedule);
+    showScheduleDialog_->setSchedule(evenGroupsSchedule, oddGroupsSchedule);
     showScheduleDialog_->show();
 }

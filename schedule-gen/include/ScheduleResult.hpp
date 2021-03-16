@@ -30,12 +30,9 @@ public:
     explicit ScheduleResult(std::vector<Group> groups)
         : groups_(std::move(groups))
     {
-        if (groups.empty())
-            throw std::invalid_argument("Groups are empty");
-
-        if (groups.front().size() != SCHEDULE_DAYS_COUNT)
-            throw std::invalid_argument("Invalid days count");
     }
+
+    bool Empty() const { return groups_.empty(); }
 
     Lesson At(std::size_t group,
               std::size_t day,
