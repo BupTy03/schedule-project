@@ -13,12 +13,19 @@ public:
     explicit SubjectRequest(std::size_t professor,
                             std::size_t hours,
                             std::set<WeekDay> days,
+                            std::set<std::size_t> groups,
                             std::set<std::size_t> classrooms)
         : professor_(professor)
         , hours_(hours)
         , days_(std::move(days))
+        , groups_(std::move(groups))
         , classrooms_(std::move(classrooms))
     {}
+
+    bool RequestedGroup(std::size_t g) const
+    {
+        return groups_.count(g) > 0;
+    }
 
     bool Requested(WeekDay d) const
     {
@@ -39,6 +46,7 @@ private:
     std::size_t professor_;
     std::size_t hours_;
     std::set<WeekDay> days_;
+    std::set<std::size_t> groups_;
     std::set<std::size_t> classrooms_;
 };
 
@@ -77,6 +85,10 @@ private:
 };
 
 
-std::size_t CountHoursPerSubject(const ScheduleData& data, std::size_t subject);
+std::size_t CalculateHours(const ScheduleData& data,
+                           std::size_t professor,
+                           std::size_t group,
+                           std::size_t subject);
+
 bool SubjectBelongsToProfessor(const ScheduleData& data, std::size_t subject, std::size_t professor);
 bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, WeekDay day);

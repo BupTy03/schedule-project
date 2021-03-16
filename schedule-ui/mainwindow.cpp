@@ -120,6 +120,22 @@ static std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays)
     return result;
 }
 
+static std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
+{
+    std::set<std::size_t> result;
+    for(auto&& g : currentGroups)
+    {
+        auto groupIndex = allGroups.indexOf(g);
+        assert(groupIndex >= 0);
+        if(groupIndex < 0)
+            continue;
+
+        result.emplace(groupIndex);
+    }
+
+    return result;
+}
+
 void MainWindow::genetateSchedule()
 {
     const auto groups = groupsListModel_.stringList();
@@ -140,6 +156,7 @@ void MainWindow::genetateSchedule()
             subjectRequests.emplace_back(professor,
                                          lesson.CountHoursPerWeek,
                                          ToWeekDaysSet(lesson.WeekDays),
+                                         ToGroupsSet(groups, discipline.Groups),
                                          std::set<std::size_t>({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }));
         }
     }
@@ -160,9 +177,10 @@ void MainWindow::genetateSchedule()
     for (std::size_t g = 0; g < groups.size(); ++g)
     {
         GroupSchedule evenSchedule;
+        evenSchedule.first = groups.at(g);
         for (std::size_t d = 0; d < 6; ++d)
         {
-            DaySchedule daySchedule = evenSchedule.at(d);
+            DaySchedule& daySchedule = evenSchedule.second.at(d);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
@@ -182,9 +200,10 @@ void MainWindow::genetateSchedule()
         }
 
         GroupSchedule oddSchedule;
+        oddSchedule.first = groups.at(g);
         for (std::size_t d = 6; d < SCHEDULE_DAYS_COUNT; ++d)
         {
-            DaySchedule& daySchedule = oddSchedule.at(d - 6);
+            DaySchedule& daySchedule = oddSchedule.second.at(d - 6);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);

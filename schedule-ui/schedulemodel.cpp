@@ -39,7 +39,7 @@ QVariant ScheduleModel::headerData(int section, Qt::Orientation orientation, int
         return QAbstractTableModel::headerData(section, orientation, role);
 
     if (Qt::Orientation::Horizontal == orientation)
-        return "ПИ";
+        return groups_.at(section).first;
 
     // Qt::Orientation::Vertical == orientation
     const std::array<QString, MAX_DAYS_PER_WEEK> days = {
@@ -66,7 +66,7 @@ QVariant ScheduleModel::data(const QModelIndex& index, int role) const
         const auto day = static_cast<std::size_t>(index.row() / MAX_DAYS_PER_WEEK);
         const auto group = static_cast<std::size_t>(index.column());
         const auto subject = static_cast<std::size_t>(index.row() % MAX_LESSONS_PER_DAY_COUNT);
-        return ToString(groups_.at(group).at(day).at(subject));
+        return ToString(groups_.at(group).second.at(day).at(subject));
     }
     default:
         return {};

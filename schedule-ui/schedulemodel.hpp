@@ -21,7 +21,7 @@ QString ToString(const ScheduleModelItem& item);
 
 
 using DaySchedule = std::array<ScheduleModelItem, MAX_LESSONS_PER_DAY_COUNT>;
-using GroupSchedule = std::array<DaySchedule, MAX_DAYS_PER_WEEK>;
+using GroupSchedule = std::pair<QString, std::array<DaySchedule, MAX_DAYS_PER_WEEK>>;
 
 
 class ScheduleModel : public QAbstractTableModel

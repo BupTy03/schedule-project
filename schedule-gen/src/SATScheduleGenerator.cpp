@@ -51,37 +51,8 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
         }
     }
 
-    // каждому конкретному предмету соответствует свой конкретный преподаватель
-//    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-//    {
-//        std::vector<BoolVar> sumProfessors;
-//        sumProfessors.reserve((data.CountProfessors() - 1) *
-//                                            data.CountGroups() * data.MaxCountLessonsPerDay() *
-//                                            data.CountClassrooms() * SCHEDULE_DAYS_COUNT);
-//
-//        for(std::size_t p = 0; p < data.CountProfessors(); ++p)
-//        {
-//            if(SubjectBelongsToProfessor(data, s, p))
-//                continue;
-//
-//            for (std::size_t g = 0; g < data.CountGroups(); ++g)
-//            {
-//                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-//                {
-//                    for(std::size_t c = 0; c < data.CountClassrooms(); ++c)
-//                    {
-//                        for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
-//                            sumProfessors.emplace_back(lessons[{d, g, p, l, c, s}]);
-//                    }
-//                }
-//            }
-//        }
-//
-//        // другие преподаватели не могут вести этот предмет
-//        cp_model.AddEquality(LinearExpr::BooleanSum(sumProfessors), 0);
-//    }
-
-    // в сумме для одной группы для одного преподавателя для одного предмета
+    // 1. каждому конкретному предмету соответствует свой конкретный преподаватель
+    // 2. в сумме для одной группы для одного преподавателя для одного предмета
     // за весь период должно быть ровно стролько часов, сколько выделено на каждый предмет
     for (std::size_t g = 0; g < data.CountGroups(); ++g)
     {
@@ -89,48 +60,48 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
         {
             for (std::size_t s = 0; s < data.CountSubjects(); ++s)
             {
-                std::vector<BoolVar> sum_days;
-                sum_days.reserve(SCHEDULE_DAYS_COUNT * data.MaxCountLessonsPerDay() * data.CountClassrooms());
+                std::vector<BoolVar> sumDays;
+                sumDays.reserve(SCHEDULE_DAYS_COUNT * data.MaxCountLessonsPerDay() * data.CountClassrooms());
                 for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
                 {
                     for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
                     {
                         for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                            sum_days.emplace_back(lessons[{d, g, p, l, c, s}]);
+                            sumDays.emplace_back(lessons[{d, g, p, l, c, s}]);
                     }
                 }
 
-                cp_model.AddEquality(LinearExpr::BooleanSum(sum_days), CountHoursPerSubject(data, s));
+                cp_model.AddEquality(LinearExpr::BooleanSum(sumDays), CalculateHours(data, p, g, s));
             }
         }
     }
 
-    // в одно время в одной и той же аудитории может быть только один предмет
-//    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
-//    {
-//        for (std::size_t g = 0; g < data.CountGroups(); ++g)
-//        {
-//            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
-//            {
-//                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-//                {
-//                    for(std::size_t c = 0; c < data.CountClassrooms(); ++c)
-//                    {
-//                        std::vector<BoolVar> sumSubjects;
-//                        sumSubjects.reserve(data.CountSubjects());
-//                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-//                        {
-//                            sumSubjects.emplace_back(lessons[{d, g, p, l, c, s}]);
-//                        }
-//
-//                        cp_model.AddLessOrEqual(LinearExpr::BooleanSum(sumSubjects), 1);
-//                    }
-//                }
-//            }
-//        }
-//    }
+    // 3. в одно время в одной и той же аудитории может быть только один предмет
+    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+    {
+        for (std::size_t g = 0; g < data.CountGroups(); ++g)
+        {
+            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+            {
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
+                    for(std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    {
+                        std::vector<BoolVar> sumSubjects;
+                        sumSubjects.reserve(data.CountSubjects());
+                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                        {
+                            sumSubjects.emplace_back(lessons[{d, g, p, l, c, s}]);
+                        }
 
-    // учитываем дни, в которые преподаватели не желают работать
+                        cp_model.AddLessOrEqual(LinearExpr::BooleanSum(sumSubjects), 1);
+                    }
+                }
+            }
+        }
+    }
+
+    // 4. учитываем дни, в которые преподаватели не желают работать
     for (std::size_t s = 0; s < data.CountSubjects(); ++s)
     {
         for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
@@ -142,16 +113,18 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
             sumForDay.reserve(data.CountProfessors() * data.CountGroups() *
                                     data.MaxCountLessonsPerDay() * data.CountClassrooms());
 
-            for(std::size_t p = 0; p < data.CountProfessors(); ++p)
+            const auto& subjRequest = data.SubjectRequests().at(s);
+            const std::size_t p = subjRequest.Professor();
+            for (std::size_t g = 0; g < data.CountGroups(); ++g)
             {
-                for (std::size_t g = 0; g < data.CountGroups(); ++g)
+                if(!subjRequest.RequestedGroup(g))
+                    continue;
+
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
                 {
-                    for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                     {
-                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                        {
-                            sumForDay.emplace_back(lessons[{d, g, p, l, c, s}]);
-                        }
+                        sumForDay.emplace_back(lessons[{d, g, p, l, c, s}]);
                     }
                 }
             }
