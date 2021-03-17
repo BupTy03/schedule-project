@@ -27,7 +27,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     , groupsListModel_()
     , professorsListModel_()
     , classroomsListModel_()
-    , addDisciplineDialog_(new AddDisciplineDialog(&groupsListModel_, &professorsListModel_, this))
+    , addDisciplineDialog_(new AddDisciplineDialog(&groupsListModel_, &professorsListModel_, &classroomsListModel_, this))
     , showScheduleDialog_(new ShowScheduleDialog(this))
     , tabStrategy_()
     , scheduleData_(std::move(scheduleData))

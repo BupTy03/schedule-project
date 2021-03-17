@@ -5,7 +5,7 @@
 #include <QtWidgets/QDialogButtonBox>
 
 
-ChooseClassroomsDialog::ChooseClassroomsDialog(QAbstractItemModel* model, QWidget *parent)
+ChooseClassroomsDialog::ChooseClassroomsDialog(const QAbstractItemModel* model, QWidget *parent)
     : QDialog(parent)
     , chooseWidget_(new ChooseItemsSetWidget(model, tr("Выберите аудитории"), this))
 {

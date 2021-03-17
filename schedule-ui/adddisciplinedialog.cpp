@@ -5,6 +5,7 @@
 #include "chooseitemssetwidget.hpp"
 #include "qspinboxdelegate.hpp"
 #include "chooseweekdaydelegate.hpp"
+#include "chooseclassroomsdelegate.hpp"
 
 #include <QtWidgets/QPushButton>
 
@@ -17,6 +18,7 @@
 
 AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
                                          QStringListModel* professorListModel,
+                                         QStringListModel* classroomsListModel,
                                          QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::AddDisciplineDialog)
@@ -29,6 +31,7 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
 
     assert(groupsListModel != nullptr);
     assert(professorListModel != nullptr);
+    assert(classroomsListModel != nullptr);
 
     setWindowTitle(tr("Добавление дисциплины"));
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
@@ -43,6 +46,7 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
     ui->lessonsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
     ui->lessonsTableView->setItemDelegateForColumn(1, new QSpinBoxDelegate(0, 1000, this));
     ui->lessonsTableView->setItemDelegateForColumn(2, new ChooseWeekDayDelegate(this));
+    ui->lessonsTableView->setItemDelegateForColumn(3, new ChooseClassroomsDelegate(classroomsListModel, this));
 
     chooseGroupsWidget_->setAvailableAndChosenTitles(tr("Доступные группы"), tr("Выбранные группы"));
     layout()->addWidget(chooseGroupsWidget_);

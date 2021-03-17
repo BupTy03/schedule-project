@@ -7,7 +7,7 @@
 #include <QtWidgets/QHBoxLayout>
 
 
-ChooseClassroomsWidget::ChooseClassroomsWidget(QAbstractItemModel* model, QWidget* parent)
+ChooseClassroomsWidget::ChooseClassroomsWidget(const QAbstractItemModel* model, QWidget* parent)
     : QWidget(parent)
     , classroomsLabel_(new QLabel(this))
     , chooseClassroomButton_(new QPushButton("...", this))
@@ -17,6 +17,7 @@ ChooseClassroomsWidget::ChooseClassroomsWidget(QAbstractItemModel* model, QWidge
     classroomsLabel_->setSizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::Fixed);
     chooseClassroomButton_->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
     chooseClassroomButton_->setFixedWidth(30);
+    chooseClassroomButton_->setFixedHeight(20);
 
     auto layer = new QHBoxLayout(this);
     layer->addWidget(classroomsLabel_);

@@ -22,6 +22,7 @@ class AddDisciplineDialog : public QDialog
 public:
     explicit AddDisciplineDialog(QStringListModel* groupsListModel,
                                  QStringListModel* professorListModel,
+                                 QStringListModel* classroomsListModel,
                                  QWidget* parent = nullptr);
     ~AddDisciplineDialog() override;
 

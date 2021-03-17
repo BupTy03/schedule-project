@@ -3,13 +3,16 @@
 #include <QMetaType>
 #include <QStringList>
 
+#include <set>
 #include <array>
 #include <vector>
 
 
+using ClassroomsSet = std::set<QString>;
 using WeekDaysType = std::array<bool, 6>;
 
 Q_DECLARE_METATYPE(WeekDaysType);
+Q_DECLARE_METATYPE(ClassroomsSet);
 
 
 struct LessonTypeItem
@@ -17,16 +20,19 @@ struct LessonTypeItem
     LessonTypeItem() = default;
     explicit LessonTypeItem(QString name,
                             int countHoursPerWeek,
-                            WeekDaysType weekDays)
+                            WeekDaysType weekDays,
+                            ClassroomsSet classroomsSet)
         : Name(std::move(name))
         , CountHoursPerWeek(countHoursPerWeek)
         , WeekDays(weekDays)
+        , Classrooms(std::move(classroomsSet))
     {
     }
 
     QString Name;
     int CountHoursPerWeek;
     WeekDaysType WeekDays;
+    ClassroomsSet Classrooms;
 };
 
 QString WeekDaysString(const WeekDaysType& weekDays);

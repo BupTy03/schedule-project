@@ -13,8 +13,8 @@ class ChooseClassroomsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit ChooseClassroomsDialog(QAbstractItemModel* model, QWidget* parent = nullptr);
-    std::set<QString> classrooms() const;
+    explicit ChooseClassroomsDialog(const QAbstractItemModel* model, QWidget* parent = nullptr);
+    [[nodiscard]] std::set<QString> classrooms() const;
 
 private:
     ChooseItemsSetWidget* chooseWidget_;

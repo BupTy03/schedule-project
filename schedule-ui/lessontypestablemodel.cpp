@@ -1,13 +1,15 @@
 #include "lessontypestablemodel.hpp"
+#include "utils.hpp"
 
 
-static constexpr auto DEFAULT_COLUMNS_COUNT = 3;
+static constexpr auto DEFAULT_COLUMNS_COUNT = 4;
 
 enum class ColumnType
 {
     Name,
     Hours,
-    Days
+    Days,
+    Classrooms
 };
 
 
@@ -39,10 +41,11 @@ QString WeekDaysString(const WeekDaysType& weekDays)
 
 QString ToString(const LessonTypeItem& lesson)
 {
-    return QString("%1 (%2) %3")
+    return QString("%1 (%2) %3 [%4]")
             .arg(lesson.Name)
             .arg(lesson.CountHoursPerWeek)
-            .arg(WeekDaysString(lesson.WeekDays));
+            .arg(WeekDaysString(lesson.WeekDays))
+            .arg(Join(lesson.Classrooms, ", "));
 }
 
 
@@ -50,9 +53,16 @@ LessonTypesTableModel::LessonTypesTableModel(QObject* parent)
     : QAbstractTableModel(parent)
     , lessons_()
 {
-    lessons_.emplace_back(tr("Лекции"), 0, WeekDaysType{ true, true, true, true, true, true });
-    lessons_.emplace_back(tr("Практики"), 0, WeekDaysType{ true, true, true, true, true, true });
-    lessons_.emplace_back(tr("Лабораторные"), 0, WeekDaysType{ true, true, true, true, true, true });
+    lessons_.emplace_back(tr("Лекции"), 0,
+                          WeekDaysType{ true, true, true, true, true, true },
+                          ClassroomsSet{});
+
+    lessons_.emplace_back(tr("Практики"), 0,
+                          WeekDaysType{ true, true, true, true, true, true },
+                          ClassroomsSet{});
+    lessons_.emplace_back(tr("Лабораторные"), 0,
+                          WeekDaysType{ true, true, true, true, true, true },
+                          ClassroomsSet{});
 }
 
 const std::vector<LessonTypeItem>& LessonTypesTableModel::lessons() const
@@ -79,7 +89,7 @@ QVariant LessonTypesTableModel::headerData(int section, Qt::Orientation orientat
         return {};
 
     static const std::array<QString, DEFAULT_COLUMNS_COUNT> sections = {
-        tr("Тип"), tr("Часов в неделю"), tr("Дни")
+        tr("Тип"), tr("Часов в неделю"), tr("Дни"), tr("Аудитории")
     };
     return sections.at(static_cast<std::size_t>(section));
 }
@@ -104,6 +114,8 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
             return lesson.CountHoursPerWeek;
         case ColumnType::Days:
             return WeekDaysString(lesson.WeekDays);
+        case ColumnType::Classrooms:
+            return Join(lesson.Classrooms, ", ");
         }
         break;
     }
@@ -112,6 +124,9 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
         if (columnType == ColumnType::Days)
             return QVariant::fromValue(lesson.WeekDays);
 
+        if(columnType == ColumnType::Classrooms)
+            return QVariant::fromValue(lesson.Classrooms);
+
         break;
     }
     case Qt::ItemDataRole::TextAlignmentRole:
@@ -119,10 +134,10 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
         switch (columnType)
         {
         case ColumnType::Name:
-            return static_cast<int>(Qt::AlignmentFlag::AlignVCenter | Qt::AlignmentFlag::AlignLeft);
         case ColumnType::Hours:
             return Qt::AlignmentFlag::AlignCenter;
         case ColumnType::Days:
+        case ColumnType::Classrooms:
             return static_cast<int>(Qt::AlignmentFlag::AlignVCenter | Qt::AlignmentFlag::AlignLeft);
         }
         break;
@@ -151,6 +166,9 @@ bool LessonTypesTableModel::setData(const QModelIndex& index, const QVariant& va
         break;
     case ColumnType::Days:
         lesson.WeekDays = value.value<WeekDaysType>();
+        break;
+    case ColumnType::Classrooms:
+        lesson.Classrooms = value.value<ClassroomsSet>();
         break;
     }
 

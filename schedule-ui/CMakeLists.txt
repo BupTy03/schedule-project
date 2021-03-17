@@ -46,6 +46,7 @@ set(PROJECT_SOURCES
         disciplinesmodel.cpp disciplinesmodel.hpp
         chooseclassroomswidget.cpp chooseclassroomswidget.hpp
         chooseclassroomsdialog.cpp chooseclassroomsdialog.hpp
+        chooseclassroomsdelegate.cpp chooseclassroomsdelegate.hpp
         utils.cpp utils.hpp
         resources.qrc)
 

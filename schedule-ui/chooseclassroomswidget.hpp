@@ -15,14 +15,12 @@ class ChooseClassroomsWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ChooseClassroomsWidget(QAbstractItemModel* model, QWidget* parent = nullptr);
+    explicit ChooseClassroomsWidget(const QAbstractItemModel* model, QWidget* parent = nullptr);
+    void setClassrooms(const std::set<QString>& classrooms);
     [[nodiscard]] std::set<QString> classrooms() const;
 
 private slots:
     void onChooseButtonClicked();
-
-private:
-    void setClassrooms(const std::set<QString>& classrooms);
 
 private:
     QLabel* classroomsLabel_;
