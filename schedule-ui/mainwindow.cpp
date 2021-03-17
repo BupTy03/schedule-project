@@ -154,6 +154,9 @@ void MainWindow::genetateSchedule()
 
         for (auto&& lesson : discipline.Lessons)
         {
+            if(lesson.CountHoursPerWeek <= 0)
+                continue;
+
             subjects.emplace_back(discipline.Name + " (" + lesson.Name + ')');
             subjectRequests.emplace_back(professor,
                                          lesson.CountHoursPerWeek,
