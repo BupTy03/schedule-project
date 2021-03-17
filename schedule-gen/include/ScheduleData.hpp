@@ -91,5 +91,4 @@ std::size_t CalculateHours(const ScheduleData& data,
                            std::size_t group,
                            std::size_t subject);
 
-bool SubjectBelongsToProfessor(const ScheduleData& data, std::size_t subject, std::size_t professor);
-bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, WeekDay day);
+bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay);

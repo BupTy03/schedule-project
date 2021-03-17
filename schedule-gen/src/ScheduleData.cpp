@@ -3,14 +3,9 @@
 #include <iostream>
 
 
-bool SubjectBelongsToProfessor(const ScheduleData& data, std::size_t subject, std::size_t professor)
+bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay)
 {
-    return data.SubjectRequests().at(subject).Professor() == professor;
-}
-
-bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, WeekDay day)
-{
-    return data.SubjectRequests().at(subject).Requested(day);
+    return data.SubjectRequests().at(subject).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
 }
 
 std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject)
