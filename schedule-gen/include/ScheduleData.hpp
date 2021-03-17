@@ -84,6 +84,7 @@ private:
     std::vector<SubjectRequest> subjectRequests_;
 };
 
+void Print(const ScheduleData& data);
 
 std::size_t CalculateHours(const ScheduleData& data,
                            std::size_t professor,

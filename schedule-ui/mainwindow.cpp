@@ -13,6 +13,8 @@
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QPushButton>
 
+#include <iostream>
+
 
 static const auto DEFAULT_LESSONS_PER_DAY_COUNT = 3;
 
@@ -157,7 +159,7 @@ void MainWindow::genetateSchedule()
                                          lesson.CountHoursPerWeek,
                                          ToWeekDaysSet(lesson.WeekDays),
                                          ToGroupsSet(groups, discipline.Groups),
-                                         std::set<std::size_t>({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }));
+                                         std::set<std::size_t>({ 1, 2, 3 }));
         }
     }
 
@@ -186,6 +188,7 @@ void MainWindow::genetateSchedule()
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
                 if (resultLesson)
                 {
+                    std::cout << "Result: g=" << g << ", d=" << d << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
                     ScheduleModelItem item;
                     item.ClassRoom = resultLesson->Classroom;
                     item.Professor = professors.at(resultLesson->Professor);
@@ -209,6 +212,7 @@ void MainWindow::genetateSchedule()
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
                 if (resultLesson)
                 {
+                    std::cout << "Result: g=" << g << ", d=" << d << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
                     ScheduleModelItem item;
                     item.ClassRoom = resultLesson->Classroom;
                     item.Professor = professors.at(resultLesson->Professor);
