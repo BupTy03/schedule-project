@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QPainter>
+#include <set>
 
 
 class QModelIndex;
@@ -42,3 +43,5 @@ struct QModelIndexGreaterByRow
 
 void CopyRows(const QAbstractItemModel& from, QAbstractItemModel& to);
 void MoveRows(QAbstractItemModel& from, QAbstractItemModel& to, QList<QModelIndex> rows);
+
+QString Join(const std::set<QString>& strSet, const QString& glue);

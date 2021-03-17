@@ -61,3 +61,13 @@ void MoveRows(QAbstractItemModel& from, QAbstractItemModel& to, QList<QModelInde
     for (const auto& row : rows)
         from.removeRow(row.row());
 }
+
+QString Join(const std::set<QString>& strSet, const QString& glue)
+{
+    QStringList lst;
+    lst.reserve(strSet.size());
+    for(auto&& s : strSet)
+        lst.push_back(s);
+
+    return lst.join(glue);
+}

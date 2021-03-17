@@ -44,9 +44,9 @@ set(PROJECT_SOURCES
         currenttabstrategy.cpp currenttabstrategy.hpp
         scheduleimportexport.cpp scheduleimportexport.hpp
         disciplinesmodel.cpp disciplinesmodel.hpp
+        chooseclassroomswidget.cpp chooseclassroomswidget.hpp
         utils.cpp utils.hpp
-        resources.qrc
-)
+        resources.qrc)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(schedule-ui
