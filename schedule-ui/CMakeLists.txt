@@ -45,6 +45,7 @@ set(PROJECT_SOURCES
         scheduleimportexport.cpp scheduleimportexport.hpp
         disciplinesmodel.cpp disciplinesmodel.hpp
         chooseclassroomswidget.cpp chooseclassroomswidget.hpp
+        chooseclassroomsdialog.cpp chooseclassroomsdialog.hpp
         utils.cpp utils.hpp
         resources.qrc)
 

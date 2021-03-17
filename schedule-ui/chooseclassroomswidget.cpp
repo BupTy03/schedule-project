@@ -1,4 +1,5 @@
 #include "chooseclassroomswidget.hpp"
+#include "chooseclassroomsdialog.hpp"
 #include "utils.hpp"
 
 #include <QtWidgets/QLabel>
@@ -6,10 +7,11 @@
 #include <QtWidgets/QHBoxLayout>
 
 
-ChooseClassroomWidget::ChooseClassroomWidget(QWidget* parent)
+ChooseClassroomsWidget::ChooseClassroomsWidget(QAbstractItemModel* model, QWidget* parent)
     : QWidget(parent)
     , classroomsLabel_(new QLabel(this))
     , chooseClassroomButton_(new QPushButton("...", this))
+    , chooseDialog_(new ChooseClassroomsDialog(model, this))
     , classrooms_()
 {
     classroomsLabel_->setSizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::Fixed);
@@ -20,15 +22,25 @@ ChooseClassroomWidget::ChooseClassroomWidget(QWidget* parent)
     layer->addWidget(classroomsLabel_);
     layer->addWidget(chooseClassroomButton_);
     setLayout(layer);
+
+    connect(chooseClassroomButton_, &QPushButton::clicked, this, &ChooseClassroomsWidget::onChooseButtonClicked);
 }
 
-void ChooseClassroomWidget::setClassrooms(const std::set<QString>& classrooms)
+void ChooseClassroomsWidget::setClassrooms(const std::set<QString>& classrooms)
 {
     classrooms_ = classrooms;
     classroomsLabel_->setText(Join(classrooms_, ", "));
 }
 
-std::set<QString> ChooseClassroomWidget::classrooms() const
+std::set<QString> ChooseClassroomsWidget::classrooms() const
 {
     return classrooms_;
+}
+
+void ChooseClassroomsWidget::onChooseButtonClicked()
+{
+    if(chooseDialog_->exec() != QDialog::DialogCode::Accepted)
+        return;
+
+    setClassrooms(chooseDialog_->classrooms());
 }
