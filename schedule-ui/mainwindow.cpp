@@ -188,7 +188,7 @@ void MainWindow::genetateSchedule()
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
                 if (resultLesson)
                 {
-                    std::cout << "Result: g=" << g << ", d=" << d << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
+                    std::cout << "Result: [ g=" << g << ", d=" << d << ", p=" << resultLesson->Professor << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
                     ScheduleModelItem item;
                     item.ClassRoom = resultLesson->Classroom;
                     item.Professor = professors.at(resultLesson->Professor);
@@ -212,7 +212,7 @@ void MainWindow::genetateSchedule()
                 const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
                 if (resultLesson)
                 {
-                    std::cout << "Result: g=" << g << ", d=" << d << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
+                    std::cout << "Result: [ g=" << g << ", d=" << d << ", p=" << resultLesson->Professor << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
                     ScheduleModelItem item;
                     item.ClassRoom = resultLesson->Classroom;
                     item.Professor = professors.at(resultLesson->Professor);

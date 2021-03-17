@@ -31,41 +31,35 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
 
     CpModelBuilder cp_model;
 
-    // [day, group, lesson, classrooms, subject]
-    using mtx_index = std::tuple<std::size_t, std::size_t, std::size_t, std::size_t, std::size_t>;
+    // [day, group, professor, lesson, classrooms, subject]
+    using mtx_index = std::tuple<std::size_t, std::size_t, std::size_t, std::size_t, std::size_t, std::size_t>;
     std::map<mtx_index, BoolVar> lessons;
 
     // создание переменных
     for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
-    {
         for (std::size_t g = 0; g < data.CountGroups(); ++g)
-        {
-            for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-            {
-                for(std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                {
-                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-                    {
-                        lessons[{d, g, l, c, s}] = cp_model.NewBoolVar();
-                    }
-                }
-            }
-        }
-    }
+            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                            lessons[{d, g, p, l, c, s}] = cp_model.NewBoolVar();
 
     // в одно время может быть только один предмет
     for (std::size_t g = 0; g < data.CountGroups(); ++g)
     {
-        for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+        for(std::size_t p = 0; p < data.CountProfessors(); ++p)
         {
-            for(std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
             {
-                std::vector<BoolVar> sumSubjects;
-                for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-                    for(std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                        sumSubjects.emplace_back(lessons[{d, g, l, c, s}]);
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
+                    std::vector<BoolVar> sumSubjects;
+                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                            sumSubjects.emplace_back(lessons[{d, g, p, l, c, s}]);
 
-                cp_model.AddLessOrEqual(LinearExpr::BooleanSum(sumSubjects), 1);
+                    cp_model.AddLessOrEqual(LinearExpr::BooleanSum(sumSubjects), 1);
+                }
             }
         }
     }
@@ -75,19 +69,17 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
     {
         for (std::size_t g = 0; g < data.CountGroups(); ++g)
         {
-            std::vector<BoolVar> sumDays;
-            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
             {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-                {
-                    for(std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                    {
-                        sumDays.emplace_back(lessons[{d, g, l, c, s}]);
-                    }
-                }
-            }
+                std::vector<BoolVar> sumDays;
+                for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+                    for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                            sumDays.emplace_back(lessons[{d, g, p, l, c, s}]);
 
-            cp_model.AddEquality(LinearExpr::BooleanSum(sumDays), data.SubjectRequests().at(s).HoursPerWeek());
+                std::cout << "Hours: [ p=" << p << ", g=" << g << ", s=" << s << " ] = " << CalculateHours(data, p, g, s) << std::endl;
+                cp_model.AddEquality(LinearExpr::BooleanSum(sumDays), CalculateHours(data, p, g, s));
+            }
         }
     }
 
@@ -106,14 +98,18 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
             for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
             {
                 ScheduleResult::Lesson resultScheduleLesson = std::nullopt;
-                for(std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                for(std::size_t p = 0; p < data.CountProfessors(); ++p)
                 {
-                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                     {
-                        if (SolutionBooleanValue(response, lessons[{d, g, l, c, s}]))
+                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
                         {
-                            std::cout << "[ g=" << g << ", d=" << d << ", l=" << l << ", c=" << c << ", s=" << s << " ]"<< std::endl;
-                            resultScheduleLesson.emplace(s, 0, c);
+                            if (SolutionBooleanValue(response, lessons[{d, g, p, l, c, s}]))
+                            {
+                                std::cout << "[ g=" << g << ", d=" << d << ", p=" << p << ", l=" << l << ", c=" << c << ", s=" << s
+                                          << " ]" << std::endl;
+                                resultScheduleLesson.emplace(s, p, c);
+                            }
                         }
                     }
                 }

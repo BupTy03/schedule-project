@@ -16,11 +16,11 @@ bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, W
 std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject)
 {
     const auto& subj = data.SubjectRequests().at(subject);
-//    if(subj.Professor() != professor)
-//        return 0;
-//
-//    if(!subj.RequestedGroup(group))
-//        return 0;
+    if(subj.Professor() != professor)
+        return 0;
+
+    if(!subj.RequestedGroup(group))
+        return 0;
 
     return subj.HoursPerWeek();
 }
