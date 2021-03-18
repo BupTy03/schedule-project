@@ -48,5 +48,7 @@ void MoveRows(QAbstractItemModel& from, QAbstractItemModel& to, QList<QModelInde
 
 QString Join(const std::set<QString>& strSet, const QString& glue);
 
+std::set<std::size_t> IndexesSet(std::size_t count);
 std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays);
 std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups);
+std::set<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms);

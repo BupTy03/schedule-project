@@ -72,6 +72,15 @@ QString Join(const std::set<QString>& strSet, const QString& glue)
     return lst.join(glue);
 }
 
+std::set<std::size_t> IndexesSet(std::size_t count)
+{
+    std::set<std::size_t> result;
+    for(std::size_t i = 0; i < count; ++i)
+        result.emplace(i);
+
+    return result;
+}
+
 std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays)
 {
     std::set<WeekDay> result;
@@ -81,20 +90,53 @@ std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays)
             result.emplace(static_cast<WeekDay>(w));
     }
 
+    if(result.empty()) {
+        return std::set<WeekDay>{
+                WeekDay::Monday,
+                WeekDay::Tuesday,
+                WeekDay::Wednesday,
+                WeekDay::Thursday,
+                WeekDay::Friday,
+                WeekDay::Saturday
+        };
+    }
+
     return result;
 }
 
 std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
 {
+    if(currentGroups.empty())
+        return IndexesSet(allGroups.size());
+
     std::set<std::size_t> result;
     for(auto&& g : currentGroups)
     {
-        auto groupIndex = allGroups.indexOf(g);
+        const auto groupIndex = allGroups.indexOf(g);
         assert(groupIndex >= 0);
         if(groupIndex < 0)
             continue;
 
         result.emplace(groupIndex);
+    }
+
+    return result;
+}
+
+std::set<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms)
+{
+    std::set<std::size_t> result;
+    if(currentClassrooms.empty())
+        return IndexesSet(allClassrooms.size());
+
+    for(auto&& c : currentClassrooms)
+    {
+        const auto classroomIndex = allClassrooms.indexOf(c);
+        assert(classroomIndex >= 0);
+        if(classroomIndex < 0)
+            continue;
+
+        result.emplace(classroomIndex);
     }
 
     return result;

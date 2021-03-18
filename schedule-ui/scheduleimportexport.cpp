@@ -44,12 +44,22 @@ static WeekDaysType ParseWeekDays(const QJsonArray& weekDays)
     return result;
 }
 
+static std::set<QString> ParseStringSet(const QJsonArray& strSet)
+{
+    std::set<QString> result;
+    for(auto&& str : strSet)
+        result.emplace(str.toString());
+
+    return result;
+}
+
 static LessonTypeItem ParseLesson(const QJsonObject& lesson)
 {
     LessonTypeItem res;
     res.Name = lesson["name"].toString();
     res.CountHoursPerWeek = lesson["hours"].toInt(0);
     res.WeekDays = ParseWeekDays(lesson["weekdays"].toArray());
+    res.Classrooms = ParseStringSet(lesson["classrooms"].toArray());
     return res;
 }
 
@@ -99,11 +109,21 @@ static QJsonArray ToJson(const WeekDaysType& weekDays)
     return result;
 }
 
+static QJsonArray ToJson(const std::set<QString>& strSet)
+{
+    QJsonArray result;
+    for(auto&& str : strSet)
+        result.push_back(str);
+
+    return result;
+}
+
 static QJsonObject ToJson(const LessonTypeItem& lesson)
 {
     return QJsonObject({ { "name", lesson.Name },
                          { "hours", lesson.CountHoursPerWeek },
-                         { "weekdays", ToJson(lesson.WeekDays) } });
+                         { "weekdays", ToJson(lesson.WeekDays) },
+                         {"classrooms", ToJson(lesson.Classrooms)}});
 }
 
 static QJsonArray ToJson(const std::vector<LessonTypeItem>& lessons)

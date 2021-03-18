@@ -151,7 +151,7 @@ void MainWindow::generateSchedule()
                                          lesson.CountHoursPerWeek,
                                          ToWeekDaysSet(lesson.WeekDays),
                                          ToGroupsSet(groups, discipline.Groups),
-                                         std::set<std::size_t>({ 1, 2, 3 }));
+                                         ToClassroomsSet(classrooms, lesson.Classrooms));
         }
     }
 
