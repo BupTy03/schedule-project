@@ -33,6 +33,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     , disciplinesModel_(std::make_unique<DisciplinesModel>())
     , scheduleProcessor_(std::make_unique<ScheduleProcessor>(std::make_unique<SATScheduleGenerator>()))
     , scheduleProcessorThread_(new QThread(this))
+    , progressBar_(new QProgressBar(this))
 {
     ui->setupUi(this);
     setWindowTitle(tr("Генератор расписаний"));
@@ -70,6 +71,10 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     professorsListModel_.setStringList(scheduleData_->professors());
     classroomsListModel_.setStringList(scheduleData_->classrooms());
     disciplinesModel_->setDisciplines(scheduleData_->disciplines());
+
+    progressBar_->setRange(0, 100);
+    ui->statusbar->addPermanentWidget(progressBar_);
+    progressBar_->hide();
 
     scheduleProcessor_->moveToThread(scheduleProcessorThread_);
     scheduleProcessorThread_->start();
@@ -121,6 +126,9 @@ void MainWindow::onTabChanged(int current)
 
 void MainWindow::generateSchedule()
 {
+    progressBar_->setValue(50);
+    progressBar_->show();
+
     const auto groups = groupsListModel_.stringList();
     const auto professors = professorsListModel_.stringList();
     const auto classrooms = classroomsListModel_.stringList();
@@ -154,11 +162,13 @@ void MainWindow::generateSchedule()
                               std::move(subjectRequests));
 
     scheduleProcessor_->setData(scheduleData);
+    progressBar_->setValue(70);
     emit startGeneratingSchedule();
 }
 
 void MainWindow::onScheduleDone()
 {
+    progressBar_->hide();
     auto resultSchedule = scheduleProcessor_->result();
     if(resultSchedule->Empty())
         return;

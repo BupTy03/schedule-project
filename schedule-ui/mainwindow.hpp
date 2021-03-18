@@ -1,6 +1,7 @@
 #pragma once
 #include <QMainWindow>
 #include <QStringListModel>
+#include <QProgressBar>
 #include <QThread>
 
 #include <memory>
@@ -53,4 +54,5 @@ private:
     std::unique_ptr<DisciplinesModel> disciplinesModel_;
     std::unique_ptr<ScheduleProcessor> scheduleProcessor_;
     QThread* scheduleProcessorThread_;
+    QProgressBar* progressBar_;
 };
