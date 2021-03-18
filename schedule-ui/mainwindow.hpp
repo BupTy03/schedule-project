@@ -42,6 +42,9 @@ private slots:
     void onScheduleDone();
 
 private:
+    void lockAllControls(bool flag);
+
+private:
     Ui::MainWindow* ui;
     QToolBar* toolBar_;
     QStringListModel groupsListModel_;

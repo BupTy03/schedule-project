@@ -129,6 +129,8 @@ void MainWindow::generateSchedule()
     progressBar_->setValue(50);
     progressBar_->show();
 
+    lockAllControls(true);
+
     const auto groups = groupsListModel_.stringList();
     const auto professors = professorsListModel_.stringList();
     const auto classrooms = classroomsListModel_.stringList();
@@ -169,6 +171,8 @@ void MainWindow::generateSchedule()
 void MainWindow::onScheduleDone()
 {
     progressBar_->hide();
+    lockAllControls(false);
+
     auto resultSchedule = scheduleProcessor_->result();
     if(resultSchedule->Empty())
         return;
@@ -249,4 +253,10 @@ void MainWindow::onScheduleDone()
 
     showScheduleDialog_->setSchedule(evenGroupsSchedule, oddGroupsSchedule);
     showScheduleDialog_->show();
+}
+
+void MainWindow::lockAllControls(bool flag)
+{
+    ui->tabWidget->setDisabled(flag);
+    toolBar_->setDisabled(flag);
 }
