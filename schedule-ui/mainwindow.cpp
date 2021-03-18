@@ -4,18 +4,14 @@
 #include "showscheduledialog.hpp"
 #include "adddisciplinedialog.hpp"
 #include "currenttabstrategy.hpp"
-#include "scheduleimportexport.hpp"
 #include "disciplinesmodel.hpp"
 #include "scheduleprocessor.hpp"
 
 #include "ScheduleGenerator.hpp"
 #include "SATScheduleGenerator.hpp"
 
-#include <QAction>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QPushButton>
-
-#include <iostream>
 
 
 static const auto DEFAULT_LESSONS_PER_DAY_COUNT = 3;
@@ -228,7 +224,6 @@ void MainWindow::onScheduleDone()
                 const ScheduleResult::Lesson resultLesson = resultSchedule->At(g, d, l);
                 if (resultLesson)
                 {
-                    std::cout << "Result: [ g=" << g << ", d=" << d << ", p=" << resultLesson->Professor << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
                     ScheduleModelItem item;
                     item.ClassRoom = resultLesson->Classroom;
                     item.Professor = professors.at(resultLesson->Professor);
@@ -252,7 +247,6 @@ void MainWindow::onScheduleDone()
                 const ScheduleResult::Lesson resultLesson = resultSchedule->At(g, d, l);
                 if (resultLesson)
                 {
-                    std::cout << "Result: [ g=" << g << ", d=" << d << ", p=" << resultLesson->Professor << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
                     ScheduleModelItem item;
                     item.ClassRoom = resultLesson->Classroom;
                     item.Professor = professors.at(resultLesson->Professor);

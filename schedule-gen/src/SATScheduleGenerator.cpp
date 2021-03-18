@@ -27,8 +27,6 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
     using operations_research::sat::Solve;
 
 
-    Print(data);
-
     CpModelBuilder cp_model;
 
     // [day, group, professor, lesson, classrooms, subject]
@@ -77,7 +75,6 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
                         for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                             sumDays.emplace_back(lessons[{d, g, p, l, c, s}]);
 
-                std::cout << "Hours: [ p=" << p << ", g=" << g << ", s=" << s << " ] = " << CalculateHours(data, p, g, s) << std::endl;
                 cp_model.AddEquality(LinearExpr::BooleanSum(sumDays), CalculateHours(data, p, g, s));
             }
         }
@@ -132,8 +129,6 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
                         {
                             if (SolutionBooleanValue(response, lessons[{d, g, p, l, c, s}]))
                             {
-                                std::cout << "[ g=" << g << ", d=" << d << ", p=" << p << ", l=" << l << ", c=" << c << ", s=" << s
-                                          << " ]" << std::endl;
                                 resultScheduleLesson.emplace(s, p, c);
                             }
                         }
