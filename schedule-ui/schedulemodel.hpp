@@ -12,7 +12,7 @@ static constexpr int MAX_LESSONS_PER_DAY_COUNT = 6;
 
 struct ScheduleModelItem
 {
-    int ClassRoom = 0;
+    QString ClassRoom;
     QString Professor;
     QString Subject;
 };

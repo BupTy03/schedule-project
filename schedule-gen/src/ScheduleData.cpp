@@ -8,6 +8,11 @@ bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, s
     return data.SubjectRequests().at(subject).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
 }
 
+bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t classroom)
+{
+    return data.SubjectRequests().at(subject).RequestedClassroom(classroom);
+}
+
 std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject)
 {
     const auto& subj = data.SubjectRequests().at(subject);

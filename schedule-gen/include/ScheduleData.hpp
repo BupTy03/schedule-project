@@ -22,6 +22,11 @@ public:
         , classrooms_(std::move(classrooms))
     {}
 
+    bool RequestedClassroom(std::size_t c) const
+    {
+        return classrooms_.count(c) > 0;
+    }
+
     bool RequestedGroup(std::size_t g) const
     {
         return groups_.count(g) > 0;
@@ -92,3 +97,4 @@ std::size_t CalculateHours(const ScheduleData& data,
                            std::size_t subject);
 
 bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay);
+bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t classroom);

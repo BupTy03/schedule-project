@@ -7,7 +7,7 @@ QString ToString(const ScheduleModelItem& item)
     if (item.ClassRoom == 0 && item.Professor.isEmpty() && item.Subject.isEmpty())
         return {};
 
-    return item.Subject % ' ' % item.Professor % " (" % QString::number(item.ClassRoom) % ')';
+    return item.Subject % ' ' % item.Professor % " (" % item.ClassRoom % ')';
 }
 
 

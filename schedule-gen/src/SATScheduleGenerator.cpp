@@ -73,38 +73,14 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
                 for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
                     for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
                         for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                            sumDays.emplace_back(lessons[{d, g, p, l, c, s}]);
+                            if(WeekDayRequestedForSubject(data, s, d) && ClassroomRequestedForSubject(data, s, c))
+                                sumDays.emplace_back(lessons[{d, g, p, l, c, s}]);
 
                 cp_model.AddEquality(LinearExpr::BooleanSum(sumDays), CalculateHours(data, p, g, s));
             }
         }
     }
 
-    // учитываем дни в которые преподы не желают работать
-    std::vector<BoolVar> notWorkingDaysSum;
-    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-    {
-        for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
-        {
-            if(WeekDayRequestedForSubject(data, s, d))
-                continue;
-
-            for (std::size_t g = 0; g < data.CountGroups(); ++g)
-            {
-                for (std::size_t p = 0; p < data.CountProfessors(); ++p)
-                {
-                    for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-                    {
-                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                        {
-                            notWorkingDaysSum.emplace_back(lessons[{d, g, p, l, c, s}]);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    cp_model.AddEquality(LinearExpr::BooleanSum(notWorkingDaysSum), 0);
 
     const CpSolverResponse response = Solve(cp_model.Build());
     LOG(INFO) << CpSolverResponseStats(response);

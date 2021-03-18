@@ -208,7 +208,7 @@ void MainWindow::onScheduleDone()
                 if (resultLesson)
                 {
                     ScheduleModelItem item;
-                    item.ClassRoom = resultLesson->Classroom;
+                    item.ClassRoom = classrooms.at(resultLesson->Classroom);
                     item.Professor = professors.at(resultLesson->Professor);
                     item.Subject = subjects.at(resultLesson->Subject);
                     daySchedule.at(l) = item;
@@ -231,7 +231,7 @@ void MainWindow::onScheduleDone()
                 if (resultLesson)
                 {
                     ScheduleModelItem item;
-                    item.ClassRoom = resultLesson->Classroom;
+                    item.ClassRoom = classrooms.at(resultLesson->Classroom);
                     item.Professor = professors.at(resultLesson->Professor);
                     item.Subject = subjects.at(resultLesson->Subject);
                     daySchedule.at(l) = item;
