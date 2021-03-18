@@ -1,6 +1,7 @@
 #include "mainwindow.hpp"
 #include "./ui_mainwindow.h"
 
+#include "utils.hpp"
 #include "showscheduledialog.hpp"
 #include "adddisciplinedialog.hpp"
 #include "currenttabstrategy.hpp"
@@ -116,34 +117,6 @@ void MainWindow::onTabChanged(int current)
     auto removeAction = actions.at(1);
     removeAction->setIcon(tabStrategy_->removeActionIcon());
     removeAction->setToolTip(tabStrategy_->removeActionToolTip());
-}
-
-static std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays)
-{
-    std::set<WeekDay> result;
-    for (std::size_t w = 0; w < weekDays.size(); ++w)
-    {
-        if (weekDays.at(w))
-            result.emplace(static_cast<WeekDay>(w));
-    }
-
-    return result;
-}
-
-static std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
-{
-    std::set<std::size_t> result;
-    for(auto&& g : currentGroups)
-    {
-        auto groupIndex = allGroups.indexOf(g);
-        assert(groupIndex >= 0);
-        if(groupIndex < 0)
-            continue;
-
-        result.emplace(groupIndex);
-    }
-
-    return result;
 }
 
 void MainWindow::generateSchedule()

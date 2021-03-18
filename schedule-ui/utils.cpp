@@ -71,3 +71,31 @@ QString Join(const std::set<QString>& strSet, const QString& glue)
 
     return lst.join(glue);
 }
+
+std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays)
+{
+    std::set<WeekDay> result;
+    for (std::size_t w = 0; w < weekDays.size(); ++w)
+    {
+        if (weekDays.at(w))
+            result.emplace(static_cast<WeekDay>(w));
+    }
+
+    return result;
+}
+
+std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
+{
+    std::set<std::size_t> result;
+    for(auto&& g : currentGroups)
+    {
+        auto groupIndex = allGroups.indexOf(g);
+        assert(groupIndex >= 0);
+        if(groupIndex < 0)
+            continue;
+
+        result.emplace(groupIndex);
+    }
+
+    return result;
+}

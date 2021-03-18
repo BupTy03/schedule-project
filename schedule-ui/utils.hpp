@@ -1,4 +1,6 @@
 #pragma once
+#include "ScheduleCommon.hpp"
+#include "scheduleimportexport.hpp"
 
 #include <QPainter>
 #include <set>
@@ -45,3 +47,6 @@ void CopyRows(const QAbstractItemModel& from, QAbstractItemModel& to);
 void MoveRows(QAbstractItemModel& from, QAbstractItemModel& to, QList<QModelIndex> rows);
 
 QString Join(const std::set<QString>& strSet, const QString& glue);
+
+std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays);
+std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups);
