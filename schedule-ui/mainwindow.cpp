@@ -6,7 +6,9 @@
 #include "currenttabstrategy.hpp"
 #include "scheduleimportexport.hpp"
 #include "disciplinesmodel.hpp"
+#include "scheduleprocessor.hpp"
 
+#include "ScheduleGenerator.hpp"
 #include "SATScheduleGenerator.hpp"
 
 #include <QAction>
@@ -32,6 +34,8 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     , tabStrategy_()
     , scheduleData_(std::move(scheduleData))
     , disciplinesModel_(std::make_unique<DisciplinesModel>())
+    , scheduleProcessor_(std::make_unique<ScheduleProcessor>(std::make_unique<SATScheduleGenerator>()))
+    , scheduleProcessorThread_(new QThread(this))
 {
     ui->setupUi(this);
     setWindowTitle(tr("Генератор расписаний"));
@@ -42,7 +46,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     toolBar_->addAction(QString(), [this]() { tabStrategy_->onAddItem(); });
     toolBar_->addAction(QString(), [this]() { tabStrategy_->onRemoveItem(); });
     toolBar_->addSeparator();
-    toolBar_->addAction(QIcon(":/img/start.ico"), tr("Сгенерировать расписание"), this, &MainWindow::genetateSchedule);
+    toolBar_->addAction(QIcon(":/img/start.ico"), tr("Сгенерировать расписание"), this, &MainWindow::generateSchedule);
 
     onTabChanged(0);
     addToolBar(Qt::ToolBarArea::TopToolBarArea, toolBar_);
@@ -70,7 +74,13 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     classroomsListModel_.setStringList(scheduleData_->classrooms());
     disciplinesModel_->setDisciplines(scheduleData_->disciplines());
 
+    scheduleProcessor_->moveToThread(scheduleProcessorThread_);
+    scheduleProcessorThread_->start();
+
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+
+    connect(this, &MainWindow::startGeneratingSchedule, scheduleProcessor_.get(), &ScheduleProcessor::start);
+    connect(scheduleProcessor_.get(), &ScheduleProcessor::done, this, &MainWindow::onScheduleDone);
 }
 
 MainWindow::~MainWindow()
@@ -79,6 +89,8 @@ MainWindow::~MainWindow()
     scheduleData_->saveProfessors(professorsListModel_.stringList());
     scheduleData_->saveClassrooms(classroomsListModel_.stringList());
     scheduleData_->saveDisciplines(disciplinesModel_->disciplines());
+    scheduleProcessorThread_->quit();
+    scheduleProcessorThread_->wait();
     delete ui;
 }
 
@@ -138,7 +150,7 @@ static std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QSt
     return result;
 }
 
-void MainWindow::genetateSchedule()
+void MainWindow::generateSchedule()
 {
     const auto groups = groupsListModel_.stringList();
     const auto professors = professorsListModel_.stringList();
@@ -166,16 +178,41 @@ void MainWindow::genetateSchedule()
         }
     }
 
-    ScheduleData scheduleData(DEFAULT_LESSONS_PER_DAY_COUNT,
+    auto scheduleData = std::make_shared<ScheduleData>(DEFAULT_LESSONS_PER_DAY_COUNT,
                               static_cast<std::size_t>(groups.size()),
                               static_cast<std::size_t>(professors.size()),
                               static_cast<std::size_t>(classrooms.size()),
                               std::move(subjectRequests));
 
-    SATScheduleGenerator generator;
-    const auto resultSchedule = generator.Genetate(scheduleData);
-    if(resultSchedule.Empty())
+    scheduleProcessor_->setData(scheduleData);
+    emit startGeneratingSchedule();
+}
+
+void MainWindow::onScheduleDone()
+{
+    auto resultSchedule = scheduleProcessor_->result();
+    if(resultSchedule->Empty())
         return;
+
+    const auto groups = groupsListModel_.stringList();
+    const auto professors = professorsListModel_.stringList();
+    const auto classrooms = classroomsListModel_.stringList();
+    const auto disciplines = disciplinesModel_->disciplines();
+
+    std::vector<QString> subjects;
+    for (auto&& discipline : disciplines)
+    {
+        auto professor = professors.indexOf(discipline.Professor);
+        assert(professor >= 0);
+
+        for (auto&& lesson : discipline.Lessons)
+        {
+            if(lesson.CountHoursPerWeek <= 0)
+                continue;
+
+            subjects.emplace_back(discipline.Name + " (" + lesson.Name + ')');
+        }
+    }
 
     std::vector<GroupSchedule> evenGroupsSchedule;
     std::vector<GroupSchedule> oddGroupsSchedule;
@@ -188,7 +225,7 @@ void MainWindow::genetateSchedule()
             DaySchedule& daySchedule = evenSchedule.second.at(d);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
-                const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
+                const ScheduleResult::Lesson resultLesson = resultSchedule->At(g, d, l);
                 if (resultLesson)
                 {
                     std::cout << "Result: [ g=" << g << ", d=" << d << ", p=" << resultLesson->Professor << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;
@@ -212,7 +249,7 @@ void MainWindow::genetateSchedule()
             DaySchedule& daySchedule = oddSchedule.second.at(d - 6);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
-                const ScheduleResult::Lesson resultLesson = resultSchedule.At(g, d, l);
+                const ScheduleResult::Lesson resultLesson = resultSchedule->At(g, d, l);
                 if (resultLesson)
                 {
                     std::cout << "Result: [ g=" << g << ", d=" << d << ", p=" << resultLesson->Professor << ", l=" << l << ", c=" << resultLesson->Classroom << ", s=" << resultLesson->Subject << " ]" << std::endl;

@@ -1,6 +1,7 @@
 #pragma once
 #include <QMainWindow>
 #include <QStringListModel>
+#include <QThread>
 
 #include <memory>
 
@@ -19,6 +20,7 @@ class ShowScheduleDialog;
 class CurrentTabStrategy;
 class ScheduleDataStorage;
 class DisciplinesModel;
+class ScheduleProcessor;
 
 
 class MainWindow : public QMainWindow
@@ -30,9 +32,13 @@ public:
                         QWidget* parent = nullptr);
     ~MainWindow() override;
 
+signals:
+    void startGeneratingSchedule();
+
 private slots:
     void onTabChanged(int current);
-    void genetateSchedule();
+    void generateSchedule();
+    void onScheduleDone();
 
 private:
     Ui::MainWindow* ui;
@@ -45,4 +51,6 @@ private:
     std::unique_ptr<CurrentTabStrategy> tabStrategy_;
     std::unique_ptr<ScheduleDataStorage> scheduleData_;
     std::unique_ptr<DisciplinesModel> disciplinesModel_;
+    std::unique_ptr<ScheduleProcessor> scheduleProcessor_;
+    QThread* scheduleProcessorThread_;
 };
