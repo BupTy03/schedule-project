@@ -2,6 +2,10 @@
 #include "weekdayeditor.hpp"
 
 
+static constexpr auto WEEK_DAYS_EDITOR_WIDTH = 65;
+static constexpr auto WEEK_DAYS_EDITOR_HEIGHT = 130;
+
+
 ChooseWeekDayDelegate::ChooseWeekDayDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
@@ -29,5 +33,7 @@ void ChooseWeekDayDelegate::setModelData(QWidget* editor, QAbstractItemModel* mo
 
 void ChooseWeekDayDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    editor->setGeometry(QRect(option.rect.topLeft(), QSize(65, 130)));
+    auto topLeft = option.rect.topLeft();
+    topLeft.ry() -= WEEK_DAYS_EDITOR_HEIGHT / 8;
+    editor->setGeometry(QRect(topLeft, QSize(WEEK_DAYS_EDITOR_WIDTH, WEEK_DAYS_EDITOR_HEIGHT)));
 }
