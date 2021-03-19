@@ -225,7 +225,7 @@ QStringList ScheduleDataJsonFile::classrooms() const
 
 void ScheduleDataJsonFile::saveClassrooms(const QStringList& classrooms)
 {
-    classrooms_ = classrooms;
+    classrooms_ = RemoveDuplicatesAndSort(classrooms);
 }
 
 std::vector<Discipline> ScheduleDataJsonFile::disciplines() const
