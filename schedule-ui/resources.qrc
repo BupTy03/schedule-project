@@ -8,5 +8,6 @@
         <file>img/left_arrow.ico</file>
         <file>img/right_arrow.ico</file>
         <file>img/remove_professor.ico</file>
+        <file>img/calendar.ico</file>
     </qresource>
 </RCC>
