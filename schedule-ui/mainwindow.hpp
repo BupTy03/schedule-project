@@ -43,6 +43,8 @@ private slots:
 
 private:
     void lockAllControls(bool flag);
+    void startProcess();
+    void endProcess();
 
 private:
     Ui::MainWindow* ui;

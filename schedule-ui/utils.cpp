@@ -141,3 +141,25 @@ std::set<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const Cl
 
     return result;
 }
+
+QString ToErrorMessage(ScheduleDataValidationResult validationResult)
+{
+    switch (validationResult)
+    {
+        case ScheduleDataValidationResult::Ok:
+            return QObject::tr("Ок");
+        case ScheduleDataValidationResult::ToFewLessonsPerDayRequested:
+            return QObject::tr("Слишком мало пар в день");
+        case ScheduleDataValidationResult::NoGroups:
+            return QObject::tr("Необходимо добавить хотя бы одну группу");
+        case ScheduleDataValidationResult::NoSubjects:
+            return QObject::tr("Необходимо добавить хотя бы одну дисциплину");
+        case ScheduleDataValidationResult::NoProfessors:
+            return QObject::tr("Необходимо добавить хотя бы одного преподавателя");
+        case ScheduleDataValidationResult::NoClassrooms:
+            return QObject::tr("Необходимо добавить хотя бы одну аудиторию");
+    }
+
+    assert(false);
+    return QObject::tr("Неизвестная ошибка");
+}

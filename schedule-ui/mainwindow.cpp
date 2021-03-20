@@ -13,6 +13,7 @@
 
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QMessageBox>
 
 
 static const auto DEFAULT_LESSONS_PER_DAY_COUNT = 3;
@@ -126,11 +127,6 @@ void MainWindow::onTabChanged(int current)
 
 void MainWindow::generateSchedule()
 {
-    progressBar_->setValue(50);
-    progressBar_->show();
-
-    lockAllControls(true);
-
     const auto groups = groupsListModel_.stringList();
     const auto professors = professorsListModel_.stringList();
     const auto classrooms = classroomsListModel_.stringList();
@@ -163,15 +159,21 @@ void MainWindow::generateSchedule()
                               static_cast<std::size_t>(classrooms.size()),
                               std::move(subjectRequests));
 
+    const auto validationResult = Validate(*scheduleData);
+    if(validationResult != ScheduleDataValidationResult::Ok)
+    {
+        QMessageBox::warning(this, tr("Предупреждение"), ToErrorMessage(validationResult));
+        return;
+    }
+
     scheduleProcessor_->setData(scheduleData);
-    progressBar_->setValue(70);
+    startProcess();
     emit startGeneratingSchedule();
 }
 
 void MainWindow::onScheduleDone()
 {
-    progressBar_->hide();
-    lockAllControls(false);
+    endProcess();
 
     auto resultSchedule = scheduleProcessor_->result();
     if(resultSchedule->Empty())
@@ -259,4 +261,17 @@ void MainWindow::lockAllControls(bool flag)
 {
     ui->tabWidget->setDisabled(flag);
     toolBar_->setDisabled(flag);
+}
+
+void MainWindow::startProcess()
+{
+    progressBar_->setValue(70);
+    progressBar_->show();
+    lockAllControls(true);
+}
+
+void MainWindow::endProcess()
+{
+    progressBar_->hide();
+    lockAllControls(false);
 }
