@@ -29,6 +29,7 @@ struct LessonTypeItem
     ClassroomsSet Classrooms;
 };
 
+bool IsValid(const LessonTypeItem& item, const QStringList& allClassrooms);
 QString WeekDaysString(const WeekDaysType& weekDays);
 QString ToString(const LessonTypeItem& lesson);
 
@@ -47,11 +48,18 @@ enum class DisciplineValidationResult
     NoName,
     NoProfessor,
     NoGroups,
-    NoLessons
+    NoLessons,
+    ProfessorNotFoundInCommonList,
+    GroupsNotFoundInCommonList,
+    InvalidLessonItems
 };
 
 int HoursPerWeekSum(const std::vector<LessonTypeItem>& lessons);
 DisciplineValidationResult Validate(const Discipline& discipline);
+DisciplineValidationResult Validate(const Discipline& discipline,
+                                    const QStringList& allGroups,
+                                    const QStringList& allProfessors,
+                                    const QStringList& allClassrooms);
 QString ToWarningMessage(DisciplineValidationResult validationResult);
 
 
@@ -71,6 +79,8 @@ public:
 
     [[nodiscard]] virtual std::vector<Discipline> disciplines() const = 0;
     virtual void saveDisciplines(const std::vector<Discipline>& disciplines) = 0;
+
+    [[nodiscard]] virtual bool IsValid() const = 0;
 };
 
 
@@ -91,6 +101,8 @@ public:
 
     [[nodiscard]] std::vector<Discipline> disciplines() const override;
     void saveDisciplines(const std::vector<Discipline>& disciplines) override;
+
+    [[nodiscard]] bool IsValid() const override;
 
 private:
     QString filename_;

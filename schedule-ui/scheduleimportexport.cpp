@@ -1,4 +1,5 @@
 #include "scheduleimportexport.hpp"
+#include "utils.hpp"
 
 #include <QFile>
 #include <QJsonArray>
@@ -6,6 +7,7 @@
 #include <QJsonDocument>
 
 #include <set>
+#include <algorithm>
 
 
 LessonTypeItem::LessonTypeItem()
@@ -24,6 +26,119 @@ LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, WeekDaysType
 {
 }
 
+bool IsValid(const LessonTypeItem& item, const QStringList& allClassrooms)
+{
+    return !item.Name.isEmpty() &&
+    item.CountHoursPerWeek >= 0 &&
+    std::any_of(item.WeekDays.begin(), item.WeekDays.end(), [](bool wd){return wd;}) &&
+    std::all_of(item.Classrooms.begin(), item.Classrooms.end(), [&](auto&& classroom){ return allClassrooms.contains(classroom); });
+}
+
+
+QString WeekDaysString(const WeekDaysType& weekDays)
+{
+    static const std::array<QString, 6> daysNames = {
+            QObject::tr("ПН"),
+            QObject::tr("ВТ"),
+            QObject::tr("СР"),
+            QObject::tr("ЧТ"),
+            QObject::tr("ПТ"),
+            QObject::tr("СБ")
+    };
+
+    QString daysStr;
+    for (std::size_t d = 0; d < weekDays.size(); ++d)
+    {
+        if (weekDays.at(d))
+        {
+            if (!daysStr.isEmpty())
+                daysStr.push_back(", ");
+
+            daysStr.push_back(daysNames.at(d));
+        }
+    }
+
+    return daysStr;
+}
+
+QString ToString(const LessonTypeItem& lesson)
+{
+    return QString("%1 (%2) %3 [%4]")
+            .arg(lesson.Name)
+            .arg(lesson.CountHoursPerWeek)
+            .arg(WeekDaysString(lesson.WeekDays))
+            .arg(Join(lesson.Classrooms, ", "));
+}
+
+DisciplineValidationResult Validate(const Discipline& discipline)
+{
+    if(discipline.Professor.isEmpty())
+        return DisciplineValidationResult::NoProfessor;
+
+    if(discipline.Name.isEmpty())
+        return DisciplineValidationResult::NoName;
+
+    if(HoursPerWeekSum(discipline.Lessons) <= 0)
+        return DisciplineValidationResult::NoLessons;
+
+    if(discipline.Groups.empty())
+        return DisciplineValidationResult::NoGroups;
+
+    return DisciplineValidationResult::Ok;
+}
+
+static bool Contains(const QStringList& allItems, const QStringList& items)
+{
+    return std::all_of(items.begin(), items.end(), [&](auto&& item){ return allItems.contains(item);});
+}
+
+DisciplineValidationResult Validate(const Discipline& discipline,
+                                    const QStringList& allGroups,
+                                    const QStringList& allProfessors,
+                                    const QStringList& allClassrooms)
+{
+    const auto validationResult = Validate(discipline);
+    if(validationResult != DisciplineValidationResult::Ok)
+        return validationResult;
+
+    if(!allProfessors.contains(discipline.Professor))
+        return DisciplineValidationResult::ProfessorNotFoundInCommonList;
+
+    if(!Contains(allGroups, discipline.Groups))
+        return DisciplineValidationResult::GroupsNotFoundInCommonList;
+
+    if(!std::all_of(discipline.Lessons.begin(), discipline.Lessons.end(), [&](auto&& l){return IsValid(l, allClassrooms);}))
+        return DisciplineValidationResult::InvalidLessonItems;
+
+    return DisciplineValidationResult::Ok;
+}
+
+QString ToWarningMessage(DisciplineValidationResult validationResult)
+{
+    static const std::map<DisciplineValidationResult, QString> mapping = {
+            {DisciplineValidationResult::Ok, QObject::tr("Ok")},
+            {DisciplineValidationResult::NoName, QObject::tr("Необходимо указать название дисциплины")},
+            {DisciplineValidationResult::NoProfessor, QObject::tr("Необходимо выбрать преподавателя")},
+            {DisciplineValidationResult::NoGroups, QObject::tr("Необходимо выбрать группы")},
+            {DisciplineValidationResult::NoLessons, QObject::tr("Необходимо назначить часы для хотя бы одного типа занятий")}
+    };
+
+    auto it = mapping.find(validationResult);
+    if(it == mapping.end())
+    {
+        assert(false && "Unknown enum value");
+        return QObject::tr("Неизвестная ошибка");
+    }
+
+    return it->second;
+}
+
+int HoursPerWeekSum(const std::vector<LessonTypeItem>& lessons)
+{
+    return std::accumulate(lessons.begin(), lessons.end(), 0, [](int lhs, const LessonTypeItem& rhs){
+        return lhs + rhs.CountHoursPerWeek;
+    });
+}
 
 static QStringList ToStringList(const QJsonArray& arr)
 {
@@ -253,4 +368,11 @@ std::vector<Discipline> ScheduleDataJsonFile::disciplines() const
 void ScheduleDataJsonFile::saveDisciplines(const std::vector<Discipline>& disciplines)
 {
     disciplines_ = disciplines;
+}
+
+bool ScheduleDataJsonFile::IsValid() const
+{
+    return std::all_of(disciplines_.begin(), disciplines_.end(), [&](const Discipline& d){
+        return ::Validate(d, groups_, professors_, classrooms_) == DisciplineValidationResult::Ok;
+    });
 }
