@@ -26,8 +26,11 @@ public:
                                  QWidget* parent = nullptr);
     ~AddDisciplineDialog() override;
 
-    Discipline discipline() const;
+    [[nodiscard]] Discipline discipline() const;
     void keyPressEvent(QKeyEvent* evt) override;
+
+private slots:
+    void onOkButtonClicked();
 
 private:
     Ui::AddDisciplineDialog* ui;

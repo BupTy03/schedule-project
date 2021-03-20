@@ -11,6 +11,7 @@
 
 #include <QKeyEvent>
 #include <QAction>
+#include <QMessageBox>
 #include <QDialogButtonBox>
 
 #include <cassert>
@@ -59,7 +60,7 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
     cancelButton->setText(tr("Отмена"));
     layout()->addWidget(buttonBox);
 
-    connect(okButton, &QPushButton::clicked, this, &AddDisciplineDialog::accept);
+    connect(okButton, &QPushButton::clicked, this, &AddDisciplineDialog::onOkButtonClicked);
     connect(cancelButton, &QPushButton::clicked, this, &AddDisciplineDialog::reject);
 }
 
@@ -84,4 +85,13 @@ void AddDisciplineDialog::keyPressEvent(QKeyEvent* evt)
         return;
 
     QDialog::keyPressEvent(evt);
+}
+
+void AddDisciplineDialog::onOkButtonClicked()
+{
+    const auto validationResult = Validate(discipline());
+    if(validationResult == DisciplineValidationResult::Ok)
+        accept();
+    else
+        QMessageBox::warning(this, tr("Предупреждение"), ToWarningMessage(validationResult));
 }

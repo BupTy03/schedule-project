@@ -1,5 +1,9 @@
 #include "lessontypestablemodel.hpp"
 #include "utils.hpp"
+#include "scheduleimportexport.hpp"
+
+#include <map>
+#include <numeric>
 
 
 static constexpr auto DEFAULT_COLUMNS_COUNT = 4;
@@ -48,19 +52,63 @@ QString ToString(const LessonTypeItem& lesson)
             .arg(Join(lesson.Classrooms, ", "));
 }
 
+DisciplineValidationResult Validate(const Discipline& discipline)
+{
+    if(discipline.Professor.isEmpty())
+        return DisciplineValidationResult::NoProfessor;
+
+    if(discipline.Name.isEmpty())
+        return DisciplineValidationResult::NoName;
+
+    if(HoursPerWeekSum(discipline.Lessons) <= 0)
+        return DisciplineValidationResult::NoLessons;
+
+    if(discipline.Groups.empty())
+        return DisciplineValidationResult::NoGroups;
+
+    return DisciplineValidationResult::Ok;
+}
+
+QString ToWarningMessage(DisciplineValidationResult validationResult)
+{
+    static const std::map<DisciplineValidationResult, QString> mapping = {
+            {DisciplineValidationResult::Ok, QObject::tr("Ok")},
+            {DisciplineValidationResult::NoName, QObject::tr("Необходимо указать название дисциплины")},
+            {DisciplineValidationResult::NoProfessor, QObject::tr("Необходимо выбрать преподавателя")},
+            {DisciplineValidationResult::NoGroups, QObject::tr("Необходимо выбрать группы")},
+            {DisciplineValidationResult::NoLessons, QObject::tr("Необходимо назначить часы для хотя бы одного типа занятий")}
+    };
+
+    auto it = mapping.find(validationResult);
+    if(it == mapping.end())
+    {
+        assert(false && "Unknown enum value");
+        return QObject::tr("Неизвестная ошибка");
+    }
+
+    return it->second;
+}
+
+int HoursPerWeekSum(const std::vector<LessonTypeItem>& lessons)
+{
+    return std::accumulate(lessons.begin(), lessons.end(), 0, [](int lhs, const LessonTypeItem& rhs){
+        return lhs + rhs.CountHoursPerWeek;
+    });
+}
+
 
 LessonTypesTableModel::LessonTypesTableModel(QObject* parent)
     : QAbstractTableModel(parent)
     , lessons_()
 {
-    lessons_.emplace_back(tr("Лекции"), 0,
+    lessons_.emplace_back(tr("Лекция"), 0,
                           WeekDaysType{ true, true, true, true, true, true },
                           ClassroomsSet{});
 
-    lessons_.emplace_back(tr("Практики"), 0,
+    lessons_.emplace_back(tr("Практика"), 0,
                           WeekDaysType{ true, true, true, true, true, true },
                           ClassroomsSet{});
-    lessons_.emplace_back(tr("Лабораторные"), 0,
+    lessons_.emplace_back(tr("Лабораторная"), 0,
                           WeekDaysType{ true, true, true, true, true, true },
                           ClassroomsSet{});
 }

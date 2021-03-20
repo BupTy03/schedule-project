@@ -8,6 +8,23 @@
 #include <set>
 
 
+LessonTypeItem::LessonTypeItem()
+        : Name()
+        , CountHoursPerWeek(0)
+        , WeekDays{true, true, true, true, true, true}
+        , Classrooms()
+{
+}
+
+LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, WeekDaysType weekDays, ClassroomsSet classroomsSet)
+        : Name(std::move(name))
+        , CountHoursPerWeek(countHoursPerWeek)
+        , WeekDays(weekDays)
+        , Classrooms(std::move(classroomsSet))
+{
+}
+
+
 static QStringList ToStringList(const QJsonArray& arr)
 {
     QStringList result;

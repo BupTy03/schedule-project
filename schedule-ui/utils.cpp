@@ -3,6 +3,7 @@
 #include <QModelIndex>
 #include <QAbstractItemModel>
 
+#include <map>
 #include <algorithm>
 
 
@@ -142,24 +143,23 @@ std::set<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const Cl
     return result;
 }
 
-QString ToErrorMessage(ScheduleDataValidationResult validationResult)
+QString ToWarningMessage(ScheduleDataValidationResult validationResult)
 {
-    switch (validationResult)
+    static const std::map<ScheduleDataValidationResult, QString> mapping = {
+            {ScheduleDataValidationResult::Ok, QObject::tr("Ок")},
+            {ScheduleDataValidationResult::ToFewLessonsPerDayRequested, QObject::tr("Слишком мало пар в день")},
+            {ScheduleDataValidationResult::NoGroups, QObject::tr("Необходимо добавить хотя бы одну группу")},
+            {ScheduleDataValidationResult::NoSubjects, QObject::tr("Необходимо добавить хотя бы одну дисциплину")},
+            {ScheduleDataValidationResult::NoProfessors, QObject::tr("Необходимо добавить хотя бы одного преподавателя")},
+            {ScheduleDataValidationResult::NoClassrooms, QObject::tr("Необходимо добавить хотя бы одну аудиторию")}
+    };
+
+    auto it = mapping.find(validationResult);
+    if(it == mapping.end())
     {
-        case ScheduleDataValidationResult::Ok:
-            return QObject::tr("Ок");
-        case ScheduleDataValidationResult::ToFewLessonsPerDayRequested:
-            return QObject::tr("Слишком мало пар в день");
-        case ScheduleDataValidationResult::NoGroups:
-            return QObject::tr("Необходимо добавить хотя бы одну группу");
-        case ScheduleDataValidationResult::NoSubjects:
-            return QObject::tr("Необходимо добавить хотя бы одну дисциплину");
-        case ScheduleDataValidationResult::NoProfessors:
-            return QObject::tr("Необходимо добавить хотя бы одного преподавателя");
-        case ScheduleDataValidationResult::NoClassrooms:
-            return QObject::tr("Необходимо добавить хотя бы одну аудиторию");
+        assert(false && "Unknown enum value");
+        return QObject::tr("Неизвестная ошибка");
     }
 
-    assert(false);
-    return QObject::tr("Неизвестная ошибка");
+    return it->second;
 }

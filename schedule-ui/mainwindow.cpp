@@ -162,7 +162,7 @@ void MainWindow::generateSchedule()
     const auto validationResult = Validate(*scheduleData);
     if(validationResult != ScheduleDataValidationResult::Ok)
     {
-        QMessageBox::warning(this, tr("Предупреждение"), ToErrorMessage(validationResult));
+        QMessageBox::warning(this, tr("Предупреждение"), ToWarningMessage(validationResult));
         return;
     }
 
@@ -187,9 +187,6 @@ void MainWindow::onScheduleDone()
     std::vector<QString> subjects;
     for (auto&& discipline : disciplines)
     {
-        auto professor = professors.indexOf(discipline.Professor);
-        assert(professor >= 0);
-
         for (auto&& lesson : discipline.Lessons)
         {
             if(lesson.CountHoursPerWeek <= 0)

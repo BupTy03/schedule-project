@@ -8,8 +8,7 @@ class LessonTypesTableModel : public QAbstractTableModel
     Q_OBJECT
 public:
     explicit LessonTypesTableModel(QObject* parent = nullptr);
-
-    const std::vector<LessonTypeItem>& lessons() const;
+    [[nodiscard]] const std::vector<LessonTypeItem>& lessons() const;
 
 public:// QAbstractTableModel interface
     int rowCount(const QModelIndex&) const override;

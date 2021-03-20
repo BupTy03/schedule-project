@@ -17,17 +17,11 @@ Q_DECLARE_METATYPE(ClassroomsSet);
 
 struct LessonTypeItem
 {
-    LessonTypeItem() = default;
+    LessonTypeItem();
     explicit LessonTypeItem(QString name,
                             int countHoursPerWeek,
                             WeekDaysType weekDays,
-                            ClassroomsSet classroomsSet)
-        : Name(std::move(name))
-        , CountHoursPerWeek(countHoursPerWeek)
-        , WeekDays(weekDays)
-        , Classrooms(std::move(classroomsSet))
-    {
-    }
+                            ClassroomsSet classroomsSet);
 
     QString Name;
     int CountHoursPerWeek;
@@ -47,22 +41,35 @@ struct Discipline
     std::vector<LessonTypeItem> Lessons;
 };
 
+enum class DisciplineValidationResult
+{
+    Ok,
+    NoName,
+    NoProfessor,
+    NoGroups,
+    NoLessons
+};
+
+int HoursPerWeekSum(const std::vector<LessonTypeItem>& lessons);
+DisciplineValidationResult Validate(const Discipline& discipline);
+QString ToWarningMessage(DisciplineValidationResult validationResult);
+
 
 class ScheduleDataStorage
 {
 public:
     virtual ~ScheduleDataStorage();
 
-    virtual QStringList groups() const = 0;
+    [[nodiscard]] virtual QStringList groups() const = 0;
     virtual void saveGroups(const QStringList& groups) = 0;
 
-    virtual QStringList professors() const = 0;
+    [[nodiscard]] virtual QStringList professors() const = 0;
     virtual void saveProfessors(const QStringList& professors) = 0;
 
-    virtual QStringList classrooms() const = 0;
+    [[nodiscard]] virtual QStringList classrooms() const = 0;
     virtual void saveClassrooms(const QStringList& classrooms) = 0;
 
-    virtual std::vector<Discipline> disciplines() const = 0;
+    [[nodiscard]] virtual std::vector<Discipline> disciplines() const = 0;
     virtual void saveDisciplines(const std::vector<Discipline>& disciplines) = 0;
 };
 
@@ -73,16 +80,16 @@ public:
     explicit ScheduleDataJsonFile(QString filename);
     ~ScheduleDataJsonFile() override;
 
-    QStringList groups() const override;
+    [[nodiscard]] QStringList groups() const override;
     void saveGroups(const QStringList& groups) override;
 
-    QStringList professors() const override;
+    [[nodiscard]] QStringList professors() const override;
     void saveProfessors(const QStringList& professors) override;
 
-    QStringList classrooms() const override;
+    [[nodiscard]] QStringList classrooms() const override;
     void saveClassrooms(const QStringList& classrooms) override;
 
-    std::vector<Discipline> disciplines() const override;
+    [[nodiscard]] std::vector<Discipline> disciplines() const override;
     void saveDisciplines(const std::vector<Discipline>& disciplines) override;
 
 private:
