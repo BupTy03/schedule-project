@@ -81,6 +81,40 @@ ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data)
         }
     }
 
+    // располагаем пары в начале дня, стараясь не превышать data.RequestedCountLessonsPerDay()
+    std::vector<BoolVar> pairsPerDay;
+    std::vector<std::int64_t> pairsCoefficients;
+    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+    {
+        for (std::size_t g = 0; g < data.CountGroups(); ++g)
+        {
+            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+            {
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    {
+                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                        {
+                            // чем позднее пара - тем выше коэффициент
+                            std::int64_t coeff = l;
+
+                            // +1 если пара превышает желаемое количество пар в день
+                            coeff += (l >= data.RequestedCountLessonsPerDay());
+
+                            // +1 если пара в субботу
+                            coeff += (ScheduleDayNumberToWeekDay(d) == WeekDay::Saturday);
+
+                            pairsPerDay.emplace_back(lessons[{d, g, p, l, c, s}]);
+                            pairsCoefficients.emplace_back(coeff);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    cp_model.Minimize(LinearExpr::BooleanScalProd(pairsPerDay, pairsCoefficients));
 
     const CpSolverResponse response = Solve(cp_model.Build());
     LOG(INFO) << CpSolverResponseStats(response);
