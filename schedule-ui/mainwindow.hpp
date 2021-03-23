@@ -40,6 +40,7 @@ private slots:
     void onTabChanged(int current);
     void generateSchedule();
     void onScheduleDone();
+    void viewSchedule();
 
 private:
     void lockAllControls(bool flag);
