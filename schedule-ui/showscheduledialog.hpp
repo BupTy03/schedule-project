@@ -16,6 +16,7 @@ public:
     explicit ShowScheduleDialog(QWidget* parent = nullptr);
     ~ShowScheduleDialog() override;
 
+    void setViewMode(bool flag);
     void setSchedule(const std::vector<GroupSchedule>& evenSchedule,
                      const std::vector<GroupSchedule>& oddSchedule);
 
@@ -24,3 +25,6 @@ private:
     ScheduleModel evenScheduleModel_;
     ScheduleModel oddScheduleModel_;
 };
+
+void SetViewMode(ShowScheduleDialog& dialog);
+void SetShowResultMode(ShowScheduleDialog& dialog);

@@ -51,7 +51,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     toolBar_->addAction(QString(), [this]() { tabStrategy_->onRemoveItem(); });
     toolBar_->addSeparator();
     toolBar_->addAction(QIcon(":/img/start.ico"), tr("Сгенерировать расписание"), this, &MainWindow::generateSchedule);
-    toolBar_->addAction(tr("Просмотреть расписание"), this, &MainWindow::viewSchedule);
+    toolBar_->addAction(QIcon(":/img/eye.ico"), tr("Просмотреть расписание"), this, &MainWindow::viewSchedule);
 
     onTabChanged(0);
     addToolBar(Qt::ToolBarArea::TopToolBarArea, toolBar_);
@@ -296,6 +296,7 @@ void MainWindow::onScheduleDone()
     }
 
     showScheduleDialog_->setSchedule(evenGroupsSchedule, oddGroupsSchedule);
+    SetShowResultMode(*showScheduleDialog_);
     if(showScheduleDialog_->exec() != QDialog::DialogCode::Accepted)
         return;
 
@@ -401,6 +402,7 @@ void MainWindow::viewSchedule()
 
     const auto schedule = ParseSchedule(jsonDoc.object());
     showScheduleDialog_->setSchedule(schedule.first, schedule.second);
+    SetViewMode(*showScheduleDialog_);
     showScheduleDialog_->show();
 }
 

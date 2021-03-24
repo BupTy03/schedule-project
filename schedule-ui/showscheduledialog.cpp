@@ -15,6 +15,16 @@
 #include <array>
 
 
+void SetViewMode(ShowScheduleDialog& dialog)
+{
+    dialog.setViewMode(true);
+}
+
+void SetShowResultMode(ShowScheduleDialog& dialog)
+{
+    dialog.setViewMode(false);
+}
+
 static std::unique_ptr<QStandardItemModel> BuildWeekDayHeaderModel()
 {
     auto result = std::make_unique<QStandardItemModel>();
@@ -55,7 +65,6 @@ ShowScheduleDialog::ShowScheduleDialog(QWidget* parent)
     , oddScheduleModel_()
 {
     ui->setupUi(this);
-    setWindowTitle(tr("Расписание"));
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
 
     ui->buttonBox->button(QDialogButtonBox::StandardButton::Save)->setText(tr("Сохранить"));
@@ -96,4 +105,10 @@ void ShowScheduleDialog::setSchedule(const std::vector<GroupSchedule>& evenSched
 {
     evenScheduleModel_.setGroups(evenSchedule);
     oddScheduleModel_.setGroups(oddSchedule);
+}
+
+void ShowScheduleDialog::setViewMode(bool flag)
+{
+    ui->buttonBox->setVisible(!flag);
+    setWindowTitle(flag ? tr("Просмотр расписания") : tr("Расписание"));
 }
