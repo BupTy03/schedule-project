@@ -1,3 +1,7 @@
+list(APPEND CMAKE_PREFIX_PATH "D:/Libs/ortools_VC2019_x64_Debug")
+
+find_package(ortools CONFIG REQUIRED)
+
 add_library(schedule-gen STATIC
         main.cpp
         ScheduleData.cpp
