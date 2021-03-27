@@ -155,33 +155,22 @@ static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
     // располагаем пары в начале дня, стараясь не превышать data.RequestedCountLessonsPerDay()
     buffer.clear();
     std::vector<std::int64_t> pairsCoefficients;
-    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d) {
-        for (std::size_t g = 0; g < data.CountGroups(); ++g) {
-            for (std::size_t p = 0; p < data.CountProfessors(); ++p) {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l) {
-                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c) {
-                        for (std::size_t s = 0; s < data.CountSubjects(); ++s) {
-                            const mtx_index idx{d, g, p, l, c, s};
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
-                            if (it == lessons.end() || it->first != idx)
-                                continue;
+    for(auto&& item : lessons)
+    {
+        // [day, group, professor, lesson, classrooms, subject]
+        const auto[d, g, p, l, c, s] = item.first;
 
-                            // чем позднее пара - тем выше коэффициент
-                            std::int64_t coeff = l;
+        // чем позднее пара - тем выше коэффициент
+        std::int64_t coeff = l;
 
-                            // +1 если пара превышает желаемое количество пар в день
-                            coeff += (l >= data.RequestedCountLessonsPerDay());
+        // +1 если пара превышает желаемое количество пар в день
+        coeff += (l >= data.RequestedCountLessonsPerDay());
 
-                            // +1 если пара в субботу
-                            coeff += (ScheduleDayNumberToWeekDay(d) == WeekDay::Saturday);
+        // +1 если пара в субботу
+        coeff += (ScheduleDayNumberToWeekDay(d) == WeekDay::Saturday);
 
-                            buffer.emplace_back(it->second);
-                            pairsCoefficients.emplace_back(coeff);
-                        }
-                    }
-                }
-            }
-        }
+        buffer.emplace_back(item.second);
+        pairsCoefficients.emplace_back(coeff);
     }
 
     cp_model.Minimize(LinearExpr::BooleanScalProd(buffer, pairsCoefficients));
