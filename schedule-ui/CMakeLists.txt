@@ -32,7 +32,6 @@ set(PROJECT_SOURCES
         mainwindow.cpp mainwindow.hpp mainwindow.ui
         showscheduledialog.cpp showscheduledialog.hpp showscheduledialog.ui
         schedulemodel.cpp schedulemodel.hpp
-        scheduleview.cpp scheduleview.hpp
         hierarchicalheaderview.cpp hierarchicalheaderview.hpp
         adddisciplinedialog.cpp adddisciplinedialog.hpp adddisciplinedialog.ui
         qstringsetfilterproxymodel.cpp qstringsetfilterproxymodel.hpp
