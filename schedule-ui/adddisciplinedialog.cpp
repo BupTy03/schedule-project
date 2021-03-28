@@ -17,6 +17,12 @@
 #include <cassert>
 
 
+static const auto MIN_HOURS_COUNT = 0;
+static const auto MAX_HOURS_COUNT = 100;
+static const auto MIN_COMPLEXITY = 0;
+static const auto MAX_COMPLEXITY = 4;
+
+
 AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
                                          QStringListModel* professorListModel,
                                          QStringListModel* classroomsListModel,
@@ -45,9 +51,10 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
     ui->lessonsGroupBox->setTitle(tr("Занятия"));
     ui->lessonsTableView->setModel(lessonsModel_.get());
     ui->lessonsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
-    ui->lessonsTableView->setItemDelegateForColumn(1, new QSpinBoxDelegate(0, 1000, this));
+    ui->lessonsTableView->setItemDelegateForColumn(1, new QSpinBoxDelegate(MIN_HOURS_COUNT, MAX_HOURS_COUNT, this));
     ui->lessonsTableView->setItemDelegateForColumn(2, new ChooseWeekDayDelegate(this));
     ui->lessonsTableView->setItemDelegateForColumn(3, new ChooseClassroomsDelegate(classroomsListModel, this));
+    ui->lessonsTableView->setItemDelegateForColumn(4, new QSpinBoxDelegate(MIN_COMPLEXITY, MAX_COMPLEXITY, this));
 
     chooseGroupsWidget_->setAvailableAndChosenTitles(tr("Доступные группы"), tr("Выбранные группы"));
     layout()->addWidget(chooseGroupsWidget_);

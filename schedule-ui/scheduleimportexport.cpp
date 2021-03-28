@@ -13,14 +13,16 @@
 LessonTypeItem::LessonTypeItem()
         : Name()
         , CountHoursPerWeek(0)
+        , Complexity(0)
         , WeekDays{true, true, true, true, true, true}
         , Classrooms()
 {
 }
 
-LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, WeekDaysType weekDays, ClassroomsSet classroomsSet)
+LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, int complexity, WeekDaysType weekDays, ClassroomsSet classroomsSet)
         : Name(std::move(name))
         , CountHoursPerWeek(countHoursPerWeek)
+        , Complexity(complexity)
         , WeekDays(weekDays)
         , Classrooms(std::move(classroomsSet))
 {
@@ -63,11 +65,12 @@ QString WeekDaysString(const WeekDaysType& weekDays)
 
 QString ToString(const LessonTypeItem& lesson)
 {
-    return QString("%1 (%2) %3 [%4]")
+    return QString("%1 (%2) %3 [%4] %5")
             .arg(lesson.Name)
             .arg(lesson.CountHoursPerWeek)
             .arg(WeekDaysString(lesson.WeekDays))
-            .arg(Join(lesson.Classrooms, ", "));
+            .arg(Join(lesson.Classrooms, ", "))
+            .arg(QString(lesson.Complexity, '*'));
 }
 
 DisciplineValidationResult Validate(const Discipline& discipline)
@@ -190,6 +193,7 @@ static LessonTypeItem ParseLesson(const QJsonObject& lesson)
     LessonTypeItem res;
     res.Name = lesson["name"].toString();
     res.CountHoursPerWeek = lesson["hours"].toInt(0);
+    res.Complexity = lesson["complexity"].toInt(0);
     res.WeekDays = ParseWeekDays(lesson["weekdays"].toArray());
     res.Classrooms = ParseStringSet(lesson["classrooms"].toArray());
     return res;
@@ -254,6 +258,7 @@ static QJsonObject ToJson(const LessonTypeItem& lesson)
 {
     return QJsonObject({ { "name", lesson.Name },
                          { "hours", lesson.CountHoursPerWeek },
+                         { "complexity", lesson.Complexity },
                          { "weekdays", ToJson(lesson.WeekDays) },
                          {"classrooms", ToJson(lesson.Classrooms)}});
 }

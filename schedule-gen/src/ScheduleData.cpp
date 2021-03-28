@@ -3,10 +3,15 @@
 #include <iostream>
 
 
-SubjectRequest::SubjectRequest(std::size_t professor, std::size_t hours, std::set<WeekDay> days,
-                               std::set<std::size_t> groups, std::set<std::size_t> classrooms)
+SubjectRequest::SubjectRequest(std::size_t professor,
+                               std::size_t hours,
+                               std::size_t complexity,
+                               std::set<WeekDay> days,
+                               std::set<std::size_t> groups,
+                               std::set<std::size_t> classrooms)
         : professor_(professor)
         , hours_(hours)
+        , complexity_(complexity)
         , days_(std::move(days))
         , groups_(std::move(groups))
         , classrooms_(std::move(classrooms))
@@ -35,6 +40,11 @@ std::size_t SubjectRequest::HoursPerWeek() const
 std::size_t SubjectRequest::Professor() const
 {
     return professor_;
+}
+
+std::size_t SubjectRequest::Complexity() const
+{
+    return complexity_;
 }
 
 

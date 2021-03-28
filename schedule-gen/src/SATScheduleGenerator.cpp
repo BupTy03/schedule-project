@@ -176,6 +176,44 @@ static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
     cp_model.Minimize(LinearExpr::BooleanScalProd(buffer, pairsCoefficients));
 }
 
+static void AddMinimizeComplexity(CpModelBuilder& cp_model,
+                                  const std::vector<LessonsMtxItem>& lessons,
+                                  const ScheduleData& data,
+                                  std::vector<BoolVar>& buffer)
+{
+    for (std::size_t g = 0; g < data.CountGroups(); ++g)
+    {
+        for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+        {
+            buffer.clear();
+            std::vector<std::int64_t> sumComplexity;
+            for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+            {
+                const auto complexity = data.SubjectRequests().at(s).Complexity();
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    {
+                        for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+                        {
+                            const mtx_index idx{d, g, p, l, c, s};
+                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
+                            if(it == lessons.end() || it->first != idx)
+                                continue;
+
+                            buffer.emplace_back(it->second);
+                            sumComplexity.emplace_back(complexity);
+                        }
+                    }
+                }
+            }
+
+            if(!buffer.empty())
+                cp_model.Minimize(LinearExpr::BooleanScalProd(buffer, sumComplexity));
+        }
+    }
+}
+
 static void AddConditions(CpModelBuilder& cp_model,
                           const std::vector<LessonsMtxItem>& lessons,
                           const ScheduleData& data)
@@ -183,6 +221,7 @@ static void AddConditions(CpModelBuilder& cp_model,
     std::vector<BoolVar> buffer;
     AddOneSubjectPerTimeCondition(cp_model, lessons, data, buffer);
     AddSubjectsHoursCondition(cp_model, lessons, data, buffer);
+    AddMinimizeComplexity(cp_model, lessons, data, buffer);
     AddMinimizeLatePairsCondition(cp_model, lessons, data, buffer);
 }
 

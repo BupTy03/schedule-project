@@ -153,6 +153,7 @@ void MainWindow::generateSchedule()
             subjects.emplace_back(discipline.Name + " (" + lesson.Name + ')');
             subjectRequests.emplace_back(professor,
                                          lesson.CountHoursPerWeek,
+                                         lesson.Complexity,
                                          ToWeekDaysSet(lesson.WeekDays),
                                          ToGroupsSet(groups, discipline.Groups),
                                          ToClassroomsSet(classrooms, lesson.Classrooms));
@@ -295,6 +296,7 @@ void MainWindow::onScheduleDone()
         oddGroupsSchedule.push_back(oddSchedule);
     }
 
+    showScheduleDialog_->setModal(false);
     showScheduleDialog_->setSchedule(evenGroupsSchedule, oddGroupsSchedule);
     SetShowResultMode(*showScheduleDialog_);
     if(showScheduleDialog_->exec() != QDialog::DialogCode::Accepted)
@@ -401,6 +403,7 @@ void MainWindow::viewSchedule()
         return;
 
     const auto schedule = ParseSchedule(jsonDoc.object());
+    showScheduleDialog_->setModal(false);
     showScheduleDialog_->setSchedule(schedule.first, schedule.second);
     SetViewMode(*showScheduleDialog_);
     showScheduleDialog_->show();

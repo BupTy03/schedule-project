@@ -12,6 +12,7 @@ class SubjectRequest
 public:
     explicit SubjectRequest(std::size_t professor,
                             std::size_t hours,
+                            std::size_t complexity,
                             std::set<WeekDay> days,
                             std::set<std::size_t> groups,
                             std::set<std::size_t> classrooms);
@@ -20,11 +21,13 @@ public:
     [[nodiscard]] bool RequestedGroup(std::size_t g) const;
     [[nodiscard]] bool Requested(WeekDay d) const;
     [[nodiscard]] std::size_t HoursPerWeek() const;
+    [[nodiscard]] std::size_t Complexity() const;
     [[nodiscard]] std::size_t Professor() const;
 
 private:
     std::size_t professor_;
     std::size_t hours_;
+    std::size_t complexity_;
     std::set<WeekDay> days_;
     std::set<std::size_t> groups_;
     std::set<std::size_t> classrooms_;

@@ -20,11 +20,13 @@ struct LessonTypeItem
     LessonTypeItem();
     explicit LessonTypeItem(QString name,
                             int countHoursPerWeek,
+                            int complexity,
                             WeekDaysType weekDays,
                             ClassroomsSet classroomsSet);
 
     QString Name;
     int CountHoursPerWeek;
+    int Complexity;
     WeekDaysType WeekDays;
     ClassroomsSet Classrooms;
 };
