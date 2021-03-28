@@ -47,6 +47,7 @@ set(PROJECT_SOURCES
         chooseclassroomsdialog.cpp chooseclassroomsdialog.hpp
         chooseclassroomsdelegate.cpp chooseclassroomsdelegate.hpp
         scheduleprocessor.cpp scheduleprocessor.hpp
+        scheduleapplicationdatamodel.cpp scheduleapplicationdatamodel.hpp
         utils.cpp utils.hpp
         resources.qrc)
 
