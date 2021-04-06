@@ -27,13 +27,13 @@ ChooseClassroomsWidget::ChooseClassroomsWidget(const QAbstractItemModel* model, 
     connect(chooseClassroomButton_, &QPushButton::clicked, this, &ChooseClassroomsWidget::onChooseButtonClicked);
 }
 
-void ChooseClassroomsWidget::setClassrooms(const std::set<QString>& classrooms)
+void ChooseClassroomsWidget::setClassrooms(const SortedSet<QString>& classrooms)
 {
     classrooms_ = classrooms;
     classroomsLabel_->setText(Join(classrooms_, ", "));
 }
 
-std::set<QString> ChooseClassroomsWidget::classrooms() const
+SortedSet<QString> ChooseClassroomsWidget::classrooms() const
 {
     return classrooms_;
 }

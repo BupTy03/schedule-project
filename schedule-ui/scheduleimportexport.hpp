@@ -4,12 +4,11 @@
 #include <QMetaType>
 #include <QStringList>
 
-#include <set>
 #include <array>
 #include <vector>
 
 
-using ClassroomsSet = std::set<QString>;
+using ClassroomsSet = SortedSet<QString>;
 
 Q_DECLARE_METATYPE(WeekDays);
 Q_DECLARE_METATYPE(ClassroomsSet);

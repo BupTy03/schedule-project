@@ -47,9 +47,9 @@ struct QModelIndexGreaterByRow
 void CopyRows(const QAbstractItemModel& from, QAbstractItemModel& to);
 void MoveRows(QAbstractItemModel& from, QAbstractItemModel& to, QList<QModelIndex> rows);
 
-QString Join(const std::set<QString>& strSet, const QString& glue);
+QString Join(const SortedSet<QString>& strSet, const QString& glue);
 
-std::set<std::size_t> IndexesSet(std::size_t count);
-std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups);
-std::set<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms);
+SortedSet<std::size_t> IndexesSet(std::size_t count);
+SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups);
+SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms);
 QString ToWarningMessage(ScheduleDataValidationResult validationResult);

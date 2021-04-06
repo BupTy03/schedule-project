@@ -14,8 +14,8 @@ public:
                             std::size_t hours,
                             std::size_t complexity,
                             WeekDays days,
-                            std::set<std::size_t> groups,
-                            std::set<std::size_t> classrooms);
+                            SortedSet<std::size_t> groups,
+                            SortedSet<std::size_t> classrooms);
 
     [[nodiscard]] bool RequestedClassroom(std::size_t c) const;
     [[nodiscard]] bool RequestedGroup(std::size_t g) const;
@@ -29,8 +29,8 @@ private:
     std::size_t hours_;
     std::size_t complexity_;
     WeekDays days_;
-    std::set<std::size_t> groups_;
-    std::set<std::size_t> classrooms_;
+    SortedSet<std::size_t> groups_;
+    SortedSet<std::size_t> classrooms_;
 };
 
 

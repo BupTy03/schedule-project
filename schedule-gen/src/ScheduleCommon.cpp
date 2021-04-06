@@ -1,7 +1,5 @@
 #include "ScheduleCommon.hpp"
 
-#include <algorithm>
-
 
 const std::size_t SCHEDULE_DAYS_COUNT = 12;
 

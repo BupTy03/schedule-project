@@ -157,7 +157,7 @@ static QStringList RemoveDuplicatesAndSort(const QStringList& lst)
     QStringList result;
     result.reserve(lst.size());
 
-    for (auto&& s : std::set<QString>(lst.begin(), lst.end()))
+    for (auto&& s : SortedSet<QString>(lst.begin(), lst.end()))
         result.push_back(s);
 
     return result;
@@ -181,11 +181,11 @@ static WeekDays ParseWeekDays(const QJsonArray& weekDays)
     return result;
 }
 
-static std::set<QString> ParseStringSet(const QJsonArray& strSet)
+static SortedSet<QString> ParseStringSet(const QJsonArray& strSet)
 {
-    std::set<QString> result;
+    SortedSet<QString> result;
     for(auto&& str : strSet)
-        result.emplace(str.toString());
+        result.Add(str.toString());
 
     return result;
 }
@@ -247,7 +247,7 @@ static QJsonArray ToJson(const WeekDays& weekDays)
     return result;
 }
 
-static QJsonArray ToJson(const std::set<QString>& strSet)
+static QJsonArray ToJson(const SortedSet<QString>& strSet)
 {
     QJsonArray result;
     for(auto&& str : strSet)

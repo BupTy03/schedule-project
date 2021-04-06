@@ -7,8 +7,8 @@ SubjectRequest::SubjectRequest(std::size_t professor,
                                std::size_t hours,
                                std::size_t complexity,
                                WeekDays days,
-                               std::set<std::size_t> groups,
-                               std::set<std::size_t> classrooms)
+                               SortedSet<std::size_t> groups,
+                               SortedSet<std::size_t> classrooms)
         : professor_(professor)
         , hours_(hours)
         , complexity_(complexity)
@@ -19,12 +19,12 @@ SubjectRequest::SubjectRequest(std::size_t professor,
 
 bool SubjectRequest::RequestedClassroom(std::size_t c) const
 {
-    return classrooms_.count(c) > 0;
+    return classrooms_.Contains(c);
 }
 
 bool SubjectRequest::RequestedGroup(std::size_t g) const
 {
-    return groups_.count(g) > 0;
+    return groups_.Contains(g);
 }
 
 bool SubjectRequest::Requested(WeekDay d) const

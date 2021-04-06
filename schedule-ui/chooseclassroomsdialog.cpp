@@ -22,8 +22,8 @@ ChooseClassroomsDialog::ChooseClassroomsDialog(const QAbstractItemModel* model, 
     connect(buttonBox, &QDialogButtonBox::rejected, this, &ChooseClassroomsDialog::reject);
 }
 
-std::set<QString> ChooseClassroomsDialog::classrooms() const
+SortedSet<QString> ChooseClassroomsDialog::classrooms() const
 {
     const auto chosenItems = chooseWidget_->chosenItemsList();
-    return std::set<QString>(chosenItems.begin(), chosenItems.end());
+    return SortedSet<QString>(chosenItems.begin(), chosenItems.end());
 }

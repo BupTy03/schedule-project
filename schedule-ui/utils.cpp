@@ -63,7 +63,7 @@ void MoveRows(QAbstractItemModel& from, QAbstractItemModel& to, QList<QModelInde
         from.removeRow(row.row());
 }
 
-QString Join(const std::set<QString>& strSet, const QString& glue)
+QString Join(const SortedSet<QString>& strSet, const QString& glue)
 {
     QStringList lst;
     lst.reserve(strSet.size());
@@ -73,21 +73,21 @@ QString Join(const std::set<QString>& strSet, const QString& glue)
     return lst.join(glue);
 }
 
-std::set<std::size_t> IndexesSet(std::size_t count)
+SortedSet<std::size_t> IndexesSet(std::size_t count)
 {
-    std::set<std::size_t> result;
+    SortedSet<std::size_t> result;
     for(std::size_t i = 0; i < count; ++i)
-        result.emplace(i);
+        result.Add(i);
 
     return result;
 }
 
-std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
+SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
 {
     if(currentGroups.empty())
         return IndexesSet(allGroups.size());
 
-    std::set<std::size_t> result;
+    SortedSet<std::size_t> result;
     for(auto&& g : currentGroups)
     {
         const auto groupIndex = allGroups.indexOf(g);
@@ -95,15 +95,15 @@ std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringLis
         if(groupIndex < 0)
             continue;
 
-        result.emplace(groupIndex);
+        result.Add(groupIndex);
     }
 
     return result;
 }
 
-std::set<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms)
+SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms)
 {
-    std::set<std::size_t> result;
+    SortedSet<std::size_t> result;
     if(currentClassrooms.empty())
         return IndexesSet(allClassrooms.size());
 
@@ -114,7 +114,7 @@ std::set<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const Cl
         if(classroomIndex < 0)
             continue;
 
-        result.emplace(classroomIndex);
+        result.Add(classroomIndex);
     }
 
     return result;
