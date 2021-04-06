@@ -82,29 +82,6 @@ std::set<std::size_t> IndexesSet(std::size_t count)
     return result;
 }
 
-std::set<WeekDay> ToWeekDaysSet(WeekDaysType weekDays)
-{
-    std::set<WeekDay> result;
-    for (std::size_t w = 0; w < weekDays.size(); ++w)
-    {
-        if (weekDays.at(w))
-            result.emplace(static_cast<WeekDay>(w));
-    }
-
-    if(result.empty()) {
-        return std::set<WeekDay>{
-                WeekDay::Monday,
-                WeekDay::Tuesday,
-                WeekDay::Wednesday,
-                WeekDay::Thursday,
-                WeekDay::Friday,
-                WeekDay::Saturday
-        };
-    }
-
-    return result;
-}
-
 std::set<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
 {
     if(currentGroups.empty())

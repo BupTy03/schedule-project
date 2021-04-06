@@ -13,7 +13,7 @@ public:
     explicit SubjectRequest(std::size_t professor,
                             std::size_t hours,
                             std::size_t complexity,
-                            std::set<WeekDay> days,
+                            WeekDays days,
                             std::set<std::size_t> groups,
                             std::set<std::size_t> classrooms);
 
@@ -28,7 +28,7 @@ private:
     std::size_t professor_;
     std::size_t hours_;
     std::size_t complexity_;
-    std::set<WeekDay> days_;
+    WeekDays days_;
     std::set<std::size_t> groups_;
     std::set<std::size_t> classrooms_;
 };

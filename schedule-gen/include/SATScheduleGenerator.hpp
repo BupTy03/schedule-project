@@ -5,5 +5,5 @@
 class SATScheduleGenerator : public ScheduleGenerator
 {
 public:
-    ScheduleResult Genetate(const ScheduleData& data) override;
+    ScheduleResult Generate(const ScheduleData& data) override;
 };

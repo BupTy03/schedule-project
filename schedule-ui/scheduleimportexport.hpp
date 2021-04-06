@@ -1,4 +1,5 @@
 #pragma once
+#include "ScheduleCommon.hpp"
 #include <QString>
 #include <QMetaType>
 #include <QStringList>
@@ -9,9 +10,8 @@
 
 
 using ClassroomsSet = std::set<QString>;
-using WeekDaysType = std::array<bool, 6>;
 
-Q_DECLARE_METATYPE(WeekDaysType);
+Q_DECLARE_METATYPE(WeekDays);
 Q_DECLARE_METATYPE(ClassroomsSet);
 
 
@@ -21,18 +21,18 @@ struct LessonTypeItem
     explicit LessonTypeItem(QString name,
                             int countHoursPerWeek,
                             int complexity,
-                            WeekDaysType weekDays,
+                            WeekDays weekDays,
                             ClassroomsSet classroomsSet);
 
     QString Name;
     int CountHoursPerWeek;
     int Complexity;
-    WeekDaysType WeekDays;
+    WeekDays WeekDaysRequested;
     ClassroomsSet Classrooms;
 };
 
 bool IsValid(const LessonTypeItem& item, const QStringList& allClassrooms);
-QString WeekDaysString(const WeekDaysType& weekDays);
+QString WeekDaysString(const WeekDays& weekDays);
 QString ToString(const LessonTypeItem& lesson);
 
 

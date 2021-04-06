@@ -22,7 +22,7 @@ QWidget* ChooseWeekDayDelegate::createEditor(QWidget* parent, const QStyleOption
 void ChooseWeekDayDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
     auto weekDayEditor = static_cast<WeekDayEditor*>(editor);
-    weekDayEditor->setWeekDays(index.data(Qt::ItemDataRole::UserRole).value<WeekDaysType>());
+    weekDayEditor->setWeekDays(index.data(Qt::ItemDataRole::UserRole).value<WeekDays>());
 }
 
 void ChooseWeekDayDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const

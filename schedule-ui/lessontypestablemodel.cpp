@@ -24,14 +24,14 @@ LessonTypesTableModel::LessonTypesTableModel(QObject* parent)
 {
     lessons_.reserve(3);
     lessons_.emplace_back(tr("Лекция"), 0, 0,
-                          WeekDaysType{ true, true, true, true, true, true },
+                          WeekDays(),
                           ClassroomsSet{});
 
     lessons_.emplace_back(tr("Практика"), 0, 0,
-                          WeekDaysType{ true, true, true, true, true, true },
+                          WeekDays(),
                           ClassroomsSet{});
     lessons_.emplace_back(tr("Лабораторная"), 0, 0,
-                          WeekDaysType{ true, true, true, true, true, true },
+                          WeekDays(),
                           ClassroomsSet{});
 }
 
@@ -83,7 +83,7 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
         case ColumnType::Hours:
             return lesson.CountHoursPerWeek;
         case ColumnType::Days:
-            return WeekDaysString(lesson.WeekDays);
+            return WeekDaysString(lesson.WeekDaysRequested);
         case ColumnType::Classrooms:
             return Join(lesson.Classrooms, ", ");
         case ColumnType::Complexity:
@@ -94,7 +94,7 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
     case Qt::ItemDataRole::UserRole:
     {
         if (columnType == ColumnType::Days)
-            return QVariant::fromValue(lesson.WeekDays);
+            return QVariant::fromValue(lesson.WeekDaysRequested);
 
         if(columnType == ColumnType::Classrooms)
             return QVariant::fromValue(lesson.Classrooms);
@@ -138,7 +138,7 @@ bool LessonTypesTableModel::setData(const QModelIndex& index, const QVariant& va
         lesson.CountHoursPerWeek = value.toInt();
         break;
     case ColumnType::Days:
-        lesson.WeekDays = value.value<WeekDaysType>();
+        lesson.WeekDaysRequested = value.value<WeekDays>();
         break;
     case ColumnType::Classrooms:
         lesson.Classrooms = value.value<ClassroomsSet>();

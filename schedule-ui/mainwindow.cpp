@@ -154,7 +154,7 @@ void MainWindow::generateSchedule()
             subjectRequests.emplace_back(professor,
                                          lesson.CountHoursPerWeek,
                                          lesson.Complexity,
-                                         ToWeekDaysSet(lesson.WeekDays),
+                                         lesson.WeekDaysRequested,
                                          ToGroupsSet(groups, discipline.Groups),
                                          ToClassroomsSet(classrooms, lesson.Classrooms));
         }

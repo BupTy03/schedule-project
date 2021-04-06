@@ -265,7 +265,7 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
 }
 
 
-ScheduleResult SATScheduleGenerator::Genetate(const ScheduleData& data) {
+ScheduleResult SATScheduleGenerator::Generate(const ScheduleData& data) {
 
     CpModelBuilder cp_model;
     std::vector<LessonsMtxItem> lessons;

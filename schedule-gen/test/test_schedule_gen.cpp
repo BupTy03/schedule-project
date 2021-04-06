@@ -25,3 +25,36 @@ TEST_CASE("TestScheduleDayNumberToWeekDay", "[utils]")
 }
 
 
+TEST_CASE("TestWeekDays", "[WeekDays]")
+{
+    WeekDays days;
+    REQUIRE(days.Contains(WeekDay::Monday));
+    REQUIRE(days.Contains(WeekDay::Tuesday));
+    REQUIRE(days.Contains(WeekDay::Wednesday));
+    REQUIRE(days.Contains(WeekDay::Thursday));
+    REQUIRE(days.Contains(WeekDay::Friday));
+    REQUIRE(days.Contains(WeekDay::Saturday));
+
+    for(auto d : days)
+        REQUIRE(d);
+
+    days.Remove(WeekDay::Monday);
+    REQUIRE_FALSE(days.Contains(WeekDay::Monday));
+
+    days.Remove(WeekDay::Tuesday);
+    REQUIRE_FALSE(days.Contains(WeekDay::Tuesday));
+
+    days.Remove(WeekDay::Wednesday);
+    REQUIRE_FALSE(days.Contains(WeekDay::Wednesday));
+
+    days.Remove(WeekDay::Thursday);
+    REQUIRE_FALSE(days.Contains(WeekDay::Thursday));
+
+    days.Remove(WeekDay::Friday);
+    REQUIRE_FALSE(days.Contains(WeekDay::Friday));
+
+    // удалить все дни в неделе = заполнить все дни
+    days.Remove(WeekDay::Saturday);
+    for(auto d : days)
+        REQUIRE(d);
+}

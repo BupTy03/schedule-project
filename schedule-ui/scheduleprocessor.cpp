@@ -14,7 +14,7 @@ ScheduleProcessor::ScheduleProcessor(std::unique_ptr<ScheduleGenerator> generato
 
 void ScheduleProcessor::start()
 {
-    result_ = std::make_shared<ScheduleResult>(generator_->Genetate(*data_));
+    result_ = std::make_shared<ScheduleResult>(generator_->Generate(*data_));
     emit done();
 }
 

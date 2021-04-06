@@ -12,8 +12,8 @@ class WeekDayEditor : public QWidget
 public:
     explicit WeekDayEditor(QWidget* parent);
 
-    void setWeekDays(const WeekDaysType& days);
-    WeekDaysType weekDays() const;
+    void setWeekDays(const WeekDays& days);
+    WeekDays weekDays() const;
 
     // QWidget interface
 protected:

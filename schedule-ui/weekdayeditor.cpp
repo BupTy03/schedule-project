@@ -37,22 +37,25 @@ WeekDayEditor::WeekDayEditor(QWidget* parent)
     view->setModel(&model_);
 }
 
-void WeekDayEditor::setWeekDays(const WeekDaysType& days)
+void WeekDayEditor::setWeekDays(const WeekDays& days)
 {
     for (int d = 0; d < model_.rowCount(); ++d)
     {
         auto item = model_.item(d, 0);
-        item->setCheckState(days.at(static_cast<std::size_t>(d)) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+        item->setCheckState(days.Contains(static_cast<WeekDay>(d)) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
     }
 }
 
-WeekDaysType WeekDayEditor::weekDays() const
+WeekDays WeekDayEditor::weekDays() const
 {
-    WeekDaysType result = { false };
+    WeekDays result;
     for (int d = 0; d < model_.rowCount(); ++d)
     {
         auto item = model_.item(d, 0);
-        result.at(static_cast<std::size_t>(d)) = item->checkState() == Qt::CheckState::Checked;
+        if(item->checkState() == Qt::CheckState::Checked)
+            result.Add(static_cast<WeekDay>(d));
+        else
+            result.Remove(static_cast<WeekDay>(d));
     }
 
     return result;

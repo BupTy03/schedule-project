@@ -14,16 +14,16 @@ LessonTypeItem::LessonTypeItem()
         : Name()
         , CountHoursPerWeek(0)
         , Complexity(0)
-        , WeekDays{true, true, true, true, true, true}
+        , WeekDaysRequested()
         , Classrooms()
 {
 }
 
-LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, int complexity, WeekDaysType weekDays, ClassroomsSet classroomsSet)
+LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, int complexity, WeekDays weekDays, ClassroomsSet classroomsSet)
         : Name(std::move(name))
         , CountHoursPerWeek(countHoursPerWeek)
         , Complexity(complexity)
-        , WeekDays(weekDays)
+        , WeekDaysRequested(weekDays)
         , Classrooms(std::move(classroomsSet))
 {
 }
@@ -31,13 +31,12 @@ LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, int complexi
 bool IsValid(const LessonTypeItem& item, const QStringList& allClassrooms)
 {
     return !item.Name.isEmpty() &&
-    item.CountHoursPerWeek >= 0 &&
-    std::any_of(item.WeekDays.begin(), item.WeekDays.end(), [](bool wd){return wd;}) &&
-    std::all_of(item.Classrooms.begin(), item.Classrooms.end(), [&](auto&& classroom){ return allClassrooms.contains(classroom); });
+    item.CountHoursPerWeek >= 0 && std::all_of(item.Classrooms.begin(), item.Classrooms.end(),
+                                               [&](auto&& classroom){ return allClassrooms.contains(classroom); });
 }
 
 
-QString WeekDaysString(const WeekDaysType& weekDays)
+QString WeekDaysString(const WeekDays& weekDays)
 {
     static const std::array<QString, 6> daysNames = {
             QObject::tr("ПН"),
@@ -49,9 +48,9 @@ QString WeekDaysString(const WeekDaysType& weekDays)
     };
 
     QString daysStr;
-    for (std::size_t d = 0; d < weekDays.size(); ++d)
+    for (std::size_t d = 0; d < daysNames.size(); ++d)
     {
-        if (weekDays.at(d))
+        if (weekDays.Contains(static_cast<WeekDay>(d)))
         {
             if (!daysStr.isEmpty())
                 daysStr.push_back(", ");
@@ -68,7 +67,7 @@ QString ToString(const LessonTypeItem& lesson)
     return QString("%1 (%2) %3 [%4] %5")
             .arg(lesson.Name)
             .arg(lesson.CountHoursPerWeek)
-            .arg(WeekDaysString(lesson.WeekDays))
+            .arg(WeekDaysString(lesson.WeekDaysRequested))
             .arg(Join(lesson.Classrooms, ", "))
             .arg(QString(lesson.Complexity, '*'));
 }
@@ -164,16 +163,19 @@ static QStringList RemoveDuplicatesAndSort(const QStringList& lst)
     return result;
 }
 
-static WeekDaysType ParseWeekDays(const QJsonArray& weekDays)
+static WeekDays ParseWeekDays(const QJsonArray& weekDays)
 {
-    WeekDaysType result = { false };
+    WeekDays result;
     if (weekDays.size() != result.size())
         return result;
 
     for (std::size_t d = 0; d < result.size(); ++d)
     {
         const auto weekDay = weekDays.at(static_cast<int>(d));
-        result.at(d) = weekDay.isBool() && weekDay.toBool(false);
+        if(weekDay.isBool() && weekDay.toBool(false))
+            result.Add(static_cast<WeekDay>(d));
+        else
+            result.Remove(static_cast<WeekDay>(d));
     }
 
     return result;
@@ -194,7 +196,7 @@ static LessonTypeItem ParseLesson(const QJsonObject& lesson)
     res.Name = lesson["name"].toString();
     res.CountHoursPerWeek = lesson["hours"].toInt(0);
     res.Complexity = lesson["complexity"].toInt(0);
-    res.WeekDays = ParseWeekDays(lesson["weekdays"].toArray());
+    res.WeekDaysRequested = ParseWeekDays(lesson["weekdays"].toArray());
     res.Classrooms = ParseStringSet(lesson["classrooms"].toArray());
     return res;
 }
@@ -236,7 +238,7 @@ static std::vector<Discipline> ParseDisciplines(const QJsonArray& disciplines)
     return result;
 }
 
-static QJsonArray ToJson(const WeekDaysType& weekDays)
+static QJsonArray ToJson(const WeekDays& weekDays)
 {
     QJsonArray result;
     for (const auto d : weekDays)
@@ -259,7 +261,7 @@ static QJsonObject ToJson(const LessonTypeItem& lesson)
     return QJsonObject({ { "name", lesson.Name },
                          { "hours", lesson.CountHoursPerWeek },
                          { "complexity", lesson.Complexity },
-                         { "weekdays", ToJson(lesson.WeekDays) },
+                         { "weekdays", ToJson(lesson.WeekDaysRequested) },
                          {"classrooms", ToJson(lesson.Classrooms)}});
 }
 
