@@ -1,8 +1,10 @@
 #pragma once
-#include <cstdint>
-#include <cstddef>
 #include <array>
 #include <vector>
+#include <cstddef>
+#include <cstdint>
+#include <cassert>
+#include <iterator>
 #include <algorithm>
 
 
@@ -18,6 +20,39 @@ enum class WeekDay : std::uint8_t
     Saturday
 };
 
+class WeekDays;
+class WeekDaysIterator
+{
+    friend class WeekDays;
+    static constexpr std::uint8_t BEGIN_MASK = 0b00000001;
+    static constexpr std::uint8_t END_MASK = 0b01000000;
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = bool;
+    using reference = bool&;
+    using pointer = bool*;
+
+    constexpr WeekDaysIterator() = default;
+
+    constexpr bool operator*() const { assert(mask_ <= 0b00111111); return data_ & mask_; }
+
+    constexpr WeekDaysIterator& operator++() { mask_ <<= 1; return *this; }
+    constexpr WeekDaysIterator operator++(int) { auto result = *this; ++(*this); return result; }
+
+    constexpr bool operator==(WeekDaysIterator other) const
+    {
+        assert(data_ == other.data_);
+        return mask_ == other.mask_;
+    }
+    constexpr bool operator!=(WeekDaysIterator other) const { return (*this == other); }
+
+private:
+    explicit WeekDaysIterator(std::uint8_t data, std::uint8_t mask) : mask_(mask), data_(data) {}
+
+private:
+    std::uint8_t mask_ = 0;
+    std::uint8_t data_ = 0;
+};
 
 /**
  * Набор дней недели.
@@ -27,9 +62,12 @@ enum class WeekDay : std::uint8_t
  */
 class WeekDays
 {
+    static constexpr std::uint8_t FULL_WEEK = 0b00111111;
 public:
-    typename std::array<bool, 6>::const_iterator begin() const;
-    typename std::array<bool, 6>::const_iterator end() const;
+    using iterator = WeekDaysIterator;
+
+    iterator begin() const;
+    iterator end() const;
     std::size_t size() const;
 
     void Add(WeekDay d);
@@ -40,7 +78,7 @@ private:
     bool Empty() const;
 
 private:
-    mutable std::array<bool, 6> days_ = {true, true, true, true, true, true};
+    mutable std::uint8_t days_ = FULL_WEEK;
 };
 
 template<typename T>

@@ -25,7 +25,7 @@ TEST_CASE("TestScheduleDayNumberToWeekDay", "[utils]")
 }
 
 
-TEST_CASE("TestWeekDays", "[WeekDays]")
+TEST_CASE("Test.WeekDays.Contains", "[WeekDays]")
 {
     WeekDays days;
     REQUIRE(days.Contains(WeekDay::Monday));
@@ -34,29 +34,90 @@ TEST_CASE("TestWeekDays", "[WeekDays]")
     REQUIRE(days.Contains(WeekDay::Thursday));
     REQUIRE(days.Contains(WeekDay::Friday));
     REQUIRE(days.Contains(WeekDay::Saturday));
+}
 
-    for(auto d : days)
-        REQUIRE(d);
+TEST_CASE("Test.WeekDays.Remove", "[WeekDays]")
+{
+    auto checkRemove = [](const WeekDays& weekDays, WeekDay removed){
+        for(int i = 0; i < 6; ++i)
+        {
+            const auto wd = static_cast<WeekDay>(i);
+            if(removed == wd)
+            {
+                REQUIRE_FALSE(weekDays.Contains(removed));
+            }
+            else
+            {
+                REQUIRE(weekDays.Contains(wd));
+            }
+        }
+    };
 
-    days.Remove(WeekDay::Monday);
-    REQUIRE_FALSE(days.Contains(WeekDay::Monday));
+    for(int i = 0; i < 6; ++i)
+    {
+        const auto wd = static_cast<WeekDay>(i);
+        WeekDays days;
+        days.Remove(wd);
+        checkRemove(days, wd);
+    }
 
-    days.Remove(WeekDay::Tuesday);
-    REQUIRE_FALSE(days.Contains(WeekDay::Tuesday));
+    // удалить все дни недели невозможно
+    // удаление всех дней недели автоматически приводит к заполнению всех дней недели
+    WeekDays days;
+    for(int i = 0; i < 6; ++i)
+        days.Remove(static_cast<WeekDay>(i));
 
-    days.Remove(WeekDay::Wednesday);
-    REQUIRE_FALSE(days.Contains(WeekDay::Wednesday));
+    for(int i = 0; i < 6; ++i)
+        days.Contains(static_cast<WeekDay>(i));
+}
 
-    days.Remove(WeekDay::Thursday);
-    REQUIRE_FALSE(days.Contains(WeekDay::Thursday));
+TEST_CASE("Test.WeekDays.Add", "[WeekDays]")
+{
+    for(int i = 0; i < 6; ++i)
+    {
+        const auto added = static_cast<WeekDay>(i);
+        WeekDays weekDays;
+        for(int j = 0; j < 6; ++j)
+        {
+            const auto curr = static_cast<WeekDay>(j);
+            if(curr == added)
+                weekDays.Add(curr);
+            else
+                weekDays.Remove(curr);
+        }
 
-    days.Remove(WeekDay::Friday);
-    REQUIRE_FALSE(days.Contains(WeekDay::Friday));
+        for(int j = 0; j < 6; ++j)
+        {
+            const auto wd = static_cast<WeekDay>(j);
+            if(added == wd)
+                REQUIRE(weekDays.Contains(added));
+            else
+                REQUIRE_FALSE(weekDays.Contains(wd));
+        }
+    }
+}
 
-    // удалить все дни в неделе = заполнить все дни
-    days.Remove(WeekDay::Saturday);
-    for(auto d : days)
-        REQUIRE(d);
+TEST_CASE("Test.WeekDays.WeekDaysIterator", "[WeekDays]")
+{
+    for(int i = 0; i < 6; ++i)
+    {
+        const auto removed = static_cast<WeekDay>(i);
+
+        WeekDays weekDays;
+        weekDays.Remove(removed);
+
+        auto it = weekDays.begin();
+        for(int j = 0; j < 6; ++j)
+        {
+            if(i == j)
+                REQUIRE_FALSE(*it);
+            else
+                REQUIRE(*it);
+
+            ++it;
+        }
+        REQUIRE(it == weekDays.end());
+    }
 }
 
 TEST_CASE("Test.SortedSet.Construct", "[SortedSet]")
