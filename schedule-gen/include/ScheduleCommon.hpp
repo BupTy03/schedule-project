@@ -86,6 +86,7 @@ class SortedSet
 {
 public:
     SortedSet() = default;
+    explicit SortedSet(const std::vector<T>& vec) : SortedSet(vec.begin(), vec.end()) {}
 
     template<class Iter>
     explicit SortedSet(Iter first, Iter last)
@@ -119,8 +120,8 @@ public:
         return true;
     }
 
-    bool empty() const { return elems_.empty(); }
-    std::size_t size() const { return elems_.size(); }
+    [[nodiscard]] bool empty() const { return elems_.empty(); }
+    [[nodiscard]] std::size_t size() const { return elems_.size(); }
     typename std::vector<T>::const_iterator begin() const
     {
         return elems_.begin();
