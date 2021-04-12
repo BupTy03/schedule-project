@@ -82,6 +82,11 @@ struct LessonAddress
 
 struct OverlappedClassroom
 {
+    explicit OverlappedClassroom(std::size_t Classroom, SortedSet<LessonAddress> Lessons)
+        : Classroom(Classroom)
+        , Lessons(std::move(Lessons))
+    {}
+
     std::size_t Classroom = 0;
     SortedSet<LessonAddress> Lessons;
 };
@@ -90,34 +95,52 @@ void Print(const OverlappedClassroom& overlappedClassroom);
 
 struct OverlappedProfessor
 {
+    explicit OverlappedProfessor(std::size_t Professor, SortedSet<LessonAddress> Lessons)
+        : Professor(Professor)
+        , Lessons(std::move(Lessons))
+    {}
+
     std::size_t Professor = 0;
     SortedSet<LessonAddress> Lessons;
 };
 
 struct ViolatedSubjectRequest
 {
+    explicit ViolatedSubjectRequest(std::size_t Subject, SortedSet<LessonAddress> Lessons)
+        : Subject(Subject)
+        , Lessons(std::move(Lessons))
+    {}
+
     std::size_t Subject = 0;
     SortedSet<LessonAddress> Lessons;
 };
 
-class ScheduleValidationResult
+struct SubjectWithAddress
 {
-public:
-    explicit ScheduleValidationResult(std::vector<OverlappedClassroom> overlappedClassrooms,
-                                      std::vector<OverlappedProfessor> overlappedProfessors,
-                                      std::vector<ViolatedSubjectRequest> violatedRequests,
-                                      std::vector<ExceedingComplexityItem> complexity);
+    explicit SubjectWithAddress(std::size_t Subject, LessonAddress Address)
+        : Subject(Subject)
+        , Address(Address)
+    {}
 
-    [[nodiscard]] const std::vector<OverlappedClassroom>& OverlappedClassrooms() const;
-    [[nodiscard]] const std::vector<OverlappedProfessor>& OverlappedProfessors() const;
-    [[nodiscard]] const std::vector<ViolatedSubjectRequest>& ViolatedRequests() const;
-    [[nodiscard]] const std::vector<ExceedingComplexityItem>& TotalComplexity() const;
+    friend bool operator<(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    {
+        return lhs.Subject < rhs.Subject;
+    }
 
-private:
-    std::vector<OverlappedClassroom> overlappedClassrooms_;
-    std::vector<OverlappedProfessor> overlappedProfessors_;
-    std::vector<ViolatedSubjectRequest> violatedRequests_;
-    std::vector<ExceedingComplexityItem> complexity_;
+    friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    {
+        return lhs.Subject == rhs.Subject;
+    }
+
+    friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    {
+        return lhs.Subject != rhs.Subject;
+    }
+
+    std::size_t Subject;
+    LessonAddress Address;
 };
 
+
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result);
+std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data, const ScheduleResult& result);
