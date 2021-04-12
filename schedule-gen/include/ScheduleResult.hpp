@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ScheduleCommon.hpp"
+
+#include <map>
 #include <cstdint>
 #include <vector>
 #include <optional>
@@ -144,3 +146,4 @@ struct SubjectWithAddress
 
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result);
 std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data, const ScheduleResult& result);
+std::map<std::size_t, SortedSet<LessonAddress>> FindViolatedSubjectRequest(const ScheduleData& data, const ScheduleResult& result);
