@@ -84,7 +84,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
                     professorsAndSubjects[item->Professor].Add(SubjectWithAddress(item->Subject, LessonAddress(g, d, l)));
             }
 
-            for(const auto&[classroom, subjects] : professorsAndSubjects)
+            for(const auto&[professor, subjects] : professorsAndSubjects)
             {
                 if(subjects.size() > 1)
                 {
@@ -92,7 +92,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
                     for(auto&& subject : subjects)
                         lessons.Add(subject.Address);
 
-                    overlappedProfessors.emplace_back(classroom, std::move(lessons));
+                    overlappedProfessors.emplace_back(professor, std::move(lessons));
                 }
             }
         }
@@ -101,9 +101,9 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
     return overlappedProfessors;
 }
 
-std::map<std::size_t, SortedSet<LessonAddress>> FindViolatedSubjectRequest(const ScheduleData& data, const ScheduleResult& result)
+std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data, const ScheduleResult& result)
 {
-    std::map<std::size_t, SortedSet<LessonAddress>> violatedRequests;
+    std::vector<ViolatedSubjectRequest> violatedRequests;
     for(std::size_t g = 0; g < data.CountGroups(); ++g)
     {
         for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
@@ -111,11 +111,16 @@ std::map<std::size_t, SortedSet<LessonAddress>> FindViolatedSubjectRequest(const
             for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
             {
                 const auto item = result.At(g, d, l);
-                if(!item)
-                    continue;
+                if(item && !WeekDayRequestedForSubject(data, item->Subject, d))
+                {
+                    auto it = std::lower_bound(violatedRequests.begin(), violatedRequests.end(),
+                                               item->Subject, ViolatedSubjectRequestLess());
 
-                if(!WeekDayRequestedForSubject(data, item->Subject, d))
-                    violatedRequests[item->Subject].Add(LessonAddress(g, d, l));
+                    if(it == violatedRequests.end() || it->Subject != item->Subject)
+                        it = violatedRequests.emplace(it, item->Subject);
+
+                    it->Lessons.Add(LessonAddress(g, d, l));
+                }
             }
         }
     }

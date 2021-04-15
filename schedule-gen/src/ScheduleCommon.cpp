@@ -4,6 +4,16 @@
 const std::size_t SCHEDULE_DAYS_COUNT = 12;
 
 
+WeekDays::WeekDays(std::initializer_list<WeekDay> lst)
+{
+    if(std::empty(lst))
+        return;
+
+    days_ = 0;
+    for(auto wd : lst)
+        Add(wd);
+}
+
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum)
 {
     return static_cast<WeekDay>(dayNum % 6);

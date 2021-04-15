@@ -68,8 +68,8 @@ struct LessonAddress
 
     friend bool operator<(const LessonAddress& lhs, const LessonAddress& rhs)
     {
-        return lhs.Group < rhs.Group || (!(lhs.Group < rhs.Group) && lhs.Day < rhs.Day) ||
-                (!(lhs.Group < rhs.Group) && !(lhs.Day < rhs.Day) && lhs.Lesson < rhs.Lesson);
+        return lhs.Group < rhs.Group || (lhs.Group == rhs.Group && lhs.Day < rhs.Day) ||
+                (lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson < rhs.Lesson);
     }
 
     friend bool operator==(const LessonAddress& lhs, const LessonAddress& rhs)
@@ -108,6 +108,11 @@ struct OverlappedProfessor
 
 struct ViolatedSubjectRequest
 {
+    explicit ViolatedSubjectRequest(std::size_t Subject)
+        : Subject(Subject)
+        , Lessons()
+    {}
+
     explicit ViolatedSubjectRequest(std::size_t Subject, SortedSet<LessonAddress> Lessons)
         : Subject(Subject)
         , Lessons(std::move(Lessons))
@@ -115,6 +120,24 @@ struct ViolatedSubjectRequest
 
     std::size_t Subject = 0;
     SortedSet<LessonAddress> Lessons;
+};
+
+struct ViolatedSubjectRequestLess
+{
+    bool operator()(const ViolatedSubjectRequest& lhs, const ViolatedSubjectRequest& rhs) const
+    {
+        return lhs.Subject < rhs.Subject;
+    }
+
+    bool operator()(const ViolatedSubjectRequest& lhs, std::size_t rhsSubject) const
+    {
+        return lhs.Subject < rhsSubject;
+    }
+
+    bool operator()(std::size_t lhsSubject, const ViolatedSubjectRequest& rhs) const
+    {
+        return lhsSubject < rhs.Subject;
+    }
 };
 
 struct SubjectWithAddress
@@ -146,4 +169,4 @@ struct SubjectWithAddress
 
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result);
 std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data, const ScheduleResult& result);
-std::map<std::size_t, SortedSet<LessonAddress>> FindViolatedSubjectRequest(const ScheduleData& data, const ScheduleResult& result);
+std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data, const ScheduleResult& result);

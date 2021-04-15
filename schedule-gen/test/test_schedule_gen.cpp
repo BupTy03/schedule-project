@@ -332,3 +332,77 @@ TEST_CASE("Test.FindOverlappedProfessors", "[Validate]")
     REQUIRE(overlappedProfessors.at(1).Lessons.Contains(LessonAddress(0, 0, 1)));
     REQUIRE(overlappedProfessors.at(1).Lessons.Contains(LessonAddress(1, 0, 1)));
 }
+
+TEST_CASE("Test.FindViolatedSubjectRequests", "[Validate]")
+{
+    ScheduleData data(3, 2, 2, 3, std::vector<SubjectRequest>({
+        SubjectRequest(0, 5, 4, WeekDays({WeekDay::Thursday}), SortedSet<std::size_t>({0, 1, 2}), SortedSet<std::size_t>({0})),
+        SubjectRequest(0, 5, 4, WeekDays({WeekDay::Thursday}), SortedSet<std::size_t>({0, 1, 2}), SortedSet<std::size_t>({0})),
+        SubjectRequest(0, 5, 4, WeekDays({WeekDay::Thursday}), SortedSet<std::size_t>({0, 1, 2}), SortedSet<std::size_t>({0})),
+        SubjectRequest(0, 5, 4, WeekDays({WeekDay::Thursday}), SortedSet<std::size_t>({0, 1, 2}), SortedSet<std::size_t>({1})),
+        SubjectRequest(0, 5, 4, WeekDays({WeekDay::Thursday}), SortedSet<std::size_t>({0, 1, 2}), SortedSet<std::size_t>({1})),
+        SubjectRequest(0, 5, 4, WeekDays({WeekDay::Thursday}), SortedSet<std::size_t>({0, 1, 2}), SortedSet<std::size_t>({2}))
+    }));
+
+    // ScheduleItem(std::size_t subject, std::size_t professor, std::size_t classroom)
+    ScheduleResult result(std::vector<ScheduleResult::Group>({
+        ScheduleResult::Group({
+               ScheduleResult::Day({
+                   ScheduleResult::Lesson(ScheduleItem(0, 0, 0)),
+                   ScheduleResult::Lesson(ScheduleItem(2, 1, 1)),
+                   ScheduleResult::Lesson(ScheduleItem(1, 0, 1)),
+                   ScheduleResult::Lesson(),
+                   ScheduleResult::Lesson(),
+                   ScheduleResult::Lesson()
+               }),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6)
+        }),
+        ScheduleResult::Group({
+               ScheduleResult::Day({
+                   ScheduleResult::Lesson(ScheduleItem(1, 0, 0)),
+                   ScheduleResult::Lesson(ScheduleItem(1, 1, 1)),
+                   ScheduleResult::Lesson(ScheduleItem(0, 0, 2)),
+                   ScheduleResult::Lesson(),
+                   ScheduleResult::Lesson(),
+                   ScheduleResult::Lesson()
+               }),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6),
+               ScheduleResult::Day(6)
+        })
+    }));
+
+    const auto violatedSubjectRequests = FindViolatedSubjectRequests(data, result);
+    REQUIRE(violatedSubjectRequests.at(0).Subject == 0);
+    REQUIRE(violatedSubjectRequests.at(0).Lessons.size() == 2);
+    REQUIRE(violatedSubjectRequests.at(0).Lessons.Contains(LessonAddress(0, 0, 0)));
+    REQUIRE(violatedSubjectRequests.at(0).Lessons.Contains(LessonAddress(1, 0, 2)));
+
+    REQUIRE(violatedSubjectRequests.at(1).Subject == 1);
+    REQUIRE(violatedSubjectRequests.at(1).Lessons.size() == 3);
+    REQUIRE(violatedSubjectRequests.at(1).Lessons.Contains(LessonAddress(0, 0, 2)));
+    REQUIRE(violatedSubjectRequests.at(1).Lessons.Contains(LessonAddress(1, 0, 0)));
+    REQUIRE(violatedSubjectRequests.at(1).Lessons.Contains(LessonAddress(1, 0, 1)));
+
+    REQUIRE(violatedSubjectRequests.at(2).Subject == 2);
+    REQUIRE(violatedSubjectRequests.at(2).Lessons.size() == 1);
+    REQUIRE(violatedSubjectRequests.at(2).Lessons.Contains(LessonAddress(0, 0, 1)));
+}

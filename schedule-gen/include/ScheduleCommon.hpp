@@ -67,6 +67,9 @@ class WeekDays
 public:
     using iterator = WeekDaysIterator;
 
+    WeekDays() = default;
+    WeekDays(std::initializer_list<WeekDay> lst);
+
     iterator begin() const;
     iterator end() const;
     std::size_t size() const;
