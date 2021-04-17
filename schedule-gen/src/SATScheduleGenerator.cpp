@@ -224,12 +224,54 @@ static void AddMinimizeComplexity(CpModelBuilder& cp_model,
     }
 }
 
+static void AddStreamsCondition(CpModelBuilder& cp_model,
+                                const std::vector<LessonsMtxItem>& lessons,
+                                const ScheduleData& data)
+{
+    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+    {
+        for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+        {
+            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+            {
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    {
+                        std::optional<BoolVar> prevVar;
+                        for (std::size_t g = 0; g < data.CountGroups(); ++g)
+                        {
+                            if (!data.SubjectRequests().at(s).RequestedGroup(g))
+                                continue;
+
+                            const mtx_index idx{d, g, p, l, c, s};
+                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
+                            if(it == lessons.end() || it->first != idx)
+                                continue;
+
+                            if(prevVar)
+                            {
+                                cp_model.AddEquality(*prevVar, it->second);
+                            }
+                            else
+                            {
+                                prevVar.emplace(it->second);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 static void AddConditions(CpModelBuilder& cp_model,
                           const std::vector<LessonsMtxItem>& lessons,
                           const ScheduleData& data)
 {
     std::vector<BoolVar> buffer;
     AddOneSubjectPerTimeCondition(cp_model, lessons, data, buffer);
+    AddStreamsCondition(cp_model, lessons, data);
     AddSubjectsHoursCondition(cp_model, lessons, data, buffer);
     AddMinimizeComplexity(cp_model, lessons, data, buffer);
     AddMinimizeLatePairsCondition(cp_model, lessons, data, buffer);
