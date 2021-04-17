@@ -72,14 +72,24 @@ static std::size_t CalculateBooleansCount(const ScheduleData& data)
 
 static void FillLessonsMatrix(CpModelBuilder& cp_model, std::vector<LessonsMtxItem>& mtx, const ScheduleData& data)
 {
-    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d) {
-        for (std::size_t g = 0; g < data.CountGroups(); ++g) {
-            for (std::size_t p = 0; p < data.CountProfessors(); ++p) {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l) {
-                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c) {
-                        for (std::size_t s = 0; s < data.CountSubjects(); ++s) {
-                            if (WeekDayRequestedForSubject(data, s, d) && ClassroomRequestedForSubject(data, s, c))
+    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+    {
+        for (std::size_t g = 0; g < data.CountGroups(); ++g)
+        {
+            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+            {
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    {
+                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                        {
+                            if (WeekDayRequestedForSubject(data, s, d) &&
+                                ClassroomRequestedForSubject(data, s, c) &&
+                                !data.LessonIsOccupied(LessonAddress(g, d, l)))
+                            {
                                 mtx.emplace_back(mtx_index{d, g, p, l, c, s}, cp_model.NewBoolVar());
+                            }
                         }
                     }
                 }
@@ -265,8 +275,8 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
 }
 
 
-ScheduleResult SATScheduleGenerator::Generate(const ScheduleData& data) {
-
+ScheduleResult SATScheduleGenerator::Generate(const ScheduleData& data)
+{
     CpModelBuilder cp_model;
     std::vector<LessonsMtxItem> lessons;
     lessons.reserve(CalculateBooleansCount(data));

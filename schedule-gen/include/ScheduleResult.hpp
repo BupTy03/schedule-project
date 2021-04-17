@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ScheduleCommon.hpp"
 
 #include <map>
@@ -48,38 +47,15 @@ struct ExceedingComplexityLess
         return lhs.GroupAndDay < rhs.GroupAndDay;
     }
 
-    bool operator()(const ExceedingComplexityItem& lhs, const std::pair<std::size_t, std::size_t>& rhs) const
+    bool operator()(const ExceedingComplexityItem& lhs, const std::pair<std::size_t, std::size_t>& rhsGroupAndDay) const
     {
-        return lhs.GroupAndDay < rhs;
+        return lhs.GroupAndDay < rhsGroupAndDay;
     }
 
-    bool operator()(const std::pair<std::size_t, std::size_t>& lhs, const ExceedingComplexityItem& rhs) const
+    bool operator()(const std::pair<std::size_t, std::size_t>& lhsGroupAndDay, const ExceedingComplexityItem& rhs) const
     {
-        return lhs < rhs.GroupAndDay;
+        return lhsGroupAndDay < rhs.GroupAndDay;
     }
-};
-
-struct LessonAddress
-{
-    explicit LessonAddress(std::size_t Group, std::size_t Day, std::size_t Lesson)
-        : Group(Group), Day(Day), Lesson(Lesson)
-    {
-    }
-
-    friend bool operator<(const LessonAddress& lhs, const LessonAddress& rhs)
-    {
-        return lhs.Group < rhs.Group || (lhs.Group == rhs.Group && lhs.Day < rhs.Day) ||
-                (lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson < rhs.Lesson);
-    }
-
-    friend bool operator==(const LessonAddress& lhs, const LessonAddress& rhs)
-    {
-        return lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson == rhs.Lesson;
-    }
-
-    std::size_t Group = 0;
-    std::size_t Day = 0;
-    std::size_t Lesson = 0;
 };
 
 struct OverlappedClassroom

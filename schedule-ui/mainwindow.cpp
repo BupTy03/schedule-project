@@ -164,7 +164,8 @@ void MainWindow::generateSchedule()
                               static_cast<std::size_t>(groups.size()),
                               static_cast<std::size_t>(professors.size()),
                               static_cast<std::size_t>(classrooms.size()),
-                              std::move(subjectRequests));
+                              std::move(subjectRequests),
+                              std::vector<LessonAddress>());
 
     const auto validationResult = Validate(*scheduleData);
     if(validationResult != ScheduleDataValidationResult::Ok)

@@ -41,7 +41,8 @@ public:
                           std::size_t countGroups,
                           std::size_t countProfessors,
                           std::size_t countClassrooms,
-                          std::vector<SubjectRequest> subjectRequests);
+                          std::vector<SubjectRequest> subjectRequests,
+                          std::vector<LessonAddress> occupiedLessons);
 
     [[nodiscard]] std::size_t MaxCountLessonsPerDay() const;
     [[nodiscard]] std::size_t RequestedCountLessonsPerDay() const;
@@ -50,6 +51,7 @@ public:
     [[nodiscard]] std::size_t CountProfessors() const;
     [[nodiscard]] std::size_t CountClassrooms() const;
     [[nodiscard]] const std::vector<SubjectRequest>& SubjectRequests() const;
+    [[nodiscard]] bool LessonIsOccupied(const LessonAddress& lessonAddress) const;
 
 private:
     std::size_t countLessonsPerDay_;
@@ -57,6 +59,7 @@ private:
     std::size_t countProfessors_;
     std::size_t countClassrooms_;
     std::vector<SubjectRequest> subjectRequests_;
+    std::vector<LessonAddress> occupiedLessons_;
 };
 
 

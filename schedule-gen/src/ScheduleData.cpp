@@ -48,14 +48,20 @@ std::size_t SubjectRequest::Complexity() const
 }
 
 
-ScheduleData::ScheduleData(std::size_t countLessonsPerDay, std::size_t countGroups, std::size_t countProfessors,
-                           std::size_t countClassrooms, std::vector<SubjectRequest> subjectRequests)
+ScheduleData::ScheduleData(std::size_t countLessonsPerDay,
+                           std::size_t countGroups,
+                           std::size_t countProfessors,
+                           std::size_t countClassrooms,
+                           std::vector<SubjectRequest> subjectRequests,
+                           std::vector<LessonAddress> occupiedLessons)
         : countLessonsPerDay_(countLessonsPerDay)
         , countGroups_(countGroups)
         , countProfessors_(countProfessors)
         , countClassrooms_(countClassrooms)
         , subjectRequests_(std::move(subjectRequests))
+        , occupiedLessons_(std::move(occupiedLessons))
 {
+    std::sort(occupiedLessons_.begin(), occupiedLessons_.end());
 }
 
 std::size_t ScheduleData::MaxCountLessonsPerDay() const
@@ -88,9 +94,15 @@ std::size_t ScheduleData::CountClassrooms() const
     return countClassrooms_;
 }
 
-const std::vector<SubjectRequest> &ScheduleData::SubjectRequests() const
+const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const
 {
     return subjectRequests_;
+}
+
+bool ScheduleData::LessonIsOccupied(const LessonAddress& lessonAddress) const
+{
+    auto it = std::lower_bound(occupiedLessons_.begin(), occupiedLessons_.end(), lessonAddress);
+    return it != occupiedLessons_.end() && *it == lessonAddress;
 }
 
 

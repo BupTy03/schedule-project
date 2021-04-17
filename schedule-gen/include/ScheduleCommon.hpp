@@ -85,6 +85,34 @@ private:
     mutable std::uint8_t days_ = FULL_WEEK;
 };
 
+struct LessonAddress
+{
+    explicit LessonAddress(std::size_t Group, std::size_t Day, std::size_t Lesson)
+            : Group(Group), Day(Day), Lesson(Lesson)
+    {
+    }
+
+    friend bool operator<(const LessonAddress& lhs, const LessonAddress& rhs)
+    {
+        return lhs.Group < rhs.Group || (lhs.Group == rhs.Group && lhs.Day < rhs.Day) ||
+               (lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson < rhs.Lesson);
+    }
+
+    friend bool operator==(const LessonAddress& lhs, const LessonAddress& rhs)
+    {
+        return lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson == rhs.Lesson;
+    }
+
+    friend bool operator!=(const LessonAddress& lhs, const LessonAddress& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    std::size_t Group;
+    std::size_t Day;
+    std::size_t Lesson;
+};
+
 template<typename T>
 class SortedSet
 {
