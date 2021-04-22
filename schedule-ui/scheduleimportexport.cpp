@@ -202,6 +202,7 @@ static LessonTypeItem ParseLesson(const QJsonObject& lesson)
 {
     LessonTypeItem res;
     res.Name = lesson["name"].toString();
+    res.Groups = ParseStringSet(lesson["groups"].toArray());
     res.CountHoursPerWeek = lesson["hours"].toInt(0);
     res.Complexity = lesson["complexity"].toInt(0);
     res.WeekDaysRequested = ParseWeekDays(lesson["weekdays"].toArray());
@@ -267,6 +268,7 @@ static QJsonArray ToJson(const SortedSet<QString>& strSet)
 static QJsonObject ToJson(const LessonTypeItem& lesson)
 {
     return QJsonObject({ { "name", lesson.Name },
+                         {"groups", ToJson(lesson.Groups)},
                          { "hours", lesson.CountHoursPerWeek },
                          { "complexity", lesson.Complexity },
                          { "weekdays", ToJson(lesson.WeekDaysRequested) },
