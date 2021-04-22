@@ -8,7 +8,7 @@ class QLabel;
 class QPushButton;
 class QAbstractItemModel;
 
-class ChooseClassroomsDialog;
+class ChooseItemsDialog;
 
 
 class ChooseClassroomsWidget : public QWidget
@@ -25,6 +25,6 @@ private slots:
 private:
     QLabel* classroomsLabel_;
     QPushButton* chooseClassroomButton_;
-    ChooseClassroomsDialog* chooseDialog_;
+    ChooseItemsDialog* chooseDialog_;
     SortedSet<QString> classrooms_;
 };

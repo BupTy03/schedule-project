@@ -1,5 +1,5 @@
 #include "chooseclassroomswidget.hpp"
-#include "chooseclassroomsdialog.hpp"
+#include "chooseitemsdialog.hpp"
 #include "utils.hpp"
 
 #include <QtWidgets/QLabel>
@@ -11,9 +11,11 @@ ChooseClassroomsWidget::ChooseClassroomsWidget(const QAbstractItemModel* model, 
     : QWidget(parent)
     , classroomsLabel_(new QLabel(this))
     , chooseClassroomButton_(new QPushButton("...", this))
-    , chooseDialog_(new ChooseClassroomsDialog(model, this))
+    , chooseDialog_(new ChooseItemsDialog(model, tr("Выберите аудитории"), this))
     , classrooms_()
 {
+    chooseDialog_->setWindowTitle(tr("Выбор аудиторий"));
+
     classroomsLabel_->setSizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::Fixed);
     chooseClassroomButton_->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Fixed);
     chooseClassroomButton_->setFixedWidth(30);
@@ -43,5 +45,5 @@ void ChooseClassroomsWidget::onChooseButtonClicked()
     if(chooseDialog_->exec() != QDialog::DialogCode::Accepted)
         return;
 
-    setClassrooms(chooseDialog_->classrooms());
+    setClassrooms(chooseDialog_->items());
 }
