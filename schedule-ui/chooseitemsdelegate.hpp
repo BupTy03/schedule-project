@@ -4,11 +4,14 @@
 
 class QAbstractItemModel;
 
-class ChooseClassroomsDelegate : public QStyledItemDelegate
+class ChooseItemsDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit ChooseClassroomsDelegate(const QAbstractItemModel* model, QObject* parent = nullptr);
+    explicit ChooseItemsDelegate(const QAbstractItemModel* model,
+                                 QString dialogTitle,
+                                 QString groupBoxWidgetTitle,
+                                 QObject* parent = nullptr);
 
     // QAbstractItemDelegate interface
 public:
@@ -18,4 +21,6 @@ public:
 
 private:
     const QAbstractItemModel* model_;
+    QString dialogTitle_;
+    QString groupBoxWidgetTitle_;
 };

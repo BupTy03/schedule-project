@@ -151,6 +151,9 @@ bool LessonTypesTableModel::setData(const QModelIndex& index, const QVariant& va
     case ColumnType::Name:
         lesson.Name = value.toString();
         break;
+    case ColumnType::Groups:
+        lesson.Groups = value.value<StringsSet>();
+        break;
     case ColumnType::Hours:
         lesson.CountHoursPerWeek = value.toInt();
         break;

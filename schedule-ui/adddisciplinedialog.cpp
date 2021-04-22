@@ -5,7 +5,7 @@
 #include "chooseitemssetwidget.hpp"
 #include "qspinboxdelegate.hpp"
 #include "chooseweekdaydelegate.hpp"
-#include "chooseclassroomsdelegate.hpp"
+#include "chooseitemsdelegate.hpp"
 
 #include <QtWidgets/QPushButton>
 
@@ -51,9 +51,17 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
     ui->lessonsGroupBox->setTitle(tr("Занятия"));
     ui->lessonsTableView->setModel(lessonsModel_.get());
     ui->lessonsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
+    ui->lessonsTableView->setItemDelegateForColumn(1, new ChooseItemsDelegate(groupsListModel,
+                                                                          tr("Выбор групп"),
+                                                                          tr("Выберите группы"),
+                                                                          this));
     ui->lessonsTableView->setItemDelegateForColumn(2, new QSpinBoxDelegate(MIN_HOURS_COUNT, MAX_HOURS_COUNT, this));
     ui->lessonsTableView->setItemDelegateForColumn(3, new ChooseWeekDayDelegate(this));
-    ui->lessonsTableView->setItemDelegateForColumn(4, new ChooseClassroomsDelegate(classroomsListModel, this));
+    ui->lessonsTableView->setItemDelegateForColumn(4, new ChooseItemsDelegate(classroomsListModel,
+                                                                              tr("Выбор аудиторий"),
+                                                                              tr("Выберите аудитории"),
+                                                                              this));
+
     ui->lessonsTableView->setItemDelegateForColumn(5, new QSpinBoxDelegate(MIN_COMPLEXITY, MAX_COMPLEXITY, this));
 
     chooseGroupsWidget_->setAvailableAndChosenTitles(tr("Доступные группы"), tr("Выбранные группы"));

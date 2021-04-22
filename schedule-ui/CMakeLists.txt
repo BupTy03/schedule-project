@@ -45,7 +45,7 @@ set(PROJECT_SOURCES
         disciplinesmodel.cpp disciplinesmodel.hpp
         chooseitemswidget.cpp chooseitemswidget.hpp
         chooseitemsdialog.cpp chooseitemsdialog.hpp
-        chooseclassroomsdelegate.cpp chooseclassroomsdelegate.hpp
+        chooseitemsdelegate.cpp chooseitemsdelegate.hpp
         scheduleprocessor.cpp scheduleprocessor.hpp
         scheduleapplicationdatamodel.cpp scheduleapplicationdatamodel.hpp
         utils.cpp utils.hpp
