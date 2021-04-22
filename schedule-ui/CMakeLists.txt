@@ -43,7 +43,7 @@ set(PROJECT_SOURCES
         currenttabstrategy.cpp currenttabstrategy.hpp
         scheduleimportexport.cpp scheduleimportexport.hpp
         disciplinesmodel.cpp disciplinesmodel.hpp
-        chooseclassroomswidget.cpp chooseclassroomswidget.hpp
+        chooseitemswidget.cpp chooseitemswidget.hpp
         chooseitemsdialog.cpp chooseitemsdialog.hpp
         chooseclassroomsdelegate.cpp chooseclassroomsdelegate.hpp
         scheduleprocessor.cpp scheduleprocessor.hpp

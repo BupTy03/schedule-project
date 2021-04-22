@@ -6,10 +6,10 @@
 
 
 ChooseItemsDialog::ChooseItemsDialog(const QAbstractItemModel* model,
-                                     const QString& title,
+                                     const QString& groupTitle,
                                      QWidget *parent)
     : QDialog(parent)
-    , chooseWidget_(new ChooseItemsSetWidget(model, title, this))
+    , chooseWidget_(new ChooseItemsSetWidget(model, groupTitle, this))
 {
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
