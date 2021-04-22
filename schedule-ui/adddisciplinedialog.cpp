@@ -51,10 +51,10 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
     ui->lessonsGroupBox->setTitle(tr("Занятия"));
     ui->lessonsTableView->setModel(lessonsModel_.get());
     ui->lessonsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
-    ui->lessonsTableView->setItemDelegateForColumn(1, new QSpinBoxDelegate(MIN_HOURS_COUNT, MAX_HOURS_COUNT, this));
-    ui->lessonsTableView->setItemDelegateForColumn(2, new ChooseWeekDayDelegate(this));
-    ui->lessonsTableView->setItemDelegateForColumn(3, new ChooseClassroomsDelegate(classroomsListModel, this));
-    ui->lessonsTableView->setItemDelegateForColumn(4, new QSpinBoxDelegate(MIN_COMPLEXITY, MAX_COMPLEXITY, this));
+    ui->lessonsTableView->setItemDelegateForColumn(2, new QSpinBoxDelegate(MIN_HOURS_COUNT, MAX_HOURS_COUNT, this));
+    ui->lessonsTableView->setItemDelegateForColumn(3, new ChooseWeekDayDelegate(this));
+    ui->lessonsTableView->setItemDelegateForColumn(4, new ChooseClassroomsDelegate(classroomsListModel, this));
+    ui->lessonsTableView->setItemDelegateForColumn(5, new QSpinBoxDelegate(MIN_COMPLEXITY, MAX_COMPLEXITY, this));
 
     chooseGroupsWidget_->setAvailableAndChosenTitles(tr("Доступные группы"), tr("Выбранные группы"));
     layout()->addWidget(chooseGroupsWidget_);

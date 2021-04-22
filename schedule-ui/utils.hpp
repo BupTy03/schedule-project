@@ -51,5 +51,5 @@ QString Join(const SortedSet<QString>& strSet, const QString& glue);
 
 SortedSet<std::size_t> IndexesSet(std::size_t count);
 SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups);
-SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms);
+SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const StringsSet& currentClassrooms);
 QString ToWarningMessage(ScheduleDataValidationResult validationResult);

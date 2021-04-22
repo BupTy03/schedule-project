@@ -23,7 +23,7 @@ void ChooseClassroomsDelegate::setEditorData(QWidget* editor, const QModelIndex&
 {
     auto chooseClassroomsWidget = dynamic_cast<ChooseClassroomsWidget*>(editor);
     assert(chooseClassroomsWidget != nullptr);
-    chooseClassroomsWidget->setClassrooms(index.data(Qt::ItemDataRole::UserRole).value<ClassroomsSet>());
+    chooseClassroomsWidget->setClassrooms(index.data(Qt::ItemDataRole::UserRole).value<StringsSet>());
 }
 
 void ChooseClassroomsDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const

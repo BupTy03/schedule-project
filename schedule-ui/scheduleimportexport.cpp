@@ -12,6 +12,7 @@
 
 LessonTypeItem::LessonTypeItem()
         : Name()
+        , Groups()
         , CountHoursPerWeek(0)
         , Complexity(0)
         , WeekDaysRequested()
@@ -19,8 +20,14 @@ LessonTypeItem::LessonTypeItem()
 {
 }
 
-LessonTypeItem::LessonTypeItem(QString name, int countHoursPerWeek, int complexity, WeekDays weekDays, ClassroomsSet classroomsSet)
+LessonTypeItem::LessonTypeItem(QString name,
+                               StringsSet groups,
+                               int countHoursPerWeek,
+                               int complexity,
+                               WeekDays weekDays,
+                               StringsSet classroomsSet)
         : Name(std::move(name))
+        , Groups(std::move(groups))
         , CountHoursPerWeek(countHoursPerWeek)
         , Complexity(complexity)
         , WeekDaysRequested(weekDays)
@@ -64,8 +71,9 @@ QString WeekDaysString(const WeekDays& weekDays)
 
 QString ToString(const LessonTypeItem& lesson)
 {
-    return QString("%1 (%2) %3 [%4] %5")
+    return QString("%1 {%2} (%3) %4 [%5] %6")
             .arg(lesson.Name)
+            .arg(Join(lesson.Groups, ", "))
             .arg(lesson.CountHoursPerWeek)
             .arg(WeekDaysString(lesson.WeekDaysRequested))
             .arg(Join(lesson.Classrooms, ", "))

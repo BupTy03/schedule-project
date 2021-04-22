@@ -101,7 +101,7 @@ SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringLi
     return result;
 }
 
-SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const ClassroomsSet& currentClassrooms)
+SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const StringsSet& currentClassrooms)
 {
     SortedSet<std::size_t> result;
     if(currentClassrooms.empty())

@@ -8,26 +8,28 @@
 #include <vector>
 
 
-using ClassroomsSet = SortedSet<QString>;
+using StringsSet = SortedSet<QString>;
 
 Q_DECLARE_METATYPE(WeekDays);
-Q_DECLARE_METATYPE(ClassroomsSet);
+Q_DECLARE_METATYPE(StringsSet);
 
 
 struct LessonTypeItem
 {
     LessonTypeItem();
     explicit LessonTypeItem(QString name,
+                            StringsSet groups,
                             int countHoursPerWeek,
                             int complexity,
                             WeekDays weekDays,
-                            ClassroomsSet classroomsSet);
+                            StringsSet classroomsSet);
 
     QString Name;
+    StringsSet Groups;
     int CountHoursPerWeek;
     int Complexity;
     WeekDays WeekDaysRequested;
-    ClassroomsSet Classrooms;
+    StringsSet Classrooms;
 };
 
 bool IsValid(const LessonTypeItem& item, const QStringList& allClassrooms);

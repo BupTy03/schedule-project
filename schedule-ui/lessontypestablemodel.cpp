@@ -6,11 +6,12 @@
 #include <numeric>
 
 
-static constexpr auto DEFAULT_COLUMNS_COUNT = 5;
+static constexpr auto DEFAULT_COLUMNS_COUNT = 6;
 
 enum class ColumnType
 {
     Name,
+    Groups,
     Hours,
     Days,
     Classrooms,
@@ -23,16 +24,26 @@ LessonTypesTableModel::LessonTypesTableModel(QObject* parent)
     , lessons_()
 {
     lessons_.reserve(3);
-    lessons_.emplace_back(tr("Лекция"), 0, 0,
+    lessons_.emplace_back(tr("Лекция"),
+                          StringsSet(),
+                          0,
+                          0,
                           WeekDays(),
-                          ClassroomsSet{});
+                          StringsSet());
 
-    lessons_.emplace_back(tr("Практика"), 0, 0,
+    lessons_.emplace_back(tr("Практика"),
+                          StringsSet(),
+                          0,
+                          0,
                           WeekDays(),
-                          ClassroomsSet{});
-    lessons_.emplace_back(tr("Лабораторная"), 0, 0,
+                          StringsSet());
+
+    lessons_.emplace_back(tr("Лабораторная"),
+                          StringsSet(),
+                          0,
+                          0,
                           WeekDays(),
-                          ClassroomsSet{});
+                          StringsSet{});
 }
 
 const std::vector<LessonTypeItem>& LessonTypesTableModel::lessons() const
@@ -59,7 +70,7 @@ QVariant LessonTypesTableModel::headerData(int section, Qt::Orientation orientat
         return {};
 
     static const std::array<QString, DEFAULT_COLUMNS_COUNT> sections = {
-        tr("Тип"), tr("Часов в неделю"), tr("Дни"), tr("Аудитории"), tr("Сложность")
+        tr("Тип"), tr("Группы"), tr("Часов в неделю"), tr("Дни"), tr("Аудитории"), tr("Сложность")
     };
     return sections.at(static_cast<std::size_t>(section));
 }
@@ -80,6 +91,8 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
         {
         case ColumnType::Name:
             return lesson.Name;
+        case ColumnType::Groups:
+            return Join(lesson.Groups, ", ");
         case ColumnType::Hours:
             return lesson.CountHoursPerWeek;
         case ColumnType::Days:
@@ -93,6 +106,9 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
     }
     case Qt::ItemDataRole::UserRole:
     {
+        if (columnType == ColumnType::Groups)
+            return QVariant::fromValue(lesson.Groups);
+
         if (columnType == ColumnType::Days)
             return QVariant::fromValue(lesson.WeekDaysRequested);
 
@@ -109,6 +125,7 @@ QVariant LessonTypesTableModel::data(const QModelIndex& index, int role) const
         case ColumnType::Hours:
         case ColumnType::Complexity:
             return Qt::AlignmentFlag::AlignCenter;
+        case ColumnType::Groups:
         case ColumnType::Days:
         case ColumnType::Classrooms:
             return static_cast<int>(Qt::AlignmentFlag::AlignVCenter | Qt::AlignmentFlag::AlignLeft);
@@ -141,7 +158,7 @@ bool LessonTypesTableModel::setData(const QModelIndex& index, const QVariant& va
         lesson.WeekDaysRequested = value.value<WeekDays>();
         break;
     case ColumnType::Classrooms:
-        lesson.Classrooms = value.value<ClassroomsSet>();
+        lesson.Classrooms = value.value<StringsSet>();
         break;
     case ColumnType::Complexity:
         lesson.Complexity = value.toInt();
