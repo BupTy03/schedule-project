@@ -31,6 +31,8 @@ public:
 
 private slots:
     void onOkButtonClicked();
+    void onAddLessonButtonClicked();
+    void onRemoveLessonButtonClicked();
 
 private:
     Ui::AddDisciplineDialog* ui;

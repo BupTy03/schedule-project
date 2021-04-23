@@ -6,6 +6,7 @@
 #include "qspinboxdelegate.hpp"
 #include "chooseweekdaydelegate.hpp"
 #include "chooseitemsdelegate.hpp"
+#include "utils.hpp"
 
 #include <QtWidgets/QPushButton>
 
@@ -62,6 +63,7 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
                                                                               this));
 
     ui->lessonsTableView->setItemDelegateForColumn(5, new QSpinBoxDelegate(MIN_COMPLEXITY, MAX_COMPLEXITY, this));
+    ui->lessonsTableView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
 
     auto buttonBox = new QDialogButtonBox(this);
     auto okButton = buttonBox->addButton(QDialogButtonBox::StandardButton::Ok);
@@ -73,6 +75,8 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
 
     connect(okButton, &QPushButton::clicked, this, &AddDisciplineDialog::onOkButtonClicked);
     connect(cancelButton, &QPushButton::clicked, this, &AddDisciplineDialog::reject);
+    connect(ui->addLessonButton, &QPushButton::clicked, this, &AddDisciplineDialog::onAddLessonButtonClicked);
+    connect(ui->removeLessonButton, &QPushButton::clicked, this, &AddDisciplineDialog::onRemoveLessonButtonClicked);
 }
 
 AddDisciplineDialog::~AddDisciplineDialog()
@@ -104,4 +108,28 @@ void AddDisciplineDialog::onOkButtonClicked()
         accept();
     else
         QMessageBox::warning(this, tr("Предупреждение"), ToWarningMessage(validationResult));
+}
+
+void AddDisciplineDialog::onAddLessonButtonClicked()
+{
+    assert(lessonsModel_ != nullptr);
+    lessonsModel_->addLesson(LessonTypeItem(tr("Лекция"),
+                                            StringsSet(),
+                                            0,
+                                            0,
+                                            WeekDays(),
+                                            StringsSet()));
+}
+
+void AddDisciplineDialog::onRemoveLessonButtonClicked()
+{
+    assert(lessonsModel_ != nullptr);
+
+    auto selectionModel = ui->lessonsTableView->selectionModel();
+    assert(selectionModel != nullptr);
+
+    auto selectedRows = selectionModel->selectedRows();
+    std::sort(selectedRows.begin(), selectedRows.end(), QModelIndexGreaterByRow());
+    for (const auto& selected : selectedRows)
+        lessonsModel_->removeRow(selected.row());
 }

@@ -7,10 +7,9 @@ class DisciplinesModel : public QAbstractTableModel
 {
 public:
     explicit DisciplinesModel(QObject* parent = nullptr);
-
     void addDiscipline(const Discipline& discipline);
     void setDisciplines(const std::vector<Discipline>& disciplines);
-    const std::vector<Discipline>& disciplines() const;
+    [[nodiscard]] const std::vector<Discipline>& disciplines() const;
 
 public:// QAbstractTableModel interface
     int rowCount(const QModelIndex& parent) const override;

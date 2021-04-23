@@ -46,6 +46,14 @@ LessonTypesTableModel::LessonTypesTableModel(QObject* parent)
                           StringsSet{});
 }
 
+void LessonTypesTableModel::addLesson(const LessonTypeItem& lesson)
+{
+    const int rowNum = static_cast<int>(lessons_.size());
+    beginInsertRows(QModelIndex(), rowNum, rowNum);
+    lessons_.emplace_back(lesson);
+    endInsertRows();
+}
+
 const std::vector<LessonTypeItem>& LessonTypesTableModel::lessons() const
 {
     return lessons_;
@@ -70,7 +78,12 @@ QVariant LessonTypesTableModel::headerData(int section, Qt::Orientation orientat
         return {};
 
     static const std::array<QString, DEFAULT_COLUMNS_COUNT> sections = {
-        tr("Тип"), tr("Группы"), tr("Часов в неделю"), tr("Дни"), tr("Аудитории"), tr("Сложность")
+        tr("Тип"),
+        tr("Группы"),
+        tr("Часов в неделю"),
+        tr("Дни"),
+        tr("Аудитории"),
+        tr("Сложность")
     };
     return sections.at(static_cast<std::size_t>(section));
 }
@@ -180,4 +193,19 @@ Qt::ItemFlags LessonTypesTableModel::flags(const QModelIndex& index) const
         return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable;
 
     return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable;
+}
+
+bool LessonTypesTableModel::removeRows(int row, int count, const QModelIndex& parent)
+{
+    if (count <= 0)
+        return true;
+
+    const int countDisciplines = static_cast<int>(lessons_.size());
+    if (row < 0 || row >= countDisciplines || row + count > countDisciplines)
+        return false;
+
+    beginRemoveRows(parent, row, row + count - 1);
+    lessons_.erase(lessons_.begin() + row, lessons_.begin() + row + count);
+    endRemoveRows();
+    return true;
 }
