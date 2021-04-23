@@ -1,13 +1,12 @@
 #include "disciplinesmodel.hpp"
 
 
-static const auto DEFAULT_COLUMNS_COUNT = 4;
+static const auto DEFAULT_COLUMNS_COUNT = 3;
 
 enum class ColumnType
 {
     Name,
     Professor,
-    Groups,
     Lessons
 };
 
@@ -73,7 +72,7 @@ QVariant DisciplinesModel::headerData(int section, Qt::Orientation orientation, 
         return {};
 
     static const std::array<QString, DEFAULT_COLUMNS_COUNT> sections = {
-        tr("Дисциплина"), tr("Преподаватель"), tr("Группы"), tr("Занятия")
+        tr("Дисциплина"), tr("Преподаватель"), tr("Занятия")
     };
     return sections.at(static_cast<std::size_t>(section));
 }
@@ -96,8 +95,6 @@ QVariant DisciplinesModel::data(const QModelIndex& index, int role) const
             return discipline.Name;
         case ColumnType::Professor:
             return discipline.Professor;
-        case ColumnType::Groups:
-            return discipline.Groups.join('\n');
         case ColumnType::Lessons:
             return ToStringList(discipline.Lessons).join('\n');
         }

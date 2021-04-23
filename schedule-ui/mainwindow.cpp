@@ -155,7 +155,7 @@ void MainWindow::generateSchedule()
                                          lesson.CountHoursPerWeek,
                                          lesson.Complexity,
                                          lesson.WeekDaysRequested,
-                                         ToGroupsSet(groups, discipline.Groups),
+                                         ToGroupsSet(groups, lesson.Groups),
                                          ToClassroomsSet(classrooms, lesson.Classrooms));
         }
     }

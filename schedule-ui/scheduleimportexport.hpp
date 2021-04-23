@@ -41,7 +41,6 @@ struct Discipline
 {
     QString Name;
     QString Professor;
-    QStringList Groups;
     std::vector<LessonTypeItem> Lessons;
 };
 
@@ -50,10 +49,8 @@ enum class DisciplineValidationResult
     Ok,
     NoName,
     NoProfessor,
-    NoGroups,
     NoLessons,
     ProfessorNotFoundInCommonList,
-    GroupsNotFoundInCommonList,
     InvalidLessonItems
 };
 

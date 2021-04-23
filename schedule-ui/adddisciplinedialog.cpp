@@ -31,7 +31,6 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
     , ui(new Ui::AddDisciplineDialog)
     , professorChoose_(new QComboBox(this))
     , disciplineChoose_(new QComboBox(this))
-    , chooseGroupsWidget_(new ChooseItemsSetWidget(groupsListModel, QObject::tr("Выбор групп"), this))
     , lessonsModel_(std::make_unique<LessonTypesTableModel>())
 {
     ui->setupUi(this);
@@ -64,9 +63,6 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
 
     ui->lessonsTableView->setItemDelegateForColumn(5, new QSpinBoxDelegate(MIN_COMPLEXITY, MAX_COMPLEXITY, this));
 
-    chooseGroupsWidget_->setAvailableAndChosenTitles(tr("Доступные группы"), tr("Выбранные группы"));
-    layout()->addWidget(chooseGroupsWidget_);
-
     auto buttonBox = new QDialogButtonBox(this);
     auto okButton = buttonBox->addButton(QDialogButtonBox::StandardButton::Ok);
     okButton->setText(tr("ОК"));
@@ -89,7 +85,6 @@ Discipline AddDisciplineDialog::discipline() const
     Discipline res;
     res.Name = disciplineChoose_->currentText();
     res.Professor = professorChoose_->currentText();
-    res.Groups = chooseGroupsWidget_->chosenItemsList();
     res.Lessons = lessonsModel_->lessons();
     return res;
 }

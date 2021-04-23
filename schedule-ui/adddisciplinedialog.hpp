@@ -36,6 +36,5 @@ private:
     Ui::AddDisciplineDialog* ui;
     QComboBox* professorChoose_;
     QComboBox* disciplineChoose_;
-    ChooseItemsSetWidget* chooseGroupsWidget_;
     std::unique_ptr<LessonTypesTableModel> lessonsModel_;
 };

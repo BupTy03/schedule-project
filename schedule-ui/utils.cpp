@@ -82,7 +82,7 @@ SortedSet<std::size_t> IndexesSet(std::size_t count)
     return result;
 }
 
-SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const QStringList& currentGroups)
+SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const StringsSet& currentGroups)
 {
     if(currentGroups.empty())
         return IndexesSet(allGroups.size());

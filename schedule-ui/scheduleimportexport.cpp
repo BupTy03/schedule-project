@@ -91,9 +91,6 @@ DisciplineValidationResult Validate(const Discipline& discipline)
     if(HoursPerWeekSum(discipline.Lessons) <= 0)
         return DisciplineValidationResult::NoLessons;
 
-    if(discipline.Groups.empty())
-        return DisciplineValidationResult::NoGroups;
-
     return DisciplineValidationResult::Ok;
 }
 
@@ -114,9 +111,6 @@ DisciplineValidationResult Validate(const Discipline& discipline,
     if(!allProfessors.contains(discipline.Professor))
         return DisciplineValidationResult::ProfessorNotFoundInCommonList;
 
-    if(!Contains(allGroups, discipline.Groups))
-        return DisciplineValidationResult::GroupsNotFoundInCommonList;
-
     if(!std::all_of(discipline.Lessons.begin(), discipline.Lessons.end(), [&](auto&& l){return IsValid(l, allClassrooms);}))
         return DisciplineValidationResult::InvalidLessonItems;
 
@@ -129,7 +123,6 @@ QString ToWarningMessage(DisciplineValidationResult validationResult)
             {DisciplineValidationResult::Ok, QObject::tr("Ok")},
             {DisciplineValidationResult::NoName, QObject::tr("Необходимо указать название дисциплины")},
             {DisciplineValidationResult::NoProfessor, QObject::tr("Необходимо выбрать преподавателя")},
-            {DisciplineValidationResult::NoGroups, QObject::tr("Необходимо выбрать группы")},
             {DisciplineValidationResult::NoLessons, QObject::tr("Необходимо назначить часы для хотя бы одного типа занятий")}
     };
 
@@ -229,7 +222,6 @@ static Discipline ParseDiscipline(const QJsonObject& discipline)
     Discipline res;
     res.Name = discipline["name"].toString();
     res.Professor = discipline["professor"].toString();
-    res.Groups = ToStringList(discipline["groups"].toArray());
     res.Lessons = ParseLessons(discipline["lessons"].toArray());
     return res;
 }
@@ -288,7 +280,6 @@ static QJsonObject ToJson(const Discipline& discipline)
 {
     return QJsonObject({ { "name", discipline.Name },
                          { "professor", discipline.Professor },
-                         { "groups", QJsonArray::fromStringList(discipline.Groups) },
                          { "lessons", ToJson(discipline.Lessons) } });
 }
 
