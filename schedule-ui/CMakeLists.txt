@@ -48,6 +48,7 @@ set(PROJECT_SOURCES
         chooseitemsdelegate.cpp chooseitemsdelegate.hpp
         scheduleprocessor.cpp scheduleprocessor.hpp
         scheduleapplicationdatamodel.cpp scheduleapplicationdatamodel.hpp
+        qcomboboxdelegate.cpp qcomboboxdelegate.hpp
         utils.cpp utils.hpp
         resources.qrc)
 

@@ -23,27 +23,12 @@ LessonTypesTableModel::LessonTypesTableModel(QObject* parent)
     : QAbstractTableModel(parent)
     , lessons_()
 {
-    lessons_.reserve(3);
     lessons_.emplace_back(tr("Лекция"),
                           StringsSet(),
                           0,
                           0,
                           WeekDays(),
                           StringsSet());
-
-    lessons_.emplace_back(tr("Практика"),
-                          StringsSet(),
-                          0,
-                          0,
-                          WeekDays(),
-                          StringsSet());
-
-    lessons_.emplace_back(tr("Лабораторная"),
-                          StringsSet(),
-                          0,
-                          0,
-                          WeekDays(),
-                          StringsSet{});
 }
 
 void LessonTypesTableModel::addLesson(const LessonTypeItem& lesson)
@@ -188,9 +173,6 @@ Qt::ItemFlags LessonTypesTableModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
         return Qt::ItemFlag::NoItemFlags;
-
-    if (index.column() == 0)
-        return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable;
 
     return Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEditable;
 }

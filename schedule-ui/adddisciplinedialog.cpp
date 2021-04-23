@@ -4,6 +4,7 @@
 #include "lessontypestablemodel.hpp"
 #include "chooseitemssetwidget.hpp"
 #include "qspinboxdelegate.hpp"
+#include "qcomboboxdelegate.hpp"
 #include "chooseweekdaydelegate.hpp"
 #include "chooseitemsdelegate.hpp"
 #include "utils.hpp"
@@ -16,12 +17,17 @@
 #include <QDialogButtonBox>
 
 #include <cassert>
+#include <algorithm>
 
 
 static const auto MIN_HOURS_COUNT = 0;
 static const auto MAX_HOURS_COUNT = 100;
 static const auto MIN_COMPLEXITY = 0;
 static const auto MAX_COMPLEXITY = 4;
+
+static const QString LECTURE_LESSON_TYPE = QObject::tr("Лекция");
+static const QString PRACTICE_LESSON_TYPE = QObject::tr("Практика");
+static const QString LAB_LESSON_TYPE = QObject::tr("Лабораторная");
 
 
 AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
@@ -51,6 +57,14 @@ AddDisciplineDialog::AddDisciplineDialog(QStringListModel* groupsListModel,
     ui->lessonsGroupBox->setTitle(tr("Занятия"));
     ui->lessonsTableView->setModel(lessonsModel_.get());
     ui->lessonsTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
+
+    ui->lessonsTableView->setItemDelegateForColumn(0,
+                                                   new QComboboxDelegate(QStringList() <<
+                                                                                       LECTURE_LESSON_TYPE <<
+                                                                                       PRACTICE_LESSON_TYPE <<
+                                                                                       LAB_LESSON_TYPE,
+                                                   this));
+
     ui->lessonsTableView->setItemDelegateForColumn(1, new ChooseItemsDelegate(groupsListModel,
                                                                           tr("Выбор групп"),
                                                                           tr("Выберите группы"),
@@ -113,7 +127,12 @@ void AddDisciplineDialog::onOkButtonClicked()
 void AddDisciplineDialog::onAddLessonButtonClicked()
 {
     assert(lessonsModel_ != nullptr);
-    lessonsModel_->addLesson(LessonTypeItem(tr("Лекция"),
+
+    const auto& lessonsList = lessonsModel_->lessons();
+    const bool hasLectures = std::any_of(lessonsList.begin(), lessonsList.end(),
+                           [](const LessonTypeItem& lesson){ return lesson.Name == LECTURE_LESSON_TYPE; });
+
+    lessonsModel_->addLesson(LessonTypeItem(hasLectures ? PRACTICE_LESSON_TYPE : LECTURE_LESSON_TYPE,
                                             StringsSet(),
                                             0,
                                             0,
