@@ -28,7 +28,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
                        QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , toolBar_(nullptr)
+    , toolBar_(new QToolBar(this))
     , groupsListModel_()
     , professorsListModel_()
     , classroomsListModel_()
@@ -46,7 +46,6 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
 
     addDisciplineDialog_->setModal(true);
 
-    toolBar_ = new QToolBar(this);
     toolBar_->addAction(QString(), [this]() { tabStrategy_->onAddItem(); });
     toolBar_->addAction(QString(), [this]() { tabStrategy_->onRemoveItem(); });
     toolBar_->addSeparator();
@@ -222,7 +221,7 @@ void MainWindow::onScheduleDone()
 {
     endProcess();
 
-    auto resultSchedule = scheduleProcessor_->result();
+    const auto resultSchedule = scheduleProcessor_->result();
     if(resultSchedule->Empty())
         return;
 
@@ -254,13 +253,13 @@ void MainWindow::onScheduleDone()
             DaySchedule& daySchedule = evenSchedule.second.at(d);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
-                const ScheduleResult::Lesson resultLesson = resultSchedule->At(g, d, l);
-                if (resultLesson)
+                const auto pResultLesson = resultSchedule->At(LessonAddress(g, d, l));
+                if (pResultLesson)
                 {
                     ScheduleModelItem item;
-                    item.ClassRoom = classrooms.at(resultLesson->Classroom);
-                    item.Professor = professors.at(resultLesson->Professor);
-                    item.Subject = subjects.at(resultLesson->Subject);
+                    item.ClassRoom = classrooms.at(pResultLesson->Classroom);
+                    item.Professor = professors.at(pResultLesson->Professor);
+                    item.Subject = subjects.at(pResultLesson->Subject);
                     daySchedule.at(l) = item;
                 }
                 else
@@ -277,13 +276,13 @@ void MainWindow::onScheduleDone()
             DaySchedule& daySchedule = oddSchedule.second.at(d - 6);
             for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
             {
-                const ScheduleResult::Lesson resultLesson = resultSchedule->At(g, d, l);
-                if (resultLesson)
+                const auto pResultLesson = resultSchedule->At(LessonAddress(g, d, l));
+                if (pResultLesson)
                 {
                     ScheduleModelItem item;
-                    item.ClassRoom = classrooms.at(resultLesson->Classroom);
-                    item.Professor = professors.at(resultLesson->Professor);
-                    item.Subject = subjects.at(resultLesson->Subject);
+                    item.ClassRoom = classrooms.at(pResultLesson->Classroom);
+                    item.Professor = professors.at(pResultLesson->Professor);
+                    item.Subject = subjects.at(pResultLesson->Subject);
                     daySchedule.at(l) = item;
                 }
                 else

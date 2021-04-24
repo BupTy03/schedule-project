@@ -54,12 +54,18 @@ struct LessonsMtxItemComp
 static std::size_t CalculateBooleansCount(const ScheduleData& data)
 {
     std::size_t count = 0;
-    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d) {
-        for (std::size_t g = 0; g < data.CountGroups(); ++g) {
-            for (std::size_t p = 0; p < data.CountProfessors(); ++p) {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l) {
-                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c) {
-                        for (std::size_t s = 0; s < data.CountSubjects(); ++s) {
+    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+    {
+        for (std::size_t g = 0; g < data.CountGroups(); ++g)
+        {
+            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+            {
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    {
+                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                        {
                             count += (WeekDayRequestedForSubject(data, s, d) && ClassroomRequestedForSubject(data, s, c));
                         }
                     }
@@ -103,13 +109,19 @@ static void AddOneSubjectPerTimeCondition(CpModelBuilder& cp_model,
                                           const ScheduleData& data,
                                           std::vector<BoolVar>& buffer)
 {
-    for (std::size_t g = 0; g < data.CountGroups(); ++g) {
-        for (std::size_t p = 0; p < data.CountProfessors(); ++p) {
-            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d) {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l) {
+    for (std::size_t g = 0; g < data.CountGroups(); ++g)
+    {
+        for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+        {
+            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+            {
+                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                {
                     buffer.clear();
-                    for (std::size_t s = 0; s < data.CountSubjects(); ++s) {
-                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c) {
+                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                    {
+                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                        {
                             const mtx_index idx{d, g, p, l, c, s};
                             const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
                             if (it != lessons.end() && it->first == idx)
@@ -281,16 +293,13 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
                                                        const std::vector<LessonsMtxItem>& lessons,
                                                        const ScheduleData& data)
 {
-    std::vector<ScheduleResult::Group> resultScheduleGroups;
+    std::vector<ScheduleItem> resultSchedule;
     for (std::size_t g = 0; g < data.CountGroups(); ++g)
     {
-        ScheduleResult::Group resultScheduleGroup;
         for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
         {
-            ScheduleResult::Day resultScheduleDay;
             for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
             {
-                ScheduleResult::Lesson resultScheduleLesson = std::nullopt;
                 for(std::size_t p = 0; p < data.CountProfessors(); ++p)
                 {
                     for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
@@ -301,19 +310,16 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
                             const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
                             if (it != lessons.end() && it->first == idx && SolutionBooleanValue(response, it->second))
                             {
-                                resultScheduleLesson.emplace(s, p, c);
+                                resultSchedule.emplace_back(LessonAddress(g, d, l), s, p, c);
                             }
                         }
                     }
                 }
-                resultScheduleDay.emplace_back(std::move(resultScheduleLesson));
             }
-            resultScheduleGroup.emplace_back(std::move(resultScheduleDay));
         }
-        resultScheduleGroups.emplace_back(std::move(resultScheduleGroup));
     }
 
-    return ScheduleResult(std::move(resultScheduleGroups));
+    return ScheduleResult(std::move(resultSchedule));
 }
 
 

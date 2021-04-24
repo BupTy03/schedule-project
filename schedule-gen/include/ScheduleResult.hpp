@@ -12,26 +12,45 @@ class ScheduleData;
 
 struct ScheduleItem
 {
-    explicit ScheduleItem(std::size_t subject, std::size_t professor, std::size_t classroom);
+    explicit ScheduleItem(const LessonAddress& address,
+                          std::size_t subject,
+                          std::size_t professor,
+                          std::size_t classroom);
 
+    LessonAddress Address;
     std::size_t Subject;
     std::size_t Professor;
     std::size_t Classroom;
 };
 
+struct ScheduleItemLess
+{
+    bool operator()(const ScheduleItem& lhs, const ScheduleItem& rhs) const
+    {
+        return lhs.Address < rhs.Address;
+    }
+
+    bool operator()(const ScheduleItem& lhs, const LessonAddress& rhsAddress) const
+    {
+        return lhs.Address < rhsAddress;
+    }
+
+    bool operator()(const LessonAddress& lhsAddress, const ScheduleItem& rhs) const
+    {
+        return lhsAddress < rhs.Address;
+    }
+};
+
 class ScheduleResult
 {
 public:
-    using Lesson = std::optional<ScheduleItem>;
-    using Day = std::vector<Lesson>;
-    using Group = std::vector<Day>;
-
-    explicit ScheduleResult(std::vector<Group> groups);
+    explicit ScheduleResult(std::vector<ScheduleItem> items);
     [[nodiscard]] bool Empty() const;
-    [[nodiscard]] Lesson At(std::size_t group, std::size_t day, std::size_t lesson) const;
+    [[nodiscard]] const std::vector<ScheduleItem>& Items() const;
+    [[nodiscard]] const ScheduleItem* At(const LessonAddress& address) const;
 
 private:
-    std::vector<Group> groups_;
+    std::vector<ScheduleItem> items_;
 };
 
 struct ExceedingComplexityItem

@@ -5,24 +5,33 @@
 #include <algorithm>
 
 
-ScheduleItem::ScheduleItem(std::size_t subject, std::size_t professor, std::size_t classroom)
-        : Subject(subject)
+ScheduleItem::ScheduleItem(const LessonAddress& address,
+                           std::size_t subject,
+                           std::size_t professor,
+                           std::size_t classroom)
+        : Address(address)
+        , Subject(subject)
         , Professor(professor)
         , Classroom(classroom)
 {}
 
-ScheduleResult::ScheduleResult(std::vector<Group> groups)
-        : groups_(std::move(groups))
+ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
+        : items_(std::move(items))
 {
+    std::sort(items_.begin(), items_.end(), ScheduleItemLess());
 }
 
-bool ScheduleResult::Empty() const { return groups_.empty(); }
+bool ScheduleResult::Empty() const { return items_.empty(); }
 
-ScheduleResult::Lesson ScheduleResult::At(std::size_t group,
-                                          std::size_t day,
-                                          std::size_t lesson) const
+const std::vector<ScheduleItem>& ScheduleResult::Items() const { return items_; }
+
+const ScheduleItem* ScheduleResult::At(const LessonAddress& address) const
 {
-    return groups_.at(group).at(day).at(lesson);
+    auto it = std::lower_bound(items_.begin(), items_.end(), address, ScheduleItemLess());
+    if(it == items_.end() || it->Address != address)
+        return nullptr;
+
+    return &(*it);
 }
 
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result)
@@ -35,7 +44,7 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
             std::map<std::size_t, SortedSet<SubjectWithAddress>> classroomsAndSubjects;
             for(std::size_t g = 0; g < data.CountGroups(); ++g)
             {
-                const auto item = result.At(g, d, l);
+                const auto item = result.At(LessonAddress(g, d, l));
                 if(item)
                     classroomsAndSubjects[item->Classroom].Add(SubjectWithAddress(item->Subject, LessonAddress(g, d, l)));
             }
@@ -79,7 +88,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
             std::map<std::size_t, SortedSet<SubjectWithAddress>> professorsAndSubjects;
             for(std::size_t g = 0; g < data.CountGroups(); ++g)
             {
-                const auto item = result.At(g, d, l);
+                const auto item = result.At(LessonAddress(g, d, l));
                 if(item)
                     professorsAndSubjects[item->Professor].Add(SubjectWithAddress(item->Subject, LessonAddress(g, d, l)));
             }
@@ -110,7 +119,7 @@ std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleDa
         {
             for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
             {
-                const auto item = result.At(g, d, l);
+                const auto item = result.At(LessonAddress(g, d, l));
                 if(item && !WeekDayRequestedForSubject(data, item->Subject, d))
                 {
                     auto it = std::lower_bound(violatedRequests.begin(), violatedRequests.end(),
