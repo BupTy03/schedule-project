@@ -26,11 +26,7 @@ using operations_research::sat::NewFeasibleSolutionObserver;
 using operations_research::sat::Solve;
 
 
-// [day, group, professor, lesson, classrooms, subject]
-using mtx_index = std::tuple<std::size_t, std::size_t, std::size_t, std::size_t, std::size_t, std::size_t>;
-
-
-using LessonsMtxItem = std::pair<mtx_index, BoolVar>;
+using LessonsMtxItem = std::pair<LessonsMatrixItemAddress, BoolVar>;
 
 struct LessonsMtxItemComp
 {
@@ -39,44 +35,51 @@ struct LessonsMtxItemComp
         return lhs.first < rhs.first;
     }
 
-    bool operator()(const LessonsMtxItem& lhs, const mtx_index& rhs) const
+    bool operator()(const LessonsMtxItem& lhs, const LessonsMatrixItemAddress& rhs) const
     {
         return lhs.first < rhs;
     }
 
-    bool operator()(const mtx_index& lhs, const LessonsMtxItem& rhs) const
+    bool operator()(const LessonsMatrixItemAddress& lhs, const LessonsMtxItem& rhs) const
     {
         return lhs < rhs.first;
     }
 };
 
-
-static std::size_t CalculateBooleansCount(const ScheduleData& data)
+class LessonsMatrix
 {
-    std::size_t count = 0;
-    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+public:
+    void Add(const LessonsMatrixItemAddress& address, const BoolVar& boolVar)
     {
-        for (std::size_t g = 0; g < data.CountGroups(); ++g)
-        {
-            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
-            {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-                {
-                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                    {
-                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-                        {
-                            count += (WeekDayRequestedForSubject(data, s, d) && ClassroomRequestedForSubject(data, s, c));
-                        }
-                    }
-                }
-            }
-        }
+        auto it = std::lower_bound(elems_.begin(), elems_.end(), address, LessonsMtxItemComp());
+        if(it == elems_.end() || it->first != address)
+            elems_.emplace(it, address, boolVar);
+        else
+            it->second = boolVar;
     }
-    return count;
-}
 
-static void FillLessonsMatrix(CpModelBuilder& cp_model, std::vector<LessonsMtxItem>& mtx, const ScheduleData& data)
+    const std::vector<LessonsMtxItem>& Elems() const { return elems_; }
+
+    BoolVar* Find(const LessonsMatrixItemAddress& address)
+    {
+        auto it = std::lower_bound(elems_.begin(), elems_.end(), address, LessonsMtxItemComp());
+        if(it == elems_.end() || it->first != address)
+            return nullptr;
+
+        return &it->second;
+    }
+
+    const BoolVar* Find(const LessonsMatrixItemAddress& address) const
+    {
+        return const_cast<LessonsMatrix*>(this)->Find(address);
+    }
+
+private:
+    std::vector<LessonsMtxItem> elems_;
+};
+
+
+static void FillLessonsMatrix(CpModelBuilder& cp_model, LessonsMatrix& mtx, const ScheduleData& data)
 {
     for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
     {
@@ -94,7 +97,7 @@ static void FillLessonsMatrix(CpModelBuilder& cp_model, std::vector<LessonsMtxIt
                                 ClassroomRequestedForSubject(data, s, c) &&
                                 !data.LessonIsOccupied(LessonAddress(g, d, l)))
                             {
-                                mtx.emplace_back(mtx_index{d, g, p, l, c, s}, cp_model.NewBoolVar());
+                                mtx.Add(LessonsMatrixItemAddress{d, g, p, l, c, s}, cp_model.NewBoolVar());
                             }
                         }
                     }
@@ -105,7 +108,7 @@ static void FillLessonsMatrix(CpModelBuilder& cp_model, std::vector<LessonsMtxIt
 }
 
 static void AddOneSubjectPerTimeCondition(CpModelBuilder& cp_model,
-                                          const std::vector<LessonsMtxItem>& lessons,
+                                          const LessonsMatrix& lessons,
                                           const ScheduleData& data,
                                           std::vector<BoolVar>& buffer)
 {
@@ -122,10 +125,9 @@ static void AddOneSubjectPerTimeCondition(CpModelBuilder& cp_model,
                     {
                         for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                         {
-                            const mtx_index idx{d, g, p, l, c, s};
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
-                            if (it != lessons.end() && it->first == idx)
-                                buffer.emplace_back(it->second);
+                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
+                            if (lesson)
+                                buffer.emplace_back(*lesson);
                         }
                     }
 
@@ -137,7 +139,7 @@ static void AddOneSubjectPerTimeCondition(CpModelBuilder& cp_model,
 }
 
 static void AddSubjectsHoursCondition(CpModelBuilder& cp_model,
-                                      const std::vector<LessonsMtxItem>& lessons,
+                                      const LessonsMatrix& lessons,
                                       const ScheduleData& data,
                                       std::vector<BoolVar>& buffer)
 {
@@ -155,10 +157,9 @@ static void AddSubjectsHoursCondition(CpModelBuilder& cp_model,
                     {
                         for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                         {
-                            const mtx_index idx{d, g, p, l, c, s};
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
-                            if (it != lessons.end() && it->first == idx)
-                                buffer.emplace_back(it->second);
+                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
+                            if (lesson)
+                                buffer.emplace_back(*lesson);
                         }
                     }
                 }
@@ -170,14 +171,14 @@ static void AddSubjectsHoursCondition(CpModelBuilder& cp_model,
 }
 
 static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
-                                          const std::vector<LessonsMtxItem>& lessons,
+                                          const LessonsMatrix& lessons,
                                           const ScheduleData& data,
                                           std::vector<BoolVar>& buffer)
 {
     // располагаем пары в начале дня, стараясь не превышать data.RequestedCountLessonsPerDay()
     buffer.clear();
     std::vector<std::int64_t> pairsCoefficients;
-    for(auto&& item : lessons)
+    for(auto&& item : lessons.Elems())
     {
         // [day, group, professor, lesson, classrooms, subject]
         const auto[d, g, p, l, c, s] = item.first;
@@ -199,7 +200,7 @@ static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
 }
 
 static void AddMinimizeComplexity(CpModelBuilder& cp_model,
-                                  const std::vector<LessonsMtxItem>& lessons,
+                                  const LessonsMatrix& lessons,
                                   const ScheduleData& data,
                                   std::vector<BoolVar>& buffer)
 {
@@ -218,12 +219,11 @@ static void AddMinimizeComplexity(CpModelBuilder& cp_model,
                     {
                         for (std::size_t p = 0; p < data.CountProfessors(); ++p)
                         {
-                            const mtx_index idx{d, g, p, l, c, s};
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
-                            if(it == lessons.end() || it->first != idx)
+                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
+                            if(lesson == nullptr)
                                 continue;
 
-                            buffer.emplace_back(it->second);
+                            buffer.emplace_back(*lesson);
                             sumComplexity.emplace_back(complexity);
                         }
                     }
@@ -237,7 +237,7 @@ static void AddMinimizeComplexity(CpModelBuilder& cp_model,
 }
 
 static void AddStreamsCondition(CpModelBuilder& cp_model,
-                                const std::vector<LessonsMtxItem>& lessons,
+                                const LessonsMatrix& lessons,
                                 const ScheduleData& data)
 {
     for (std::size_t s = 0; s < data.CountSubjects(); ++s)
@@ -256,18 +256,17 @@ static void AddStreamsCondition(CpModelBuilder& cp_model,
                             if (!data.SubjectRequests().at(s).RequestedGroup(g))
                                 continue;
 
-                            const mtx_index idx{d, g, p, l, c, s};
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
-                            if(it == lessons.end() || it->first != idx)
+                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
+                            if(lesson == nullptr)
                                 continue;
 
                             if(prevVar)
                             {
-                                cp_model.AddEquality(*prevVar, it->second);
+                                cp_model.AddEquality(*prevVar, *lesson);
                             }
                             else
                             {
-                                prevVar.emplace(it->second);
+                                prevVar.emplace(*lesson);
                             }
                         }
                     }
@@ -278,7 +277,7 @@ static void AddStreamsCondition(CpModelBuilder& cp_model,
 }
 
 static void AddConditions(CpModelBuilder& cp_model,
-                          const std::vector<LessonsMtxItem>& lessons,
+                          const LessonsMatrix& lessons,
                           const ScheduleData& data)
 {
     std::vector<BoolVar> buffer;
@@ -290,7 +289,7 @@ static void AddConditions(CpModelBuilder& cp_model,
 }
 
 static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& response,
-                                                       const std::vector<LessonsMtxItem>& lessons,
+                                                       const LessonsMatrix& lessons,
                                                        const ScheduleData& data)
 {
     std::vector<ScheduleItem> resultSchedule;
@@ -306,9 +305,8 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
                     {
                         for (std::size_t s = 0; s < data.CountSubjects(); ++s)
                         {
-                            const mtx_index idx{d, g, p, l, c, s};
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx, LessonsMtxItemComp());
-                            if (it != lessons.end() && it->first == idx && SolutionBooleanValue(response, it->second))
+                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
+                            if (lesson && SolutionBooleanValue(response, *lesson))
                             {
                                 resultSchedule.emplace_back(LessonAddress(g, d, l), s, p, c);
                             }
@@ -326,8 +324,7 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
 ScheduleResult SATScheduleGenerator::Generate(const ScheduleData& data)
 {
     CpModelBuilder cp_model;
-    std::vector<LessonsMtxItem> lessons;
-    lessons.reserve(CalculateBooleansCount(data));
+    LessonsMatrix lessons;
 
     FillLessonsMatrix(cp_model, lessons, data);
     AddConditions(cp_model, lessons, data);
