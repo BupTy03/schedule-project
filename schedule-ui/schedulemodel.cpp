@@ -18,7 +18,13 @@ ScheduleModel::ScheduleModel(QObject* parent)
 
 void ScheduleModel::setGroups(const std::vector<GroupSchedule>& groups)
 {
+    if(groups.empty())
+        return;
+
+    removeRows(0, rowCount(QModelIndex()), QModelIndex());
+    beginInsertRows(QModelIndex(), 0, static_cast<int>(groups.size()) - 1);
     groups_ = groups;
+    endInsertRows();
 }
 
 int ScheduleModel::rowCount(const QModelIndex& parent) const
@@ -71,4 +77,9 @@ QVariant ScheduleModel::data(const QModelIndex& index, int role) const
     default:
         return {};
     }
+}
+
+const std::vector<GroupSchedule>& ScheduleModel::groups() const
+{
+    return groups_;
 }

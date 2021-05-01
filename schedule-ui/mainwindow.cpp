@@ -178,45 +178,6 @@ void MainWindow::generateSchedule()
     emit startGeneratingSchedule();
 }
 
-static QJsonObject ToJson(const ScheduleModelItem& item)
-{
-    return QJsonObject({
-                               {"classroom", item.ClassRoom},
-                               {"professor", item.Professor},
-                               {"subject",   item.Subject}
-                       });
-}
-
-static QJsonArray ToJson(const DaySchedule& day)
-{
-    QJsonArray result;
-    for(auto&& scheduleItem : day)
-        result.push_back(ToJson(scheduleItem));
-    return result;
-}
-
-static QJsonArray ToJson(const std::array<DaySchedule, MAX_DAYS_PER_WEEK>& days)
-{
-    QJsonArray result;
-    for(auto&& day : days)
-        result.push_back(ToJson(day));
-
-    return result;
-}
-
-static QJsonArray ToJson(const std::vector<GroupSchedule>& groupsSchedule)
-{
-    QJsonArray result;
-    for(auto&& groupSchedule : groupsSchedule)
-    {
-        result.push_back(QJsonObject({
-            {"name", groupSchedule.first},
-            {"days", ToJson(groupSchedule.second)}
-        }));
-    }
-    return result;
-}
-
 void MainWindow::onScheduleDone()
 {
     endProcess();
@@ -298,114 +259,12 @@ void MainWindow::onScheduleDone()
 
     showScheduleDialog_->setModal(false);
     showScheduleDialog_->setSchedule(evenGroupsSchedule, oddGroupsSchedule);
-    SetShowResultMode(*showScheduleDialog_);
-    if(showScheduleDialog_->exec() != QDialog::DialogCode::Accepted)
-        return;
-
-    const auto filePath = QFileDialog::getSaveFileName(this,
-                                                       tr("Сохранить расписание"),
-                                                       QString(),
-                                                       tr("Json (*.json)"));
-
-    if(filePath.isEmpty())
-        return;
-
-    QFile file(filePath);
-    if(!file.open(QFile::OpenModeFlag::WriteOnly))
-        return;
-
-    file.write(QJsonDocument(QJsonObject({
-                                                 {"num",   ToJson(evenGroupsSchedule)},
-                                                 {"denom", ToJson(oddGroupsSchedule)}
-                                         })).toJson());
-}
-
-static ScheduleModelItem ParseScheduleItem(const QJsonObject& scheduleItem)
-{
-    ScheduleModelItem result;
-    result.ClassRoom = scheduleItem["classroom"].toString();
-    result.Professor = scheduleItem["professor"].toString();
-    result.Subject = scheduleItem["subject"].toString();
-    return result;
-}
-
-static DaySchedule ParseDay(const QJsonArray& scheduleItems)
-{
-    DaySchedule result;
-    if(result.size() != scheduleItems.size())
-        return {};
-
-    for(std::size_t i = 0; i < scheduleItems.size(); ++i)
-        result.at(i) = ParseScheduleItem(scheduleItems.at(i).toObject());
-
-    return result;
-}
-
-static std::array<DaySchedule, MAX_DAYS_PER_WEEK> ParseDays(const QJsonArray& days)
-{
-    std::array<DaySchedule, MAX_DAYS_PER_WEEK> result;
-    if(result.size() != days.size())
-        return {};
-
-    for(std::size_t i = 0; i < days.size(); ++i)
-        result.at(i) = ParseDay(days.at(i).toArray());
-
-    return result;
-}
-
-static GroupSchedule ParseGroupSchedule(const QJsonObject& groupSchedule)
-{
-    GroupSchedule result;
-    result.first = groupSchedule["name"].toString();
-    result.second = ParseDays(groupSchedule["days"].toArray());
-    return result;
-}
-
-static std::vector<GroupSchedule> ParseGroupsSchedule(const QJsonArray& groupsSchedule)
-{
-    std::vector<GroupSchedule> result;
-    result.reserve(groupsSchedule.size());
-    for(auto&& groupSchedule : groupsSchedule)
-    {
-        if(groupSchedule.isObject())
-            result.emplace_back(ParseGroupSchedule(groupSchedule.toObject()));
-    }
-
-    return result;
-}
-
-static std::pair<std::vector<GroupSchedule>, std::vector<GroupSchedule>> ParseSchedule(const QJsonObject& schedule)
-{
-    const auto num = schedule["num"];
-    const auto denom = schedule["denom"];
-    if(!(num.isArray() && denom.isArray()))
-        return {};
-
-    return {ParseGroupsSchedule(num.toArray()), ParseGroupsSchedule(denom.toArray())};
+    showScheduleDialog_->show();
 }
 
 void MainWindow::viewSchedule()
 {
-    const auto filePath = QFileDialog::getOpenFileName(this,
-                                                       tr("Открыть расписание"),
-                                                       QString(),
-                                                       tr("Json (*.json)"));
-
-    if(filePath.isEmpty())
-        return;
-
-    QFile file(filePath);
-    if(!file.open(QFile::OpenModeFlag::ReadOnly))
-        return;
-
-    const auto jsonDoc = QJsonDocument::fromJson(file.readAll());
-    if(!jsonDoc.isObject())
-        return;
-
-    const auto schedule = ParseSchedule(jsonDoc.object());
     showScheduleDialog_->setModal(false);
-    showScheduleDialog_->setSchedule(schedule.first, schedule.second);
-    SetViewMode(*showScheduleDialog_);
     showScheduleDialog_->show();
 }
 

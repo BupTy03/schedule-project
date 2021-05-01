@@ -29,12 +29,13 @@ class ScheduleModel : public QAbstractTableModel
 public:
     explicit ScheduleModel(QObject* parent = nullptr);
     void setGroups(const std::vector<GroupSchedule>& groups);
+    [[nodiscard]] const std::vector<GroupSchedule>& groups() const;
 
 public:// QAbstractTableModel interface
-    int rowCount(const QModelIndex& parent) const override;
-    int columnCount(const QModelIndex& parent) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-    QVariant data(const QModelIndex& index, int role) const override;
+    [[nodiscard]] int rowCount(const QModelIndex& parent) const override;
+    [[nodiscard]] int columnCount(const QModelIndex& parent) const override;
+    [[nodiscard]] QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    [[nodiscard]] QVariant data(const QModelIndex& index, int role) const override;
 
 private:
     std::vector<GroupSchedule> groups_;
