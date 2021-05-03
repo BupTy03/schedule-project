@@ -2,7 +2,7 @@
 #include "ScheduleGenerator.hpp"
 
 
-class SATScheduleGenerator : public ScheduleGenerator
+class GAScheduleGenerator : public ScheduleGenerator
 {
 public:
     ScheduleResult Generate(const ScheduleData& data) override;

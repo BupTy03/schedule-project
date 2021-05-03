@@ -10,6 +10,7 @@
 
 #include "ScheduleGenerator.hpp"
 #include "SATScheduleGenerator.hpp"
+#include "GAScheduleGenerator.hpp"
 
 #include <QFileDialog>
 #include <QtWidgets/QToolBar>
@@ -37,7 +38,7 @@ MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
     , tabStrategy_()
     , scheduleData_(std::move(scheduleData))
     , disciplinesModel_(std::make_unique<DisciplinesModel>())
-    , scheduleProcessor_(std::make_unique<ScheduleProcessor>(std::make_unique<SATScheduleGenerator>()))
+    , scheduleProcessor_(std::make_unique<ScheduleProcessor>(std::make_unique<GAScheduleGenerator>()))
     , scheduleProcessorThread_(new QThread(this))
     , progressBar_(new QProgressBar(this))
 {

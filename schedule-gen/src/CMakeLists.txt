@@ -3,9 +3,11 @@ add_library(schedule-gen STATIC
         ScheduleData.cpp
         ScheduleResult.cpp
         ScheduleCommon.cpp
-        SATScheduleGenerator.cpp)
+        SATScheduleGenerator.cpp
+        GAScheduleGenerator.cpp)
 
-target_include_directories(schedule-gen PUBLIC ../include)
+target_include_directories(schedule-gen PUBLIC ../include ../../GAlib)
+target_link_libraries(schedule-gen PUBLIC libga)
 target_compile_features(schedule-gen PUBLIC cxx_std_17)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
