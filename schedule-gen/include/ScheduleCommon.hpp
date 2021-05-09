@@ -6,6 +6,7 @@
 #include <cassert>
 #include <iterator>
 #include <algorithm>
+#include <stdexcept>
 #include <initializer_list>
 
 
@@ -197,22 +198,22 @@ public:
         elems_.erase(std::unique(elems_.begin(), elems_.end()), elems_.end());
     }
 
-    bool Contains(const T& value) const
+    bool contains(const T& value) const
     {
         auto it = lower_bound(value);
         return (it != elems_.end() && *it == value);
     }
-    bool Add(const T& value)
+    auto insert(const T& value)
     {
         auto it = lower_bound(value);
         if(it != elems_.end() && *it == value)
-            return false;
+            return it;
 
-        elems_.emplace(it, value);
-        return true;
+        it = elems_.emplace(it, value);
+        return it;
     }
 
-    bool Remove(const T& value)
+    bool erase(const T& value)
     {
         auto it = lower_bound(value);
         if(it == elems_.end() || *it != value)
@@ -224,16 +225,67 @@ public:
 
     [[nodiscard]] bool empty() const { return elems_.empty(); }
     [[nodiscard]] std::size_t size() const { return elems_.size(); }
-    typename std::vector<T>::const_iterator begin() const { return elems_.begin(); }
-    typename std::vector<T>::const_iterator end() const { return elems_.end(); }
+    auto begin() const { return elems_.begin(); }
+    auto end() const { return elems_.end(); }
 
-    typename std::vector<T>::const_iterator lower_bound(const T& value) const
+    auto lower_bound(const T& value) const
     {
         return std::lower_bound(elems_.begin(), elems_.end(), value);
     }
 
 private:
     std::vector<T> elems_;
+};
+
+struct FirstLess
+{
+    template<typename T1, typename T2>
+    bool operator()(const std::pair<T1, T2>& lhs, const std::pair<T1, T2>& rhs)
+    {
+        return lhs.first < rhs.first;
+    }
+
+    template<typename T1, typename T2>
+    bool operator()(const std::pair<T1, T2>& lhs, const T1& rhs)
+    {
+        return lhs.first < rhs;
+    }
+
+    template<typename T1, typename T2>
+    bool operator()(const T1& lhs, const std::pair<T1, T2>& rhs)
+    {
+        return lhs < rhs.first;
+    }
+};
+
+template<typename K, typename T>
+class SortedMap
+{
+public:
+    T& operator[](const K& key)
+    {
+        auto it = std::lower_bound(elems_.begin(), elems_.end(), key, FirstLess());
+        if(it == elems_.end() || FirstLess()(key, *it))
+            it = elems_.emplace(it, key, T{});
+
+        return it->second;
+    }
+
+    const T& at(const K& key) const
+    {
+        auto it = std::lower_bound(elems_.begin(), elems_.end(), key, FirstLess());
+        if(it == elems_.end() || FirstLess()(key, *it))
+            throw std::out_of_range("key is out of range");
+
+        return it->second;
+    }
+
+    void clear() { elems_.clear(); }
+    auto begin() const { return elems_.begin(); }
+    auto end() const { return elems_.end(); }
+
+private:
+    std::vector<std::pair<K, T>> elems_;
 };
 
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);

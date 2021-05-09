@@ -19,12 +19,12 @@ SubjectRequest::SubjectRequest(std::size_t professor,
 
 bool SubjectRequest::RequestedClassroom(std::size_t c) const
 {
-    return classrooms_.Contains(c);
+    return classrooms_.contains(c);
 }
 
 bool SubjectRequest::RequestedGroup(std::size_t g) const
 {
-    return groups_.Contains(g);
+    return groups_.contains(g);
 }
 
 bool SubjectRequest::Requested(WeekDay d) const

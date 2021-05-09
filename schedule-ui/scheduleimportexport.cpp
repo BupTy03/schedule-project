@@ -186,7 +186,7 @@ static SortedSet<QString> ParseStringSet(const QJsonArray& strSet)
 {
     SortedSet<QString> result;
     for(auto&& str : strSet)
-        result.Add(str.toString());
+        result.insert(str.toString());
 
     return result;
 }

@@ -77,7 +77,7 @@ SortedSet<std::size_t> IndexesSet(std::size_t count)
 {
     SortedSet<std::size_t> result;
     for(std::size_t i = 0; i < count; ++i)
-        result.Add(i);
+        result.insert(i);
 
     return result;
 }
@@ -95,7 +95,7 @@ SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const StringsSe
         if(groupIndex < 0)
             continue;
 
-        result.Add(groupIndex);
+        result.insert(groupIndex);
     }
 
     return result;
@@ -114,7 +114,7 @@ SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const S
         if(classroomIndex < 0)
             continue;
 
-        result.Add(classroomIndex);
+        result.insert(classroomIndex);
     }
 
     return result;
