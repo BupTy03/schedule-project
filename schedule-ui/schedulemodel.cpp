@@ -21,10 +21,10 @@ void ScheduleModel::setGroups(const std::vector<GroupSchedule>& groups)
     if(groups.empty())
         return;
 
-    removeRows(0, rowCount(QModelIndex()), QModelIndex());
-    beginInsertRows(QModelIndex(), 0, static_cast<int>(groups.size()) - 1);
+    removeColumns(0, columnCount(QModelIndex()), QModelIndex());
+    beginInsertColumns(QModelIndex(), 0, static_cast<int>(groups.size()) - 1);
     groups_ = groups;
-    endInsertRows();
+    endInsertColumns();
 }
 
 int ScheduleModel::rowCount(const QModelIndex& parent) const
@@ -48,15 +48,6 @@ QVariant ScheduleModel::headerData(int section, Qt::Orientation orientation, int
         return groups_.at(section).first;
 
     // Qt::Orientation::Vertical == orientation
-    const std::array<QString, MAX_DAYS_PER_WEEK> days = {
-        "Понедельник",
-        "Вторник",
-        "Среда",
-        "Четверг",
-        "Пятница",
-        "Суббота"
-    };
-
     return section % MAX_LESSONS_PER_DAY_COUNT + 1;
 }
 

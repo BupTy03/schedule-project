@@ -33,20 +33,20 @@ static std::unique_ptr<QStandardItemModel> BuildWeekDayHeaderModel()
         "Суббота"
     };
 
-    for (std::size_t i = 0; i < days.size(); ++i)
+    for (std::size_t day = 0; day < days.size(); ++day)
     {
-        QStandardItem* rotatedTextCell = new QStandardItem(days.at(i));
+        auto rotatedTextCell = new QStandardItem(days.at(day));
         rotatedTextCell->setSizeHint(QSize(rotatedTextCell->sizeHint().width() + 30, rotatedTextCell->sizeHint().height()));
         rotatedTextCell->setData(1, Qt::UserRole);
 
-        for (int i = 1; i <= MAX_LESSONS_PER_DAY_COUNT; ++i)
+        for (int lesson = 1; lesson <= MAX_LESSONS_PER_DAY_COUNT; ++lesson)
         {
-            auto item = new QStandardItem(QString::number(i));
+            auto item = new QStandardItem(QString::number(lesson));
             item->setSizeHint(QSize(item->sizeHint().width() + 20, item->sizeHint().height()));
             rotatedTextCell->appendColumn({ item });
         }
 
-        result->setItem(0, static_cast<int>(i), rotatedTextCell);
+        result->setItem(0, static_cast<int>(day), rotatedTextCell);
     }
 
     return result;
