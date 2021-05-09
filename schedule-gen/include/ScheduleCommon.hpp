@@ -198,6 +198,8 @@ public:
         elems_.erase(std::unique(elems_.begin(), elems_.end()), elems_.end());
     }
 
+    [[nodiscard]] const std::vector<T>& elems() const { return elems_; }
+
     bool contains(const T& value) const
     {
         auto it = lower_bound(value);
@@ -287,5 +289,18 @@ public:
 private:
     std::vector<std::pair<K, T>> elems_;
 };
+
+template<class SortedRange1, class SortedRange2>
+bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
+{
+    for(const auto& e : r1)
+    {
+        auto it = std::lower_bound(std::begin(r2), std::end(r2), e);
+        if(it != std::end(r2) && !(e < *it))
+            return true;
+    }
+
+    return false;
+}
 
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);

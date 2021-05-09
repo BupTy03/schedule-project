@@ -24,6 +24,11 @@ public:
     [[nodiscard]] std::size_t Complexity() const;
     [[nodiscard]] std::size_t Professor() const;
 
+    const std::vector<std::size_t>& Groups() const { return groups_.elems(); }
+    const std::vector<std::size_t>& Classrooms() const { return classrooms_.elems(); }
+
+    bool RequestedWeekDay(std::size_t day) const { return days_.Contains(static_cast<WeekDay>(day % 6)); }
+
 private:
     std::size_t professor_;
     std::size_t hours_;

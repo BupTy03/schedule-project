@@ -1,166 +1,87 @@
 #include "GAScheduleGenerator.hpp"
 
-#include "ga/GAGenome.h"
-#include "ga/GASimpleGA.h"
-#include "ga/GADemeGA.h"
-#include "ga/GASStateGA.h"
-#include "ga/GAIncGA.h"
-#include "ga/GA1DBinStrGenome.h"
 
-
-static float Objective(GAGenome&);
-
-
-struct GAScheduleGeneratorContext
+void Print(const ScheduleIndividual& individ, const std::vector<SubjectRequest>& requests)
 {
-public:
-    explicit GAScheduleGeneratorContext(const ScheduleData* pScheduleData)
-        : pScheduleData_(pScheduleData)
+    const auto& lessons = individ.Lessons();
+    const auto& classrooms = individ.Classrooms();
+
+    for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
-        assert(ScheduleDataPtr != nullptr);
-        for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+        std::cout << "Lesson " << l << ": ";
+
+        auto it = std::find(lessons.begin(), lessons.end(), l);
+        if(it == lessons.end())
         {
-            for (std::size_t g = 0; g < pScheduleData_->CountGroups(); ++g)
+            std::cout << '-';
+        }
+        else
+        {
+            while(it != lessons.end())
             {
-                for (std::size_t p = 0; p < pScheduleData_->CountProfessors(); ++p)
-                {
-                    for (std::size_t l = 0; l < pScheduleData_->MaxCountLessonsPerDay(); ++l)
-                    {
-                        for (std::size_t c = 0; c < pScheduleData_->CountClassrooms(); ++c)
-                        {
-                            for (std::size_t s = 0; s < pScheduleData_->CountSubjects(); ++s)
-                            {
-                                if (WeekDayRequestedForSubject(*pScheduleData_, s, d) &&
-                                    ClassroomRequestedForSubject(*pScheduleData_, s, c) &&
-                                    !pScheduleData_->LessonIsOccupied(LessonAddress(g, d, l)))
-                                {
-                                    lessonItems_.emplace_back(d, g, p, l, c, s);
-                                }
-                            }
-                        }
-                    }
-                }
+                const std::size_t r = std::distance(lessons.begin(), it);
+                const auto& request = requests.at(r);
+                std::cout << "[s:" << r << ", p:" << request.Professor() << ", c:" << classrooms.at(r) << "]";
+
+                it = std::find(std::next(it), lessons.end(), l);
             }
         }
+
+        std::cout << '\n';
     }
-
-    [[nodiscard]] const ScheduleData& Data() const { return *pScheduleData_; }
-    [[nodiscard]] const std::vector<LessonsMatrixItemAddress>& Lessons() const
-    {
-        return lessonItems_;
-    }
-
-private:
-    const ScheduleData* pScheduleData_;
-    std::vector<LessonsMatrixItemAddress> lessonItems_;
-};
-
+}
 
 ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
-    constexpr int populationSize = 10;
-    constexpr int generationsCount = 10;
-    constexpr float pmut = 0.9;
-    constexpr float pcross = 0.9;
+    std::vector<SubjectRequest> requests;
+    std::vector<std::size_t> subjectNumbers;
 
-    GAScheduleGeneratorContext context(&data);
-    GA1DBinaryStringGenome genome(context.Lessons().size(), Objective, &context);
-    //GASimpleGA ga(genome);
-    GASteadyStateGA ga(genome);
-    ga.populationSize(populationSize);
-    ga.nGenerations(generationsCount);
-//    ga.pMutation(pmut);
-//    ga.pCrossover(pcross);
-
-    GARankSelector selector;
-    ga.selector(selector);
-
-    GASigmaTruncationScaling sigmaTruncation;
-    ga.scaling(sigmaTruncation);
-
-    ga.initialize();
-    ga.evolve();
-    genome = ga.statistics().bestIndividual();
-
-    std::vector<ScheduleItem> resultSchedule;
-    for(std::size_t i = 0; i < genome.size(); ++i)
+    const auto& subjectRequests = data.SubjectRequests();
+    for(std::size_t subject = 0; subject < subjectRequests.size(); ++subject)
     {
-        if(genome.gene(i))
-        {
-            const auto& item = context.Lessons().at(i);
-            resultSchedule.emplace_back(LessonAddress(item.Group, item.Day, item.Lesson), item.Subject, item.Professor, item.Classroom);
-
-            std::cout << "[g:" << item.Group << ",d:" << item.Day << ",l:" << item.Lesson << "] {s:" << item.Subject << ",p:" << item.Professor << ",c:" << item.Classroom << "}\n";
-        }
+        auto&& r = subjectRequests.at(subject);
+        requests.insert(requests.end(), r.HoursPerWeek(), r);
+        subjectNumbers.insert(subjectNumbers.end(), r.HoursPerWeek(), subject);
     }
 
-    std::cout << "resultSchedule.size(): " << resultSchedule.size() << '\n';
-    std::cout << "Best score: " << genome.score() << std::endl;
-    return ScheduleResult(std::move(resultSchedule));
-}
+    ScheduleGA algo(std::vector<ScheduleIndividual>(1000, ScheduleIndividual(requests)));
+    const auto stat = algo.IterationsCount(1000)
+            .SelectionCount(200)
+            .CrossoverCount(25)
+            .MutationChance(45)
+            .Start(requests);
 
+    const auto& bestIndividual = algo.Best();
+    Print(bestIndividual, requests);
+    std::cout << "Best: " << bestIndividual.Evaluate(requests) << '\n';
+    std::cout << "Time: " << std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s.\n";
+    std::cout << "Iterations: " << stat.Iterations << '\n';
+    std::cout.flush();
 
-static float Objective(GAGenome& gn)
-{
-    auto&& genome = dynamic_cast<GA1DBinaryStringGenome&>(gn);
-    auto pContext = reinterpret_cast<GAScheduleGeneratorContext*>(genome.userData());
-    const auto& data = pContext->Data();
-    const auto& lessons = pContext->Lessons();
+    const auto& lessons = bestIndividual.Lessons();
+    const auto& classrooms = bestIndividual.Classrooms();
 
-    float score = 0.f;
-    for (std::size_t g = 0; g < data.CountGroups(); ++g)
+    std::vector<ScheduleItem> scheduleItems;
+    for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
-        for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+        auto it = std::find(lessons.begin(), lessons.end(), l);
+        while(it != lessons.end())
         {
-            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+            const std::size_t r = std::distance(lessons.begin(), it);
+            const auto& request = requests.at(r);
+            for(std::size_t g : request.Groups())
             {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-                {
-                    float sum = 0.f;
-                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-                    {
-                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                        {
-                            const LessonsMatrixItemAddress idx(d, g, p, l, c, s);
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx);
-                            if(it != lessons.end() && *it == idx && genome.gene(std::distance(lessons.begin(), it)))
-                                sum += 1.f;
-                        }
-                    }
-
-                    score -= std::fabs(sum - 1.f);
-                }
+                scheduleItems.emplace_back(LessonAddress(g,
+                                                         l / MAX_LESSONS_PER_DAY,
+                                                         l % MAX_LESSONS_PER_DAY),
+                                           subjectNumbers.at(r),
+                                           request.Professor(),
+                                           classrooms.at(r));
             }
+
+            it = std::find(std::next(it), lessons.end(), l);
         }
     }
 
-    // в сумме для одной группы за весь период должно быть ровно стролько пар, сколько выделено на каждый предмет
-    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
-    {
-        for (std::size_t g = 0; g < data.CountGroups(); ++g)
-        {
-            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
-            {
-                float sum = 0.f;
-                for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
-                {
-                    for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
-                    {
-                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                        {
-                            const LessonsMatrixItemAddress idx(d, g, p, l, c, s);
-                            const auto it = std::lower_bound(lessons.begin(), lessons.end(), idx);
-                            if(it != lessons.end() && *it == idx && genome.gene(std::distance(lessons.begin(), it)))
-                                sum += 1.f;
-                        }
-                    }
-                }
-
-                score -= std::fabs(sum - CalculateHours(data, p, g, s));
-            }
-        }
-    }
-
-    //std::cout << "Score: " << score << '\n';
-    return score;
+    return ScheduleResult(std::move(scheduleItems));
 }
