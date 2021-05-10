@@ -18,10 +18,13 @@ ScheduleModel::ScheduleModel(QObject* parent)
 
 void ScheduleModel::setGroups(const std::vector<GroupSchedule>& groups)
 {
-    if(groups.empty())
-        return;
+    if(!groups_.empty())
+    {
+        beginRemoveColumns(QModelIndex(), 0, static_cast<int>(groups_.size() - 1));
+        groups_.clear();
+        endRemoveColumns();
+    }
 
-    removeColumns(0, columnCount(QModelIndex()), QModelIndex());
     beginInsertColumns(QModelIndex(), 0, static_cast<int>(groups.size()) - 1);
     groups_ = groups;
     endInsertColumns();

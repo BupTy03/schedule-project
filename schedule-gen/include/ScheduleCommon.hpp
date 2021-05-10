@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cassert>
 #include <iterator>
+#include <iostream>
 #include <algorithm>
 #include <stdexcept>
 #include <initializer_list>
@@ -260,10 +261,18 @@ struct FirstLess
     }
 };
 
-template<typename K, typename T>
+template<typename K, typename T, typename A = std::allocator<std::pair<K, T>>>
 class SortedMap
 {
 public:
+    SortedMap() = default;
+    explicit SortedMap(const A& a)
+            : elems_(a)
+    { }
+
+    const std::vector<std::pair<K, T>, A>& elems() const { return elems_; }
+    std::vector<std::pair<K, T>, A>& elems() { return elems_; }
+
     T& operator[](const K& key)
     {
         auto it = std::lower_bound(elems_.begin(), elems_.end(), key, FirstLess());
@@ -273,21 +282,12 @@ public:
         return it->second;
     }
 
-    const T& at(const K& key) const
-    {
-        auto it = std::lower_bound(elems_.begin(), elems_.end(), key, FirstLess());
-        if(it == elems_.end() || FirstLess()(key, *it))
-            throw std::out_of_range("key is out of range");
-
-        return it->second;
-    }
-
     void clear() { elems_.clear(); }
     auto begin() const { return elems_.begin(); }
     auto end() const { return elems_.end(); }
 
 private:
-    std::vector<std::pair<K, T>> elems_;
+    std::vector<std::pair<K, T>, A> elems_;
 };
 
 template<class SortedRange1, class SortedRange2>
@@ -302,5 +302,95 @@ bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
 
     return false;
 }
+
+std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment);
+
+
+struct LinearAllocatorBufferSpan
+{
+    explicit LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total)
+            : ptr(ptr)
+            , offset(0)
+            , total(total)
+    {
+        assert(this->ptr != nullptr);
+        assert(this->total > 0);
+    }
+
+    std::uint8_t* ptr;
+    std::size_t offset;
+    std::size_t total;
+};
+
+
+template<typename T>
+class LinearAllocator
+{
+    template<typename U>
+    friend class LinearAllocator;
+
+    LinearAllocatorBufferSpan* buffer_ = nullptr;
+
+public:
+    using value_type = T;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    template< class U > struct rebind { using other = LinearAllocator<U>; };
+
+    LinearAllocator() = default;
+
+    explicit LinearAllocator(LinearAllocatorBufferSpan* buffer)
+            : buffer_(buffer)
+    {
+        assert(buffer != nullptr);
+    }
+
+    template<typename U>
+    LinearAllocator(const LinearAllocator<U>& other)
+            : buffer_(other.buffer_)
+    {
+    }
+
+    template<typename U>
+    LinearAllocator& operator=(const LinearAllocator<U>& other)
+    {
+        buffer_ = other.buffer_;
+    }
+
+    T* allocate(std::size_t count)
+    {
+        constexpr auto alignment = __alignof(T);
+        const std::size_t size = count * sizeof(T);
+
+        std::size_t padding = 0;
+        const std::size_t currentAddress = reinterpret_cast<std::size_t>(buffer_->ptr) + buffer_->offset;
+        if (alignment != 0 && buffer_->offset % alignment != 0)
+        {
+            // Alignment is required. Find the next aligned memory address and update offset
+            padding = CalculatePadding(currentAddress, alignment);
+        }
+
+        if (buffer_->offset + padding + size > buffer_->total)
+        {
+            std::allocator<T> alloc;
+            std::cout << "Heap allocation performed!\n";
+            return alloc.allocate(count);
+        }
+
+        buffer_->offset += padding + size;
+        return reinterpret_cast<T*>(currentAddress + padding);
+    }
+    constexpr void deallocate(T*, std::size_t) { }
+
+    friend bool operator==(const LinearAllocator& lhs, const LinearAllocator& rhs)
+    {
+        return lhs.buffer_ == rhs.buffer_;
+    }
+
+    friend bool operator!=(const LinearAllocator& lhs, const LinearAllocator& rhs)
+    {
+        return !(lhs == rhs);
+    }
+};
 
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);

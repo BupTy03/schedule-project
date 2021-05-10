@@ -1,6 +1,7 @@
 #pragma once
 #include "ScheduleGenerator.hpp"
 
+#include <array>
 #include <random>
 #include <iostream>
 #include <execution>
@@ -44,9 +45,59 @@ public:
         evaluated_ = true;
         evaluatedValue_ = 0;
 
-        std::vector<SortedMap<std::size_t, std::size_t>> dayComplexity_(DAYS_IN_SCHEDULE);
-        std::vector<SortedMap<std::size_t, SortedSet<std::size_t>>> dayWindows_(DAYS_IN_SCHEDULE);
-        std::vector<SortedMap<std::size_t, SortedSet<std::size_t>>> professorsDayWindows_(DAYS_IN_SCHEDULE);
+        std::array<std::uint8_t, 20480> buffer{};
+        LinearAllocatorBufferSpan bufferSpan(buffer.data(), buffer.size());
+
+        using IntPair = std::pair<std::size_t, std::size_t>;
+        using MapPair = std::pair<std::size_t, std::array<bool, 6>>;
+
+        using ComplexityMap = SortedMap<std::size_t, std::size_t, LinearAllocator<std::pair<std::size_t, std::size_t>>>;
+        using WindowsMap = SortedMap<std::size_t, std::array<bool, 6>, LinearAllocator<std::pair<std::size_t, std::array<bool, 6>>>>;
+
+        std::array<ComplexityMap, DAYS_IN_SCHEDULE> dayComplexity_{
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
+                ComplexityMap(LinearAllocator<IntPair>(&bufferSpan))
+        };
+
+        std::array<WindowsMap, DAYS_IN_SCHEDULE> dayWindows_{
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan))
+        };
+
+        std::array<WindowsMap, DAYS_IN_SCHEDULE> professorsDayWindows_{
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
+                WindowsMap(LinearAllocator<MapPair>(&bufferSpan))
+        };
 
         for(std::size_t r = 0; r < lessons_.size(); ++r)
         {
@@ -55,11 +106,11 @@ public:
             const std::size_t day = lesson / MAX_LESSONS_PER_DAY;
             const std::size_t lessonInDay = lesson % MAX_LESSONS_PER_DAY;
 
-            professorsDayWindows_.at(day)[request.Professor()].insert(lessonInDay);
+            professorsDayWindows_.at(day)[request.Professor()][lessonInDay] = true;
             for(std::size_t group : request.Groups())
             {
                 dayComplexity_.at(day)[group] += (lessonInDay * request.Complexity());
-                dayWindows_.at(day)[group].insert(lessonInDay);
+                dayWindows_.at(day)[group][lessonInDay] = true;
             }
         }
 
@@ -76,13 +127,16 @@ public:
             for(auto&& p : day)
             {
                 std::size_t prevLesson = 0;
-                for(std::size_t lesson : p.second)
+                for(std::size_t lessonNum = 0; lessonNum < MAX_LESSONS_PER_DAY; ++lessonNum)
                 {
-                    const std::size_t lessonsGap = lesson - prevLesson;
-                    if(lessonsGap > 1)
-                        evaluatedValue_ += lessonsGap * 3;
+                    if(p.second.at(lessonNum))
+                    {
+                        const std::size_t lessonsGap = lessonNum - prevLesson;
+                        prevLesson = lessonNum;
 
-                    prevLesson = lesson;
+                        if(lessonsGap > 1)
+                            evaluatedValue_ += lessonsGap * 3;
+                    }
                 }
             }
         }
@@ -93,13 +147,16 @@ public:
             for(auto&& p : day)
             {
                 std::size_t prevLesson = 0;
-                for(std::size_t lesson : p.second)
+                for(std::size_t lessonNum = 0; lessonNum < MAX_LESSONS_PER_DAY; ++lessonNum)
                 {
-                    const std::size_t lessonsGap = lesson - prevLesson;
-                    if(lessonsGap > 1)
-                        evaluatedValue_ += lessonsGap * 2;
+                    if(p.second.at(lessonNum))
+                    {
+                        const std::size_t lessonsGap = lessonNum - prevLesson;
+                        prevLesson = lessonNum;
 
-                    prevLesson = lesson;
+                        if(lessonsGap > 1)
+                            evaluatedValue_ += lessonsGap * 2;
+                    }
                 }
             }
         }

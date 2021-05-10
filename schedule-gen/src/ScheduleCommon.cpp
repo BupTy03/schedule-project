@@ -38,3 +38,12 @@ void WeekDays::Remove(WeekDay d) { days_ &= ~(1 << static_cast<std::uint8_t>(d))
 bool WeekDays::Contains(WeekDay d) const { return Empty() || (days_ & (1 << static_cast<std::uint8_t>(d))); }
 
 bool WeekDays::Empty() const { return days_ == 0; }
+
+
+std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment)
+{
+    const std::size_t multiplier = (baseAddress / alignment) + 1;
+    const std::size_t alignedAddress = multiplier * alignment;
+    const std::size_t padding = alignedAddress - baseAddress;
+    return padding;
+}
