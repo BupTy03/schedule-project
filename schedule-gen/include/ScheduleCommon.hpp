@@ -329,8 +329,6 @@ class LinearAllocator
     template<typename U>
     friend class LinearAllocator;
 
-    LinearAllocatorBufferSpan* buffer_ = nullptr;
-
 public:
     using value_type = T;
     using size_type = std::size_t;
@@ -338,6 +336,9 @@ public:
     template< class U > struct rebind { using other = LinearAllocator<U>; };
 
     LinearAllocator() = default;
+#ifdef _DEBUG
+    ~LinearAllocator() { assert(externalAllocationsCounter_ == 0); }
+#endif
 
     explicit LinearAllocator(LinearAllocatorBufferSpan* buffer)
             : buffer_(buffer)
@@ -372,15 +373,26 @@ public:
 
         if (buffer_->offset + padding + size > buffer_->total)
         {
-            std::allocator<T> alloc;
-            std::cout << "Heap allocation performed!\n";
-            return alloc.allocate(count);
+#ifdef _DEBUG
+            externalAllocationsCounter_++;
+#endif
+            return overflowAllocator_.allocate(count);
         }
 
         buffer_->offset += padding + size;
         return reinterpret_cast<T*>(currentAddress + padding);
     }
-    constexpr void deallocate(T*, std::size_t) { }
+    void deallocate(T* p, std::size_t count)
+    {
+        auto ptr = reinterpret_cast<std::uint8_t*>(p);
+        if(ptr >= buffer_->ptr && ptr <= (buffer_->ptr + buffer_->total))
+            return;
+
+#ifdef _DEBUG
+        externalAllocationsCounter_--;
+#endif
+        overflowAllocator_.deallocate(p, count);
+    }
 
     friend bool operator==(const LinearAllocator& lhs, const LinearAllocator& rhs)
     {
@@ -391,6 +403,15 @@ public:
     {
         return !(lhs == rhs);
     }
+
+private:
+
+#ifdef _DEBUG
+    std::int64_t externalAllocationsCounter_ = 0;
+#endif
+
+    LinearAllocatorBufferSpan* buffer_ = nullptr;
+    std::allocator<T> overflowAllocator_;
 };
 
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
