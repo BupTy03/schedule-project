@@ -1,16 +1,9 @@
 #pragma once
 #include "ScheduleGenerator.hpp"
 
-#include <array>
 #include <random>
-#include <iostream>
-#include <execution>
-
-
-constexpr auto MAX_LESSONS_PER_DAY = 6;
-constexpr auto DAYS_IN_SCHEDULE_WEEK = 6;
-constexpr auto DAYS_IN_SCHEDULE = DAYS_IN_SCHEDULE_WEEK * 2;
-constexpr auto MAX_LESSONS_COUNT = MAX_LESSONS_PER_DAY * DAYS_IN_SCHEDULE_WEEK * 2;
+#include <chrono>
+#include <vector>
 
 
 class ScheduleIndividual
@@ -56,21 +49,21 @@ class ScheduleGA
 public:
     explicit ScheduleGA(std::vector<ScheduleIndividual> individuals);
 
-    [[nodiscard]] ScheduleGA& IterationsCount(std::size_t iterations);
+    ScheduleGA& IterationsCount(std::size_t iterations);
     [[nodiscard]] std::size_t IterationsCount() const;
 
-    [[nodiscard]] ScheduleGA& SelectionCount(std::size_t selectionCount);
+    ScheduleGA& SelectionCount(std::size_t selectionCount);
     [[nodiscard]] std::size_t SelectionCount() const;
 
-    [[nodiscard]] ScheduleGA& CrossoverCount(std::size_t crossoverCount);
+    ScheduleGA& CrossoverCount(std::size_t crossoverCount);
     [[nodiscard]] std::size_t CrossoverCount() const;
 
-    [[nodiscard]] ScheduleGA& MutationChance(std::size_t mutationChance);
+    ScheduleGA& MutationChance(std::size_t mutationChance);
     [[nodiscard]] std::size_t MutationChance() const;
 
     [[nodiscard]] const ScheduleIndividual& Best() const;
 
-    [[nodiscard]] ScheduleGAStatistics Start(const std::vector<SubjectRequest>& requests);
+    ScheduleGAStatistics Start(const std::vector<SubjectRequest>& requests);
 
 private:
     std::size_t iterationsCount_;

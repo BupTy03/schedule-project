@@ -1,5 +1,15 @@
 #include "GAScheduleGenerator.hpp"
 
+#include <array>
+#include <iostream>
+#include <execution>
+
+
+static constexpr auto MAX_LESSONS_PER_DAY = 6;
+static constexpr auto DAYS_IN_SCHEDULE_WEEK = 6;
+static constexpr auto DAYS_IN_SCHEDULE = DAYS_IN_SCHEDULE_WEEK * 2;
+static constexpr auto MAX_LESSONS_COUNT = MAX_LESSONS_PER_DAY * DAYS_IN_SCHEDULE_WEEK * 2;
+
 
 ScheduleIndividual::ScheduleIndividual(const std::vector<SubjectRequest> &requests)
         : evaluated_(false)
