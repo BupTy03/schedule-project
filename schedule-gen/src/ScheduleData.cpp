@@ -17,35 +17,23 @@ SubjectRequest::SubjectRequest(std::size_t professor,
         , classrooms_(std::move(classrooms))
 {}
 
-bool SubjectRequest::RequestedClassroom(std::size_t c) const
-{
-    return classrooms_.contains(c);
-}
+bool SubjectRequest::RequestedClassroom(std::size_t c) const { return classrooms_.contains(c); }
 
-bool SubjectRequest::RequestedGroup(std::size_t g) const
-{
-    return groups_.contains(g);
-}
+bool SubjectRequest::RequestedGroup(std::size_t g) const { return groups_.contains(g); }
 
-bool SubjectRequest::Requested(WeekDay d) const
-{
-    return days_.Contains(d);
-}
+bool SubjectRequest::Requested(WeekDay d) const { return days_.Contains(d); }
 
-std::size_t SubjectRequest::HoursPerWeek() const
-{
-    return hours_;
-}
+std::size_t SubjectRequest::HoursPerWeek() const { return hours_; }
 
-std::size_t SubjectRequest::Professor() const
-{
-    return professor_;
-}
+std::size_t SubjectRequest::Professor() const { return professor_; }
 
-std::size_t SubjectRequest::Complexity() const
-{
-    return complexity_;
-}
+std::size_t SubjectRequest::Complexity() const { return complexity_; }
+
+const std::vector<std::size_t>& SubjectRequest::Groups() const { return groups_.elems(); }
+
+const std::vector<std::size_t>& SubjectRequest::Classrooms() const { return classrooms_.elems(); }
+
+bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.Contains(static_cast<WeekDay>(day % 6)); }
 
 
 ScheduleData::ScheduleData(std::size_t countLessonsPerDay,
@@ -64,40 +52,19 @@ ScheduleData::ScheduleData(std::size_t countLessonsPerDay,
     std::sort(occupiedLessons_.begin(), occupiedLessons_.end());
 }
 
-std::size_t ScheduleData::MaxCountLessonsPerDay() const
-{
-    return 6;
-}
+std::size_t ScheduleData::MaxCountLessonsPerDay() const { return 6; }
 
-std::size_t ScheduleData::RequestedCountLessonsPerDay() const
-{
-    return countLessonsPerDay_;
-}
+std::size_t ScheduleData::RequestedCountLessonsPerDay() const { return countLessonsPerDay_; }
 
-std::size_t ScheduleData::CountGroups() const
-{
-    return countGroups_;
-}
+std::size_t ScheduleData::CountGroups() const { return countGroups_; }
 
-std::size_t ScheduleData::CountSubjects() const
-{
-    return subjectRequests_.size();
-}
+std::size_t ScheduleData::CountSubjects() const { return subjectRequests_.size(); }
 
-std::size_t ScheduleData::CountProfessors() const
-{
-    return countProfessors_;
-}
+std::size_t ScheduleData::CountProfessors() const { return countProfessors_; }
 
-std::size_t ScheduleData::CountClassrooms() const
-{
-    return countClassrooms_;
-}
+std::size_t ScheduleData::CountClassrooms() const { return countClassrooms_; }
 
-const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const
-{
-    return subjectRequests_;
-}
+const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const { return subjectRequests_; }
 
 bool ScheduleData::LessonIsOccupied(const LessonAddress& lessonAddress) const
 {

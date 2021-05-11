@@ -37,17 +37,17 @@ public:
 
     constexpr WeekDaysIterator() = default;
 
-    constexpr bool operator*() const { assert(mask_ <= 0b00111111); return data_ & mask_; }
+    [[nodiscard]] constexpr bool operator*() const { assert(mask_ <= 0b00111111); return data_ & mask_; }
 
     constexpr WeekDaysIterator& operator++() { mask_ <<= 1; return *this; }
     constexpr WeekDaysIterator operator++(int) { auto result = *this; ++(*this); return result; }
 
-    constexpr bool operator==(WeekDaysIterator other) const
+    [[nodiscard]] constexpr bool operator==(WeekDaysIterator other) const
     {
         assert(data_ == other.data_);
         return mask_ == other.mask_;
     }
-    constexpr bool operator!=(WeekDaysIterator other) const { return (*this == other); }
+    [[nodiscard]] constexpr bool operator!=(WeekDaysIterator other) const { return (*this == other); }
 
 private:
     explicit WeekDaysIterator(std::uint8_t data, std::uint8_t mask) : mask_(mask), data_(data) {}
@@ -72,16 +72,16 @@ public:
     WeekDays() = default;
     WeekDays(std::initializer_list<WeekDay> lst);
 
-    iterator begin() const;
-    iterator end() const;
-    std::size_t size() const;
+    [[nodiscard]] iterator begin() const;
+    [[nodiscard]] iterator end() const;
+    [[nodiscard]] std::size_t size() const;
 
     void Add(WeekDay d);
     void Remove(WeekDay d);
-    bool Contains(WeekDay d) const;
+    [[nodiscard]] bool Contains(WeekDay d) const;
 
 private:
-    bool Empty() const;
+    [[nodiscard]] bool Empty() const;
 
 private:
     mutable std::uint8_t days_ = FULL_WEEK;
@@ -90,25 +90,20 @@ private:
 struct LessonAddress
 {
     explicit LessonAddress(std::size_t Group, std::size_t Day, std::size_t Lesson)
-            : Group(Group), Day(Day), Lesson(Lesson)
-    {
-    }
+            : Group(Group), Day(Day), Lesson(Lesson) { }
 
-    friend bool operator<(const LessonAddress& lhs, const LessonAddress& rhs)
+    [[nodiscard]] friend bool operator<(const LessonAddress& lhs, const LessonAddress& rhs)
     {
         return lhs.Group < rhs.Group || (lhs.Group == rhs.Group && lhs.Day < rhs.Day) ||
                (lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson < rhs.Lesson);
     }
 
-    friend bool operator==(const LessonAddress& lhs, const LessonAddress& rhs)
+    [[nodiscard]] friend bool operator==(const LessonAddress& lhs, const LessonAddress& rhs)
     {
         return lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson == rhs.Lesson;
     }
 
-    friend bool operator!=(const LessonAddress& lhs, const LessonAddress& rhs)
-    {
-        return !(lhs == rhs);
-    }
+    [[nodiscard]] friend bool operator!=(const LessonAddress& lhs, const LessonAddress& rhs) { return !(lhs == rhs); }
 
     std::size_t Group;
     std::size_t Day;
@@ -122,17 +117,9 @@ struct LessonsMatrixItemAddress
                                       std::size_t professor,
                                       std::size_t lesson,
                                       std::size_t classroom,
-                                      std::size_t subject)
-            : Day(day)
-            , Group(group)
-            , Professor(professor)
-            , Lesson(lesson)
-            , Classroom(classroom)
-            , Subject(subject)
-    {
-    }
+                                      std::size_t subject);
 
-    friend bool operator==(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
+    [[nodiscard]] friend bool operator==(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
         return lhs.Day == rhs.Day &&
                lhs.Group == rhs.Group &&
@@ -142,12 +129,12 @@ struct LessonsMatrixItemAddress
                lhs.Subject == rhs.Subject;
     }
 
-    friend bool operator!=(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
+    [[nodiscard]] friend bool operator!=(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
         return !(lhs == rhs);
     }
 
-    friend bool operator<(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
+    [[nodiscard]] friend bool operator<(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
         return lhs.Day < rhs.Day ||
                (lhs.Day == rhs.Day && lhs.Group < rhs.Group) ||
@@ -157,21 +144,18 @@ struct LessonsMatrixItemAddress
                (lhs.Day == rhs.Day && lhs.Group == rhs.Group && lhs.Professor == rhs.Professor && lhs.Lesson == rhs.Lesson && lhs.Classroom == rhs.Classroom && lhs.Subject < rhs.Subject);
     }
 
-    friend bool operator>(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
+    [[nodiscard]] friend bool operator>(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
         return rhs < lhs;
     }
-
-    friend bool operator<=(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
+    [[nodiscard]] friend bool operator<=(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
         return !(lhs > rhs);
     }
-
-    friend bool operator>=(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
+    [[nodiscard]] friend bool operator>=(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
         return !(lhs < rhs);
     }
-
 
     std::size_t Day;
     std::size_t Group;
@@ -201,7 +185,7 @@ public:
 
     [[nodiscard]] const std::vector<T>& elems() const { return elems_; }
 
-    bool contains(const T& value) const
+    [[nodiscard]] bool contains(const T& value) const
     {
         auto it = lower_bound(value);
         return (it != elems_.end() && *it == value);
@@ -215,7 +199,6 @@ public:
         it = elems_.emplace(it, value);
         return it;
     }
-
     bool erase(const T& value)
     {
         auto it = lower_bound(value);
@@ -228,10 +211,10 @@ public:
 
     [[nodiscard]] bool empty() const { return elems_.empty(); }
     [[nodiscard]] std::size_t size() const { return elems_.size(); }
-    auto begin() const { return elems_.begin(); }
-    auto end() const { return elems_.end(); }
+    [[nodiscard]] auto begin() const { return elems_.begin(); }
+    [[nodiscard]] auto end() const { return elems_.end(); }
 
-    auto lower_bound(const T& value) const
+    [[nodiscard]] auto lower_bound(const T& value) const
     {
         return std::lower_bound(elems_.begin(), elems_.end(), value);
     }
@@ -243,19 +226,19 @@ private:
 struct FirstLess
 {
     template<typename T1, typename T2>
-    bool operator()(const std::pair<T1, T2>& lhs, const std::pair<T1, T2>& rhs)
+    [[nodiscard]] bool operator()(const std::pair<T1, T2>& lhs, const std::pair<T1, T2>& rhs)
     {
         return lhs.first < rhs.first;
     }
 
     template<typename T1, typename T2>
-    bool operator()(const std::pair<T1, T2>& lhs, const T1& rhs)
+    [[nodiscard]] bool operator()(const std::pair<T1, T2>& lhs, const T1& rhs)
     {
         return lhs.first < rhs;
     }
 
     template<typename T1, typename T2>
-    bool operator()(const T1& lhs, const std::pair<T1, T2>& rhs)
+    [[nodiscard]] bool operator()(const T1& lhs, const std::pair<T1, T2>& rhs)
     {
         return lhs < rhs.first;
     }
@@ -266,14 +249,12 @@ class SortedMap
 {
 public:
     SortedMap() = default;
-    explicit SortedMap(const A& a)
-            : elems_(a)
-    { }
+    explicit SortedMap(const A& a) : elems_(a) { }
 
-    const std::vector<std::pair<K, T>, A>& elems() const { return elems_; }
-    std::vector<std::pair<K, T>, A>& elems() { return elems_; }
+    [[nodiscard]] const std::vector<std::pair<K, T>, A>& elems() const { return elems_; }
+    [[nodiscard]] std::vector<std::pair<K, T>, A>& elems() { return elems_; }
 
-    T& operator[](const K& key)
+    [[nodiscard]] T& operator[](const K& key)
     {
         auto it = std::lower_bound(elems_.begin(), elems_.end(), key, FirstLess());
         if(it == elems_.end() || FirstLess()(key, *it))
@@ -283,15 +264,15 @@ public:
     }
 
     void clear() { elems_.clear(); }
-    auto begin() const { return elems_.begin(); }
-    auto end() const { return elems_.end(); }
+    [[nodiscard]] auto begin() const { return elems_.begin(); }
+    [[nodiscard]] auto end() const { return elems_.end(); }
 
 private:
     std::vector<std::pair<K, T>, A> elems_;
 };
 
 template<class SortedRange1, class SortedRange2>
-bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
+[[nodiscard]] bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
 {
     for(const auto& e : r1)
     {
@@ -303,19 +284,12 @@ bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
     return false;
 }
 
-std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment);
+[[nodiscard]] std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment);
 
 
 struct LinearAllocatorBufferSpan
 {
-    explicit LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total)
-            : ptr(ptr)
-            , offset(0)
-            , total(total)
-    {
-        assert(this->ptr != nullptr);
-        assert(this->total > 0);
-    }
+    explicit LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total);
 
     std::uint8_t* ptr;
     std::size_t offset;
@@ -340,25 +314,15 @@ public:
     ~LinearAllocator() { assert(externalAllocationsCounter_ == 0); }
 #endif
 
-    explicit LinearAllocator(LinearAllocatorBufferSpan* buffer)
-            : buffer_(buffer)
-    {
-        assert(buffer != nullptr);
-    }
+    explicit LinearAllocator(LinearAllocatorBufferSpan* buffer) : buffer_(buffer) { assert(buffer != nullptr); }
 
     template<typename U>
-    LinearAllocator(const LinearAllocator<U>& other)
-            : buffer_(other.buffer_)
-    {
-    }
+    LinearAllocator(const LinearAllocator<U>& other) : buffer_(other.buffer_) { }
 
     template<typename U>
-    LinearAllocator& operator=(const LinearAllocator<U>& other)
-    {
-        buffer_ = other.buffer_;
-    }
+    LinearAllocator& operator=(const LinearAllocator<U>& other) { buffer_ = other.buffer_; }
 
-    T* allocate(std::size_t count)
+    [[nodiscard]] T* allocate(std::size_t count)
     {
         constexpr auto alignment = __alignof(T);
         const std::size_t size = count * sizeof(T);
@@ -394,15 +358,8 @@ public:
         overflowAllocator_.deallocate(p, count);
     }
 
-    friend bool operator==(const LinearAllocator& lhs, const LinearAllocator& rhs)
-    {
-        return lhs.buffer_ == rhs.buffer_;
-    }
-
-    friend bool operator!=(const LinearAllocator& lhs, const LinearAllocator& rhs)
-    {
-        return !(lhs == rhs);
-    }
+    [[nodiscard]] friend bool operator==(const LinearAllocator& lhs, const LinearAllocator& rhs) { return lhs.buffer_ == rhs.buffer_; }
+    [[nodiscard]] friend bool operator!=(const LinearAllocator& lhs, const LinearAllocator& rhs) { return !(lhs == rhs); }
 
 private:
 
@@ -414,4 +371,4 @@ private:
     std::allocator<T> overflowAllocator_;
 };
 
-WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
+[[nodiscard]] WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);

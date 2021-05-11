@@ -23,11 +23,9 @@ public:
     [[nodiscard]] std::size_t HoursPerWeek() const;
     [[nodiscard]] std::size_t Complexity() const;
     [[nodiscard]] std::size_t Professor() const;
-
-    const std::vector<std::size_t>& Groups() const { return groups_.elems(); }
-    const std::vector<std::size_t>& Classrooms() const { return classrooms_.elems(); }
-
-    bool RequestedWeekDay(std::size_t day) const { return days_.Contains(static_cast<WeekDay>(day % 6)); }
+    [[nodiscard]] const std::vector<std::size_t>& Groups() const;
+    [[nodiscard]] const std::vector<std::size_t>& Classrooms() const;
+    [[nodiscard]] bool RequestedWeekDay(std::size_t day) const;
 
 private:
     std::size_t professor_;
@@ -79,7 +77,7 @@ enum class ScheduleDataValidationResult
 };
 
 void Print(const ScheduleData& data);
-ScheduleDataValidationResult Validate(const ScheduleData& data);
-std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject);
-bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay);
-bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t classroom);
+[[nodiscard]] ScheduleDataValidationResult Validate(const ScheduleData& data);
+[[nodiscard]] std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject);
+[[nodiscard]] bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay);
+[[nodiscard]] bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t classroom);

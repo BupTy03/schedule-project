@@ -10,5 +10,5 @@ class ScheduleGenerator
 {
 public:
     virtual ~ScheduleGenerator() = default;
-    virtual ScheduleResult Generate(const ScheduleData&) = 0;
+    [[nodiscard]] virtual ScheduleResult Generate(const ScheduleData&) = 0;
 };

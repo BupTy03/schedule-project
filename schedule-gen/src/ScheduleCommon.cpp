@@ -47,3 +47,23 @@ std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment)
     const std::size_t padding = alignedAddress - baseAddress;
     return padding;
 }
+
+LinearAllocatorBufferSpan::LinearAllocatorBufferSpan(std::uint8_t *ptr, std::size_t total)
+        : ptr(ptr)
+        , offset(0)
+        , total(total)
+{
+    assert(this->ptr != nullptr);
+    assert(this->total > 0);
+}
+
+LessonsMatrixItemAddress::LessonsMatrixItemAddress(std::size_t day, std::size_t group, std::size_t professor,
+                                                   std::size_t lesson, std::size_t classroom, std::size_t subject)
+        : Day(day)
+        , Group(group)
+        , Professor(professor)
+        , Lesson(lesson)
+        , Classroom(classroom)
+        , Subject(subject)
+{
+}

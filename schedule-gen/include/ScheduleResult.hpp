@@ -25,17 +25,15 @@ struct ScheduleItem
 
 struct ScheduleItemLess
 {
-    bool operator()(const ScheduleItem& lhs, const ScheduleItem& rhs) const
+    [[nodiscard]] bool operator()(const ScheduleItem& lhs, const ScheduleItem& rhs) const
     {
         return lhs.Address < rhs.Address;
     }
-
-    bool operator()(const ScheduleItem& lhs, const LessonAddress& rhsAddress) const
+    [[nodiscard]] bool operator()(const ScheduleItem& lhs, const LessonAddress& rhsAddress) const
     {
         return lhs.Address < rhsAddress;
     }
-
-    bool operator()(const LessonAddress& lhsAddress, const ScheduleItem& rhs) const
+    [[nodiscard]] bool operator()(const LessonAddress& lhsAddress, const ScheduleItem& rhs) const
     {
         return lhsAddress < rhs.Address;
     }
@@ -61,17 +59,20 @@ struct ExceedingComplexityItem
 
 struct ExceedingComplexityLess
 {
-    bool operator()(const ExceedingComplexityItem& lhs, const ExceedingComplexityItem& rhs) const
+    [[nodiscard]] bool operator()(const ExceedingComplexityItem& lhs,
+            const ExceedingComplexityItem& rhs) const
     {
         return lhs.GroupAndDay < rhs.GroupAndDay;
     }
 
-    bool operator()(const ExceedingComplexityItem& lhs, const std::pair<std::size_t, std::size_t>& rhsGroupAndDay) const
+    [[nodiscard]] bool operator()(const ExceedingComplexityItem& lhs,
+            const std::pair<std::size_t, std::size_t>& rhsGroupAndDay) const
     {
         return lhs.GroupAndDay < rhsGroupAndDay;
     }
 
-    bool operator()(const std::pair<std::size_t, std::size_t>& lhsGroupAndDay, const ExceedingComplexityItem& rhs) const
+    [[nodiscard]] bool operator()(const std::pair<std::size_t, std::size_t>& lhsGroupAndDay,
+            const ExceedingComplexityItem& rhs) const
     {
         return lhsGroupAndDay < rhs.GroupAndDay;
     }
@@ -119,17 +120,17 @@ struct ViolatedSubjectRequest
 
 struct ViolatedSubjectRequestLess
 {
-    bool operator()(const ViolatedSubjectRequest& lhs, const ViolatedSubjectRequest& rhs) const
+    [[nodiscard]] bool operator()(const ViolatedSubjectRequest& lhs, const ViolatedSubjectRequest& rhs) const
     {
         return lhs.Subject < rhs.Subject;
     }
 
-    bool operator()(const ViolatedSubjectRequest& lhs, std::size_t rhsSubject) const
+    [[nodiscard]] bool operator()(const ViolatedSubjectRequest& lhs, std::size_t rhsSubject) const
     {
         return lhs.Subject < rhsSubject;
     }
 
-    bool operator()(std::size_t lhsSubject, const ViolatedSubjectRequest& rhs) const
+    [[nodiscard]] bool operator()(std::size_t lhsSubject, const ViolatedSubjectRequest& rhs) const
     {
         return lhsSubject < rhs.Subject;
     }
@@ -142,17 +143,17 @@ struct SubjectWithAddress
         , Address(Address)
     {}
 
-    friend bool operator<(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    [[nodiscard]] friend bool operator<(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
     {
         return lhs.Subject < rhs.Subject;
     }
 
-    friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    [[nodiscard]] friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
     {
         return lhs.Subject == rhs.Subject;
     }
 
-    friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    [[nodiscard]] friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
     {
         return lhs.Subject != rhs.Subject;
     }
@@ -162,6 +163,11 @@ struct SubjectWithAddress
 };
 
 
-std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result);
-std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data, const ScheduleResult& result);
-std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data, const ScheduleResult& result);
+[[nodiscard]] std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
+                                                                        const ScheduleResult& result);
+
+[[nodiscard]] std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data,
+                                                                        const ScheduleResult& result);
+
+[[nodiscard]] std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data,
+                                                                              const ScheduleResult& result);
