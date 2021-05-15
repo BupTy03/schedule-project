@@ -15,17 +15,12 @@ ScheduleItem::ScheduleItem(const LessonAddress& address,
         , Classroom(classroom)
 {}
 
-ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
-        : items_(std::move(items))
-{
-    std::sort(items_.begin(), items_.end(), ScheduleItemLess());
-}
 
-bool ScheduleResult::Empty() const { return items_.empty(); }
+bool ScheduleResult::empty() const { return items_.empty(); }
 
-const std::vector<ScheduleItem>& ScheduleResult::Items() const { return items_; }
+const std::vector<ScheduleItem>& ScheduleResult::items() const { return items_; }
 
-const ScheduleItem* ScheduleResult::At(const LessonAddress& address) const
+const ScheduleItem* ScheduleResult::at(const LessonAddress& address) const
 {
     auto it = std::lower_bound(items_.begin(), items_.end(), address, ScheduleItemLess());
     if(it == items_.end() || it->Address != address)
@@ -33,6 +28,28 @@ const ScheduleItem* ScheduleResult::At(const LessonAddress& address) const
 
     return &(*it);
 }
+
+std::vector<ScheduleItem>::iterator ScheduleResult::insert(const ScheduleItem& item)
+{
+    auto it = std::lower_bound(items_.begin(), items_.end(), item.Address, ScheduleItemLess());
+    if(it == items_.end() || it->Address != item.Address)
+        it = items_.insert(it, item);
+
+    return it;
+}
+
+
+void Print(const OverlappedClassroom& overlappedClassroom)
+{
+    std::cout << "Overlapped classroom: " << overlappedClassroom.Classroom << " {\n";
+    for(auto lesson : overlappedClassroom.Lessons)
+    {
+        std::cout << "    (g: " << lesson.Group << ", d: " << lesson.Day << ", l: " << lesson.Lesson << ")\n";
+    }
+
+    std::cout << "}\n" << std::endl;
+}
+
 
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result)
 {
@@ -44,7 +61,7 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
             SortedMap<std::size_t, SortedSet<SubjectWithAddress>> classroomsAndSubjects;
             for(std::size_t g = 0; g < data.CountGroups(); ++g)
             {
-                const auto item = result.At(LessonAddress(g, d, l));
+                const auto item = result.at(LessonAddress(g, d, l));
                 if(item)
                     classroomsAndSubjects[item->Classroom].insert(SubjectWithAddress(item->Subject, LessonAddress(g, d, l)));
             }
@@ -66,18 +83,6 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
     return overlappedClassrooms;
 }
 
-void Print(const OverlappedClassroom& overlappedClassroom)
-{
-    std::cout << "Overlapped classroom: " << overlappedClassroom.Classroom << " {\n";
-    for(auto lesson : overlappedClassroom.Lessons)
-    {
-        std::cout << "    (g: " << lesson.Group << ", d: " << lesson.Day << ", l: " << lesson.Lesson << ")\n";
-    }
-
-    std::cout << "}\n" << std::endl;
-}
-
-
 std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data, const ScheduleResult& result)
 {
     std::vector<OverlappedProfessor> overlappedProfessors;
@@ -88,7 +93,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
             SortedMap<std::size_t, SortedSet<SubjectWithAddress>> professorsAndSubjects;
             for(std::size_t g = 0; g < data.CountGroups(); ++g)
             {
-                const auto item = result.At(LessonAddress(g, d, l));
+                const auto item = result.at(LessonAddress(g, d, l));
                 if(item)
                     professorsAndSubjects[item->Professor].insert(SubjectWithAddress(item->Subject, LessonAddress(g, d, l)));
             }
@@ -119,8 +124,8 @@ std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleDa
         {
             for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
             {
-                const auto item = result.At(LessonAddress(g, d, l));
-                if(item && !WeekDayRequestedForSubject(data, item->Subject, d))
+                const auto item = result.at(LessonAddress(g, d, l));
+                if(item && (!WeekDayRequestedForSubject(data, item->Subject, d) || data.LessonIsOccupied(LessonAddress(g, d, l))))
                 {
                     auto it = std::lower_bound(violatedRequests.begin(), violatedRequests.end(),
                                                item->Subject, ViolatedSubjectRequestLess());

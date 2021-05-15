@@ -42,10 +42,12 @@ struct ScheduleItemLess
 class ScheduleResult
 {
 public:
-    explicit ScheduleResult(std::vector<ScheduleItem> items);
-    [[nodiscard]] bool Empty() const;
-    [[nodiscard]] const std::vector<ScheduleItem>& Items() const;
-    [[nodiscard]] const ScheduleItem* At(const LessonAddress& address) const;
+    ScheduleResult() = default;
+    [[nodiscard]] bool empty() const;
+    [[nodiscard]] const std::vector<ScheduleItem>& items() const;
+
+    std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
+    [[nodiscard]] const ScheduleItem* at(const LessonAddress& address) const;
 
 private:
     std::vector<ScheduleItem> items_;

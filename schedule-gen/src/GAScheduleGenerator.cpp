@@ -461,7 +461,7 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
     const auto& lessons = bestIndividual.Lessons();
     const auto& classrooms = bestIndividual.Classrooms();
 
-    std::vector<ScheduleItem> scheduleItems;
+    ScheduleResult resultSchedule;
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         auto it = std::find(lessons.begin(), lessons.end(), l);
@@ -471,17 +471,17 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
             const auto& request = requests.at(r);
             for(std::size_t g : request.Groups())
             {
-                scheduleItems.emplace_back(LessonAddress(g,
+                resultSchedule.insert(ScheduleItem(LessonAddress(g,
                                                          l / MAX_LESSONS_PER_DAY,
                                                          l % MAX_LESSONS_PER_DAY),
                                            subjectNumbers.at(r),
                                            request.Professor(),
-                                           classrooms.at(r));
+                                           classrooms.at(r)));
             }
 
             it = std::find(std::next(it), lessons.end(), l);
         }
     }
 
-    return ScheduleResult(std::move(scheduleItems));
+    return resultSchedule;
 }

@@ -186,10 +186,50 @@ TEST_CASE("Test.SortedSet.erase", "[SortedSet]")
 
 TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
 {
+    const std::vector<SubjectRequest> subjectRequests = {
+        SubjectRequest(0, 1, 0, {}, {0}, {0, 1, 2}),
+        SubjectRequest(1, 1, 1, {}, {3}, {0, 1, 2}),
+        SubjectRequest(2, 1, 2, {}, {1}, {0, 1, 2}),
+        SubjectRequest(3, 1, 3, {}, {2}, {0, 1, 2}),
+        SubjectRequest(4, 1, 4, {}, {1}, {0, 1, 2})
+    };
+
+    const ScheduleData scheduleData(6, 6, 5, 3, subjectRequests, {});
+
+    ScheduleResult scheduleResult;
+    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0, 0), 1, 1, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(4, 0, 0), 2, 2, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(2, 0, 0), 3, 3, 2));
+    scheduleResult.insert(ScheduleItem(LessonAddress(1, 0, 0), 4, 4, 1));
+
+    const auto result = FindOverlappedClassrooms(scheduleData, scheduleResult);
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 0; }) != result.end());
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 1; }) != result.end());
 }
 
 TEST_CASE("Test.FindOverlappedProfessors", "[Validate]")
 {
+    const std::vector<SubjectRequest> subjectRequests = {
+            SubjectRequest(0, 1, 0, {}, {0}, {0, 1, 2}),
+            SubjectRequest(1, 1, 1, {}, {3}, {0, 1, 2}),
+            SubjectRequest(2, 1, 2, {}, {1}, {0, 1, 2}),
+            SubjectRequest(3, 1, 3, {}, {2}, {0, 1, 2}),
+            SubjectRequest(4, 1, 4, {}, {1}, {0, 1, 2})
+    };
+
+    const ScheduleData scheduleData(6, 6, 5, 3, subjectRequests, {});
+
+    ScheduleResult scheduleResult;
+    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0, 0), 1, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(4, 0, 0), 2, 1, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(2, 0, 0), 3, 3, 2));
+    scheduleResult.insert(ScheduleItem(LessonAddress(1, 0, 0), 4, 1, 1));
+
+    const auto result = FindOverlappedProfessors(scheduleData, scheduleResult);
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Professor == 0; }) != result.end());
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Professor == 1; }) != result.end());
 }
 
 TEST_CASE("Test.FindViolatedSubjectRequests", "[Validate]")

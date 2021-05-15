@@ -57,7 +57,7 @@ QString WeekDaysString(const WeekDays& weekDays)
     QString daysStr;
     for (std::size_t d = 0; d < daysNames.size(); ++d)
     {
-        if (weekDays.Contains(static_cast<WeekDay>(d)))
+        if (weekDays.contains(static_cast<WeekDay>(d)))
         {
             if (!daysStr.isEmpty())
                 daysStr.push_back(", ");
@@ -174,9 +174,9 @@ static WeekDays ParseWeekDays(const QJsonArray& weekDays)
     {
         const auto weekDay = weekDays.at(static_cast<int>(d));
         if(weekDay.isBool() && weekDay.toBool(false))
-            result.Add(static_cast<WeekDay>(d));
+            result.insert(static_cast<WeekDay>(d));
         else
-            result.Remove(static_cast<WeekDay>(d));
+            result.erase(static_cast<WeekDay>(d));
     }
 
     return result;

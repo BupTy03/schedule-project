@@ -42,7 +42,7 @@ void WeekDayEditor::setWeekDays(const WeekDays& days)
     for (int d = 0; d < model_.rowCount(); ++d)
     {
         auto item = model_.item(d, 0);
-        item->setCheckState(days.Contains(static_cast<WeekDay>(d)) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+        item->setCheckState(days.contains(static_cast<WeekDay>(d)) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
     }
 }
 
@@ -53,9 +53,9 @@ WeekDays WeekDayEditor::weekDays() const
     {
         auto item = model_.item(d, 0);
         if(item->checkState() == Qt::CheckState::Checked)
-            result.Add(static_cast<WeekDay>(d));
+            result.insert(static_cast<WeekDay>(d));
         else
-            result.Remove(static_cast<WeekDay>(d));
+            result.erase(static_cast<WeekDay>(d));
     }
 
     return result;

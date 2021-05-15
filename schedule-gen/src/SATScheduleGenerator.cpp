@@ -292,7 +292,7 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
                                                        const LessonsMatrix& lessons,
                                                        const ScheduleData& data)
 {
-    std::vector<ScheduleItem> resultSchedule;
+    ScheduleResult resultSchedule;
     for (std::size_t g = 0; g < data.CountGroups(); ++g)
     {
         for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
@@ -308,7 +308,7 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
                             const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
                             if (lesson && SolutionBooleanValue(response, *lesson))
                             {
-                                resultSchedule.emplace_back(LessonAddress(g, d, l), s, p, c);
+                                resultSchedule.insert(ScheduleItem(LessonAddress(g, d, l), s, p, c));
                             }
                         }
                     }
@@ -317,7 +317,7 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
         }
     }
 
-    return ScheduleResult(std::move(resultSchedule));
+    return resultSchedule;
 }
 
 
