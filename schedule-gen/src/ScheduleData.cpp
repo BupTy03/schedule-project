@@ -15,13 +15,16 @@ SubjectRequest::SubjectRequest(std::size_t professor,
         , days_(days)
         , groups_(std::move(groups))
         , classrooms_(std::move(classrooms))
-{}
+{
+    if(days_.empty())
+        days_ = WeekDays::fullWeek();
+}
 
 bool SubjectRequest::RequestedClassroom(std::size_t c) const { return classrooms_.contains(c); }
 
 bool SubjectRequest::RequestedGroup(std::size_t g) const { return groups_.contains(g); }
 
-bool SubjectRequest::Requested(WeekDay d) const { return days_.Contains(d); }
+bool SubjectRequest::Requested(WeekDay d) const { return days_.contains(d); }
 
 std::size_t SubjectRequest::HoursPerWeek() const { return hours_; }
 
@@ -33,7 +36,7 @@ const std::vector<std::size_t>& SubjectRequest::Groups() const { return groups_.
 
 const std::vector<std::size_t>& SubjectRequest::Classrooms() const { return classrooms_.elems(); }
 
-bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.Contains(static_cast<WeekDay>(day % 6)); }
+bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.contains(static_cast<WeekDay>(day % 6)); }
 
 
 ScheduleData::ScheduleData(std::size_t countLessonsPerDay,

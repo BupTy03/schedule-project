@@ -11,7 +11,7 @@
 #include <initializer_list>
 
 
-extern const std::size_t SCHEDULE_DAYS_COUNT;
+constexpr std::size_t SCHEDULE_DAYS_COUNT = 12;
 
 enum class WeekDay : std::uint8_t
 {
@@ -22,6 +22,9 @@ enum class WeekDay : std::uint8_t
     Friday,
     Saturday
 };
+
+[[nodiscard]] WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
+
 
 class WeekDays;
 class WeekDaysIterator
@@ -59,9 +62,6 @@ private:
 
 /**
  * Набор дней недели.
- * Инвариант класса: всегда содержит хотя бы один день недели.
- * Если удалить все дни недели при помощи метода Remove,
- * набор дней недели автоматически станет полным.
  */
 class WeekDays
 {
@@ -69,22 +69,25 @@ class WeekDays
 public:
     using iterator = WeekDaysIterator;
 
-    WeekDays() = default;
+    WeekDays();
     WeekDays(std::initializer_list<WeekDay> lst);
+    static WeekDays fullWeek();
+    static WeekDays emptyWeek();
 
     [[nodiscard]] iterator begin() const;
     [[nodiscard]] iterator end() const;
     [[nodiscard]] std::size_t size() const;
+    [[nodiscard]] bool empty() const;
 
-    void Add(WeekDay d);
-    void Remove(WeekDay d);
-    [[nodiscard]] bool Contains(WeekDay d) const;
-
-private:
-    [[nodiscard]] bool Empty() const;
+    void insert(WeekDay d);
+    void erase(WeekDay d);
+    [[nodiscard]] bool contains(WeekDay d) const;
 
 private:
-    mutable std::uint8_t days_ = FULL_WEEK;
+    explicit WeekDays(std::uint8_t days);
+
+private:
+    std::uint8_t days_;
 };
 
 struct LessonAddress
@@ -252,7 +255,6 @@ public:
     explicit SortedMap(const A& a) : elems_(a) { }
 
     [[nodiscard]] const std::vector<std::pair<K, T>, A>& elems() const { return elems_; }
-    [[nodiscard]] std::vector<std::pair<K, T>, A>& elems() { return elems_; }
 
     [[nodiscard]] T& operator[](const K& key)
     {
@@ -370,5 +372,3 @@ private:
     LinearAllocatorBufferSpan* buffer_ = nullptr;
     std::allocator<T> overflowAllocator_;
 };
-
-[[nodiscard]] WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
