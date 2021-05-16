@@ -274,11 +274,11 @@ TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
     const ScheduleData scheduleData(6, 5, 3, subjectRequests, {});
 
     ScheduleResult scheduleResult;
-    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0, 0), 1, 1, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(4, 0, 0), 2, 2, 1));
-    scheduleResult.insert(ScheduleItem(LessonAddress(2, 0, 0), 3, 3, 2));
-    scheduleResult.insert(ScheduleItem(LessonAddress(1, 0, 0), 4, 4, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0), 0, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0), 1, 1, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(4, 0), 2, 2, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(2, 0), 3, 3, 2));
+    scheduleResult.insert(ScheduleItem(LessonAddress(1, 0), 4, 4, 1));
 
     const auto result = FindOverlappedClassrooms(scheduleData, scheduleResult);
     REQUIRE(result.size() == 2);
@@ -299,11 +299,11 @@ TEST_CASE("Test.FindOverlappedProfessors", "[Validate]")
     ScheduleData scheduleData(6, 5, 3, subjectRequests, {});
 
     ScheduleResult scheduleResult;
-    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0, 0), 1, 0, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(4, 0, 0), 2, 1, 1));
-    scheduleResult.insert(ScheduleItem(LessonAddress(2, 0, 0), 3, 3, 2));
-    scheduleResult.insert(ScheduleItem(LessonAddress(1, 0, 0), 4, 1, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0), 0, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0), 1, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(4, 0), 2, 1, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(2, 0), 3, 3, 2));
+    scheduleResult.insert(ScheduleItem(LessonAddress(1, 0), 4, 1, 1));
 
     const auto result = FindOverlappedProfessors(scheduleData, scheduleResult);
     REQUIRE(result.size() == 2);
@@ -322,21 +322,21 @@ TEST_CASE("Test.FindViolatedSubjectRequests", "[Validate]")
     };
 
     const std::vector<SubjectWithAddress> fixedLessons = {
-            SubjectWithAddress(0, LessonAddress(0, 0, 0)),
-            SubjectWithAddress(4, LessonAddress(1, 1, 4))
+            SubjectWithAddress(0, LessonAddress(0, 0)),
+            SubjectWithAddress(4, LessonAddress(1, 1 * MAX_LESSONS_PER_DAY + 4))
     };
 
     const ScheduleData scheduleData(6, 5, 3, subjectRequests, fixedLessons);
 
     ScheduleResult scheduleResult;
-    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0, 1), 1, 1, 1));
-    scheduleResult.insert(ScheduleItem(LessonAddress(4, 3, 2), 2, 2, 2));
-    scheduleResult.insert(ScheduleItem(LessonAddress(2, 5, 3), 3, 3, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(1, 1, 4), 4, 4, 2));
+    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0), 0, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(3, 1), 1, 1, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(4, 3 * MAX_LESSONS_PER_DAY + 2), 2, 2, 2));
+    scheduleResult.insert(ScheduleItem(LessonAddress(2, 5 * MAX_LESSONS_PER_DAY + 3), 3, 3, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(1, 1 * MAX_LESSONS_PER_DAY + 4), 4, 4, 2));
 
     const auto result = FindViolatedSubjectRequests(scheduleData, scheduleResult);
     REQUIRE(result.size() == 2);
-    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(0, 0, 0)); }) != result.end());
-    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(1, 1, 4)); }) != result.end());
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(0, 0)); }) != result.end());
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(1, 1 * MAX_LESSONS_PER_DAY + 4)); }) != result.end());
 }

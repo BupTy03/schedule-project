@@ -124,7 +124,7 @@ QString ToWarningMessage(ScheduleDataValidationResult validationResult)
 {
     static const std::map<ScheduleDataValidationResult, QString> mapping = {
             {ScheduleDataValidationResult::Ok, QObject::tr("Ок")},
-            {ScheduleDataValidationResult::ToFewLessonsPerDayRequested, QObject::tr("Слишком мало пар в день")},
+            {ScheduleDataValidationResult::ToMuchLessonsPerDayRequested, QObject::tr("Слишком много пар в день")},
             {ScheduleDataValidationResult::NoGroups, QObject::tr("Необходимо добавить хотя бы одну группу")},
             {ScheduleDataValidationResult::NoSubjects, QObject::tr("Необходимо добавить хотя бы одну дисциплину")},
             {ScheduleDataValidationResult::NoProfessors, QObject::tr("Необходимо добавить хотя бы одного преподавателя")},

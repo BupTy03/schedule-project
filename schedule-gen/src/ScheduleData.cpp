@@ -53,8 +53,6 @@ ScheduleData::ScheduleData(std::size_t countGroups,
     std::sort(occupiedLessons_.begin(), occupiedLessons_.end());
 }
 
-std::size_t ScheduleData::MaxCountLessonsPerDay() const { return 6; }
-
 std::size_t ScheduleData::CountGroups() const { return countGroups_; }
 
 std::size_t ScheduleData::CountSubjects() const { return subjectRequests_.size(); }
@@ -74,7 +72,6 @@ bool ScheduleData::LessonIsOccupied(const LessonAddress& lessonAddress) const
 
 void Print(const ScheduleData& data)
 {
-    std::cout << "MaxCountLessonsPerDay: " << data.MaxCountLessonsPerDay() << '\n';
     std::cout << "CountProfessors: " << data.CountProfessors() << '\n';
     std::cout << "CountGroups: " << data.CountGroups() << '\n';
     std::cout << "CountSubjects: " << data.CountSubjects() << '\n';
@@ -95,8 +92,8 @@ ScheduleDataValidationResult Validate(const ScheduleData& data)
     if (data.CountSubjects() <= 0)
         return ScheduleDataValidationResult::NoSubjects;
 
-    if(data.CountSubjects() > data.MaxCountLessonsPerDay() * SCHEDULE_DAYS_COUNT)
-        return ScheduleDataValidationResult::ToFewLessonsPerDayRequested;
+    if(data.CountSubjects() > MAX_LESSONS_COUNT)
+        return ScheduleDataValidationResult::ToMuchLessonsPerDayRequested;
 
     return ScheduleDataValidationResult::Ok;
 }

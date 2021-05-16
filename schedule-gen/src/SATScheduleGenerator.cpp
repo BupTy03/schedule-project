@@ -81,24 +81,22 @@ private:
 
 static void FillLessonsMatrix(CpModelBuilder& cp_model, LessonsMatrix& mtx, const ScheduleData& data)
 {
-    for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+    for (std::size_t g = 0; g < data.CountGroups(); ++g)
     {
-        for (std::size_t g = 0; g < data.CountGroups(); ++g)
+        for (std::size_t p = 0; p < data.CountProfessors(); ++p)
         {
-            for (std::size_t p = 0; p < data.CountProfessors(); ++p)
+            for (std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
             {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                const std::size_t day = LessonToScheduleDay(l);
+                for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                 {
-                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
                     {
-                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                        if (WeekDayRequestedForSubject(data, s, day) &&
+                            ClassroomRequestedForSubject(data, s, c) &&
+                            !data.LessonIsOccupied(LessonAddress(g, l)))
                         {
-                            if (WeekDayRequestedForSubject(data, s, d) &&
-                                ClassroomRequestedForSubject(data, s, c) &&
-                                !data.LessonIsOccupied(LessonAddress(g, d, l)))
-                            {
-                                mtx.Add(LessonsMatrixItemAddress{d, g, p, l, c, s}, cp_model.NewBoolVar());
-                            }
+                            mtx.Add(LessonsMatrixItemAddress{g, p, l, c, s}, cp_model.NewBoolVar());
                         }
                     }
                 }
@@ -116,23 +114,20 @@ static void AddOneSubjectPerTimeCondition(CpModelBuilder& cp_model,
     {
         for (std::size_t p = 0; p < data.CountProfessors(); ++p)
         {
-            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+            for (std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
             {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                buffer.clear();
+                for (std::size_t s = 0; s < data.CountSubjects(); ++s)
                 {
-                    buffer.clear();
-                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                     {
-                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                        {
-                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
-                            if (lesson)
-                                buffer.emplace_back(*lesson);
-                        }
+                        const auto lesson = lessons.Find(LessonsMatrixItemAddress{g, p, l, c, s});
+                        if (lesson)
+                            buffer.emplace_back(*lesson);
                     }
-
-                    cp_model.AddLessOrEqual(LinearExpr::BooleanSum(buffer), 1);
                 }
+
+                cp_model.AddLessOrEqual(LinearExpr::BooleanSum(buffer), 1);
             }
         }
     }
@@ -151,16 +146,13 @@ static void AddSubjectsHoursCondition(CpModelBuilder& cp_model,
             for (std::size_t p = 0; p < data.CountProfessors(); ++p)
             {
                 buffer.clear();
-                for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+                for (std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
                 {
-                    for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                     {
-                        for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
-                        {
-                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
-                            if (lesson)
-                                buffer.emplace_back(*lesson);
-                        }
+                        const auto lesson = lessons.Find(LessonsMatrixItemAddress{g, p, l, c, s});
+                        if (lesson)
+                            buffer.emplace_back(*lesson);
                     }
                 }
 
@@ -181,13 +173,13 @@ static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
     for(auto&& item : lessons.Elems())
     {
         // [day, group, professor, lesson, classrooms, subject]
-        const auto[d, g, p, l, c, s] = item.first;
+        const auto[g, p, l, c, s] = item.first;
 
         // чем позднее пара - тем выше коэффициент
         std::int64_t coeff = l;
 
         // +1 если пара в субботу
-        coeff += (ScheduleDayNumberToWeekDay(d) == WeekDay::Saturday);
+        coeff += (ScheduleDayNumberToWeekDay(LessonToScheduleDay(l)) == WeekDay::Saturday);
 
         buffer.emplace_back(item.second);
         pairsCoefficients.emplace_back(coeff);
@@ -210,13 +202,13 @@ static void AddMinimizeComplexity(CpModelBuilder& cp_model,
             for (std::size_t s = 0; s < data.CountSubjects(); ++s)
             {
                 const auto complexity = data.SubjectRequests().at(s).Complexity();
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY; ++l)
                 {
                     for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                     {
                         for (std::size_t p = 0; p < data.CountProfessors(); ++p)
                         {
-                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
+                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{g, p, d * MAX_LESSONS_PER_DAY + l, c, s});
                             if(lesson == nullptr)
                                 continue;
 
@@ -241,30 +233,27 @@ static void AddStreamsCondition(CpModelBuilder& cp_model,
     {
         for (std::size_t p = 0; p < data.CountProfessors(); ++p)
         {
-            for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+            for (std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
             {
-                for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+                for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                 {
-                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    std::optional<BoolVar> prevVar;
+                    for (std::size_t g = 0; g < data.CountGroups(); ++g)
                     {
-                        std::optional<BoolVar> prevVar;
-                        for (std::size_t g = 0; g < data.CountGroups(); ++g)
+                        if (!data.SubjectRequests().at(s).RequestedGroup(g))
+                            continue;
+
+                        const auto lesson = lessons.Find(LessonsMatrixItemAddress{g, p, l, c, s});
+                        if(lesson == nullptr)
+                            continue;
+
+                        if(prevVar)
                         {
-                            if (!data.SubjectRequests().at(s).RequestedGroup(g))
-                                continue;
-
-                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
-                            if(lesson == nullptr)
-                                continue;
-
-                            if(prevVar)
-                            {
-                                cp_model.AddEquality(*prevVar, *lesson);
-                            }
-                            else
-                            {
-                                prevVar.emplace(*lesson);
-                            }
+                            cp_model.AddEquality(*prevVar, *lesson);
+                        }
+                        else
+                        {
+                            prevVar.emplace(*lesson);
                         }
                     }
                 }
@@ -292,21 +281,18 @@ static ScheduleResult MakeScheduleFromSolverResponse(const CpSolverResponse& res
     ScheduleResult resultSchedule;
     for (std::size_t g = 0; g < data.CountGroups(); ++g)
     {
-        for (std::size_t d = 0; d < SCHEDULE_DAYS_COUNT; ++d)
+        for (std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
         {
-            for (std::size_t l = 0; l < data.MaxCountLessonsPerDay(); ++l)
+            for(std::size_t p = 0; p < data.CountProfessors(); ++p)
             {
-                for(std::size_t p = 0; p < data.CountProfessors(); ++p)
+                for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
                 {
-                    for (std::size_t c = 0; c < data.CountClassrooms(); ++c)
+                    for (std::size_t s = 0; s < data.CountSubjects(); ++s)
                     {
-                        for (std::size_t s = 0; s < data.CountSubjects(); ++s)
+                        const auto lesson = lessons.Find(LessonsMatrixItemAddress{g, p, l, c, s});
+                        if (lesson && SolutionBooleanValue(response, *lesson))
                         {
-                            const auto lesson = lessons.Find(LessonsMatrixItemAddress{d, g, p, l, c, s});
-                            if (lesson && SolutionBooleanValue(response, *lesson))
-                            {
-                                resultSchedule.insert(ScheduleItem(LessonAddress(g, d, l), s, p, c));
-                            }
+                            resultSchedule.insert(ScheduleItem(LessonAddress(g, l), s, p, c));
                         }
                     }
                 }

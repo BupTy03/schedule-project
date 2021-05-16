@@ -1,6 +1,11 @@
 #include "ScheduleCommon.hpp"
 
 
+std::size_t LessonToScheduleDay(std::size_t lesson)
+{
+    return lesson / MAX_LESSONS_PER_DAY;
+}
+
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum)
 {
     return static_cast<WeekDay>(dayNum % 6);
@@ -58,10 +63,12 @@ LinearAllocatorBufferSpan::LinearAllocatorBufferSpan(std::uint8_t* ptr, std::siz
     assert(total > 0);
 }
 
-LessonsMatrixItemAddress::LessonsMatrixItemAddress(std::size_t day, std::size_t group, std::size_t professor,
-                                                   std::size_t lesson, std::size_t classroom, std::size_t subject)
-        : Day(day)
-        , Group(group)
+LessonsMatrixItemAddress::LessonsMatrixItemAddress(std::size_t group,
+                                                   std::size_t professor,
+                                                   std::size_t lesson,
+                                                   std::size_t classroom,
+                                                   std::size_t subject)
+        : Group(group)
         , Professor(professor)
         , Lesson(lesson)
         , Classroom(classroom)

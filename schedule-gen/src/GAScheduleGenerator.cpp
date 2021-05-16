@@ -5,12 +5,6 @@
 #include <execution>
 
 
-static constexpr auto MAX_LESSONS_PER_DAY = 6;
-static constexpr auto DAYS_IN_SCHEDULE_WEEK = 6;
-static constexpr auto DAYS_IN_SCHEDULE = DAYS_IN_SCHEDULE_WEEK * 2;
-static constexpr auto MAX_LESSONS_COUNT = MAX_LESSONS_PER_DAY * DAYS_IN_SCHEDULE_WEEK * 2;
-
-
 ScheduleIndividual::ScheduleIndividual(const std::vector<SubjectRequest> &requests)
         : evaluated_(false)
         , evaluatedValue_(std::numeric_limits<std::size_t>::max())
@@ -100,7 +94,7 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
     {
         const auto& request = requests.at(r);
         const std::size_t lesson = lessons_.at(r);
-        const std::size_t day = lesson / MAX_LESSONS_PER_DAY;
+        const std::size_t day = LessonToScheduleDay(lesson);
         const std::size_t lessonInDay = lesson % MAX_LESSONS_PER_DAY;
 
         professorsDayWindows_.at(day)[request.Professor()][lessonInDay] = true;
@@ -286,7 +280,7 @@ void ScheduleIndividual::ChooseLesson(const std::vector<SubjectRequest>& request
 
     std::size_t chooseLessonTry = 0;
     while(chooseLessonTry < MAX_LESSONS_COUNT * 2 &&
-          (!request.RequestedWeekDay(scheduleLesson / MAX_LESSONS_PER_DAY) ||
+          (!request.RequestedWeekDay(LessonToScheduleDay(scheduleLesson)) ||
            ClassroomsIntersects(scheduleLesson, classrooms_.at(requestIndex)) ||
            GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson)))
     {
@@ -471,9 +465,7 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
             const auto& request = requests.at(r);
             for(std::size_t g : request.Groups())
             {
-                resultSchedule.insert(ScheduleItem(LessonAddress(g,
-                                                         l / MAX_LESSONS_PER_DAY,
-                                                         l % MAX_LESSONS_PER_DAY),
+                resultSchedule.insert(ScheduleItem(LessonAddress(g, l),
                                            subjectNumbers.at(r),
                                            request.Professor(),
                                            classrooms.at(r)));

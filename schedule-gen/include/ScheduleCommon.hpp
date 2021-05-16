@@ -12,6 +12,10 @@
 
 
 constexpr std::size_t SCHEDULE_DAYS_COUNT = 12;
+constexpr std::size_t MAX_LESSONS_PER_DAY = 6;
+constexpr std::size_t DAYS_IN_SCHEDULE_WEEK = 6;
+constexpr std::size_t DAYS_IN_SCHEDULE = DAYS_IN_SCHEDULE_WEEK * 2;
+constexpr std::size_t MAX_LESSONS_COUNT = MAX_LESSONS_PER_DAY * DAYS_IN_SCHEDULE_WEEK * 2;
 
 enum class WeekDay : std::uint8_t
 {
@@ -23,6 +27,7 @@ enum class WeekDay : std::uint8_t
     Saturday
 };
 
+[[nodiscard]] std::size_t LessonToScheduleDay(std::size_t lesson);
 [[nodiscard]] WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
 
 
@@ -92,31 +97,30 @@ private:
 
 struct LessonAddress
 {
-    explicit LessonAddress(std::size_t Group, std::size_t Day, std::size_t Lesson)
-            : Group(Group), Day(Day), Lesson(Lesson) { }
+    explicit LessonAddress(std::size_t Group, std::size_t Lesson)
+            : Group(Group)
+            , Lesson(Lesson)
+    { }
 
     [[nodiscard]] friend bool operator<(const LessonAddress& lhs, const LessonAddress& rhs)
     {
-        return lhs.Group < rhs.Group || (lhs.Group == rhs.Group && lhs.Day < rhs.Day) ||
-               (lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson < rhs.Lesson);
+        return (lhs.Group < rhs.Group) || (lhs.Group == rhs.Group && lhs.Lesson < rhs.Lesson);
     }
 
     [[nodiscard]] friend bool operator==(const LessonAddress& lhs, const LessonAddress& rhs)
     {
-        return lhs.Group == rhs.Group && lhs.Day == rhs.Day && lhs.Lesson == rhs.Lesson;
+        return lhs.Group == rhs.Group && lhs.Lesson == rhs.Lesson;
     }
 
     [[nodiscard]] friend bool operator!=(const LessonAddress& lhs, const LessonAddress& rhs) { return !(lhs == rhs); }
 
     std::size_t Group;
-    std::size_t Day;
     std::size_t Lesson;
 };
 
 struct LessonsMatrixItemAddress
 {
-    explicit LessonsMatrixItemAddress(std::size_t day,
-                                      std::size_t group,
+    explicit LessonsMatrixItemAddress(std::size_t group,
                                       std::size_t professor,
                                       std::size_t lesson,
                                       std::size_t classroom,
@@ -124,8 +128,7 @@ struct LessonsMatrixItemAddress
 
     [[nodiscard]] friend bool operator==(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
-        return lhs.Day == rhs.Day &&
-               lhs.Group == rhs.Group &&
+        return lhs.Group == rhs.Group &&
                lhs.Professor == rhs.Professor &&
                lhs.Lesson == rhs.Lesson &&
                lhs.Classroom == rhs.Classroom &&
@@ -139,12 +142,12 @@ struct LessonsMatrixItemAddress
 
     [[nodiscard]] friend bool operator<(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
     {
-        return lhs.Day < rhs.Day ||
-               (lhs.Day == rhs.Day && lhs.Group < rhs.Group) ||
-               (lhs.Day == rhs.Day && lhs.Group == rhs.Group && lhs.Professor < rhs.Professor) ||
-               (lhs.Day == rhs.Day && lhs.Group == rhs.Group && lhs.Professor == rhs.Professor && lhs.Lesson < rhs.Lesson) ||
-               (lhs.Day == rhs.Day && lhs.Group == rhs.Group && lhs.Professor == rhs.Professor && lhs.Lesson == rhs.Lesson && lhs.Classroom < rhs.Classroom) ||
-               (lhs.Day == rhs.Day && lhs.Group == rhs.Group && lhs.Professor == rhs.Professor && lhs.Lesson == rhs.Lesson && lhs.Classroom == rhs.Classroom && lhs.Subject < rhs.Subject);
+        return
+               (lhs.Group < rhs.Group) ||
+               (lhs.Group == rhs.Group && lhs.Professor < rhs.Professor) ||
+               (lhs.Group == rhs.Group && lhs.Professor == rhs.Professor && lhs.Lesson < rhs.Lesson) ||
+               (lhs.Group == rhs.Group && lhs.Professor == rhs.Professor && lhs.Lesson == rhs.Lesson && lhs.Classroom < rhs.Classroom) ||
+               (lhs.Group == rhs.Group && lhs.Professor == rhs.Professor && lhs.Lesson == rhs.Lesson && lhs.Classroom == rhs.Classroom && lhs.Subject < rhs.Subject);
     }
 
     [[nodiscard]] friend bool operator>(const LessonsMatrixItemAddress& lhs, const LessonsMatrixItemAddress& rhs)
@@ -160,7 +163,6 @@ struct LessonsMatrixItemAddress
         return !(lhs < rhs);
     }
 
-    std::size_t Day;
     std::size_t Group;
     std::size_t Professor;
     std::size_t Lesson;

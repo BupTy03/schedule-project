@@ -89,7 +89,6 @@ public:
                           std::vector<SubjectRequest> subjectRequests,
                           std::vector<SubjectWithAddress> occupiedLessons);
 
-    [[nodiscard]] std::size_t MaxCountLessonsPerDay() const;
     [[nodiscard]] std::size_t CountGroups() const;
     [[nodiscard]] std::size_t CountSubjects() const;
     [[nodiscard]] std::size_t CountProfessors() const;
@@ -109,7 +108,7 @@ private:
 enum class ScheduleDataValidationResult
 {
     Ok,
-    ToFewLessonsPerDayRequested,
+    ToMuchLessonsPerDayRequested,
     NoGroups,
     NoSubjects,
     NoProfessors,
