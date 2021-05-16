@@ -184,6 +184,83 @@ TEST_CASE("Test.SortedSet.erase", "[SortedSet]")
     }
 }
 
+TEST_CASE("Test.SortedMap.construct", "[SortedMap]")
+{
+    SortedMap<std::string, int> words = {
+            {"pen",      1},
+            {"apple", 3},
+            {"penapple", 0},
+            {"applepen", 2}
+    };
+
+    REQUIRE(words.elems() == std::vector<std::pair<std::string, int>>{
+        {"apple", 3},
+        {"applepen", 2},
+        {"pen",      1},
+        {"penapple", 0}
+    });
+}
+
+TEST_CASE("Test.SortedMap.operator[]", "[SortedMap]")
+{
+    SortedMap<std::string, int> words = {
+            {"pen",      1},
+            {"apple", 3},
+            {"penapple", 0},
+            {"applepen", 2}
+    };
+
+    // inserting elements
+    words["pen"] = 2;
+    words["apple"] = 0;
+    words["penapple"] = 3;
+    words["applepen"] = 1;
+
+    REQUIRE(words.elems() == std::vector<std::pair<std::string, int>>{
+            {"apple", 0},
+            {"applepen", 1},
+            {"pen",      2},
+            {"penapple", 3}
+    });
+
+    // changing existing elements
+    words["pen"] = 1;
+    words["apple"] = 3;
+    words["penapple"] = 0;
+    words["applepen"] = 2;
+
+    REQUIRE(words.elems() == std::vector<std::pair<std::string, int>>{
+            {"apple", 3},
+            {"applepen", 2},
+            {"pen",      1},
+            {"penapple", 0}
+    });
+}
+
+TEST_CASE("Test.set_intersects", "[Algorithms]")
+{
+    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({3, 4})));
+    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({1, 2, 3, 4, 5})));
+    REQUIRE(set_intersects(std::vector<int>(), std::vector<int>()));
+    REQUIRE(set_intersects(std::vector<int>({}), std::vector<int>({3, 4})));
+    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({})));
+
+    REQUIRE_FALSE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({6, 7, 8})));
+    REQUIRE_FALSE(set_intersects(std::vector<int>({1, 2, 5}), std::vector<int>({3, 4})));
+}
+
+TEST_CASE("Test.CalculatePadding", "[Utils]")
+{
+    REQUIRE(CalculatePadding(3, 2) == 1);
+    REQUIRE(CalculatePadding(3, 4) == 1);
+    REQUIRE(CalculatePadding(2, 4) == 2);
+    REQUIRE(CalculatePadding(1, 8) == 7);
+
+    REQUIRE(CalculatePadding(0, 0) == 0);
+    REQUIRE(CalculatePadding(0, 8) == 0);
+    REQUIRE(CalculatePadding(1, 0) == 0);
+}
+
 TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
 {
     const std::vector<SubjectRequest> subjectRequests = {
@@ -194,7 +271,7 @@ TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
         SubjectRequest(4, 1, 4, {}, {1}, {0, 1, 2})
     };
 
-    const ScheduleData scheduleData(6, 6, 5, 3, subjectRequests, {});
+    const ScheduleData scheduleData(6, 5, 3, subjectRequests, {});
 
     ScheduleResult scheduleResult;
     scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
@@ -204,6 +281,7 @@ TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
     scheduleResult.insert(ScheduleItem(LessonAddress(1, 0, 0), 4, 4, 1));
 
     const auto result = FindOverlappedClassrooms(scheduleData, scheduleResult);
+    REQUIRE(result.size() == 2);
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 0; }) != result.end());
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 1; }) != result.end());
 }
@@ -218,7 +296,7 @@ TEST_CASE("Test.FindOverlappedProfessors", "[Validate]")
             SubjectRequest(4, 1, 4, {}, {1}, {0, 1, 2})
     };
 
-    const ScheduleData scheduleData(6, 6, 5, 3, subjectRequests, {});
+    ScheduleData scheduleData(6, 5, 3, subjectRequests, {});
 
     ScheduleResult scheduleResult;
     scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
@@ -228,10 +306,37 @@ TEST_CASE("Test.FindOverlappedProfessors", "[Validate]")
     scheduleResult.insert(ScheduleItem(LessonAddress(1, 0, 0), 4, 1, 1));
 
     const auto result = FindOverlappedProfessors(scheduleData, scheduleResult);
+    REQUIRE(result.size() == 2);
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Professor == 0; }) != result.end());
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Professor == 1; }) != result.end());
 }
 
 TEST_CASE("Test.FindViolatedSubjectRequests", "[Validate]")
 {
+    const std::vector<SubjectRequest> subjectRequests = {
+            SubjectRequest(0, 1, 0, {WeekDay::Friday}, {0}, {0, 1, 2}),
+            SubjectRequest(1, 1, 1, {WeekDay::Monday, WeekDay::Friday}, {3}, {0, 1, 2}),
+            SubjectRequest(2, 1, 2, {WeekDay::Thursday, WeekDay::Friday}, {1}, {0, 1, 2}),
+            SubjectRequest(3, 1, 3, {WeekDay::Saturday, WeekDay::Friday}, {2}, {0, 1, 2}),
+            SubjectRequest(4, 1, 4, {WeekDay::Saturday, WeekDay::Wednesday}, {1}, {0, 1, 2})
+    };
+
+    const std::vector<SubjectWithAddress> fixedLessons = {
+            SubjectWithAddress(0, LessonAddress(0, 0, 0)),
+            SubjectWithAddress(4, LessonAddress(1, 1, 4))
+    };
+
+    const ScheduleData scheduleData(6, 5, 3, subjectRequests, fixedLessons);
+
+    ScheduleResult scheduleResult;
+    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0, 0), 0, 0, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0, 1), 1, 1, 1));
+    scheduleResult.insert(ScheduleItem(LessonAddress(4, 3, 2), 2, 2, 2));
+    scheduleResult.insert(ScheduleItem(LessonAddress(2, 5, 3), 3, 3, 0));
+    scheduleResult.insert(ScheduleItem(LessonAddress(1, 1, 4), 4, 4, 2));
+
+    const auto result = FindViolatedSubjectRequests(scheduleData, scheduleResult);
+    REQUIRE(result.size() == 2);
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(0, 0, 0)); }) != result.end());
+    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(1, 1, 4)); }) != result.end());
 }

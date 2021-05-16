@@ -40,19 +40,22 @@ bool WeekDays::contains(WeekDay d) const { return (days_ & (1 << static_cast<std
 
 std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment)
 {
-    const std::size_t multiplier = (baseAddress / alignment) + 1;
-    const std::size_t alignedAddress = multiplier * alignment;
-    const std::size_t padding = alignedAddress - baseAddress;
-    return padding;
+    if(baseAddress == 0 || alignment == 0)
+        return 0;
+
+    if(alignment > baseAddress)
+        return alignment - baseAddress;
+
+    return baseAddress % alignment;
 }
 
-LinearAllocatorBufferSpan::LinearAllocatorBufferSpan(std::uint8_t *ptr, std::size_t total)
-        : ptr(ptr)
-        , offset(0)
-        , total(total)
+LinearAllocatorBufferSpan::LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total)
+        : pBegin(ptr)
+        , pEnd(pBegin)
+        , pCapacityEnd(pBegin + total)
 {
-    assert(this->ptr != nullptr);
-    assert(this->total > 0);
+    assert(ptr != nullptr);
+    assert(total > 0);
 }
 
 LessonsMatrixItemAddress::LessonsMatrixItemAddress(std::size_t day, std::size_t group, std::size_t professor,

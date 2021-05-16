@@ -247,12 +247,45 @@ struct FirstLess
     }
 };
 
+struct FirstEqual
+{
+    template<typename T1, typename T2>
+    [[nodiscard]] bool operator()(const std::pair<T1, T2>& lhs, const std::pair<T1, T2>& rhs)
+    {
+        return lhs.first == rhs.first;
+    }
+
+    template<typename T1, typename T2>
+    [[nodiscard]] bool operator()(const std::pair<T1, T2>& lhs, const T1& rhs)
+    {
+        return lhs.first == rhs;
+    }
+
+    template<typename T1, typename T2>
+    [[nodiscard]] bool operator()(const T1& lhs, const std::pair<T1, T2>& rhs)
+    {
+        return lhs == rhs.first;
+    }
+};
+
 template<typename K, typename T, typename A = std::allocator<std::pair<K, T>>>
 class SortedMap
 {
 public:
     SortedMap() = default;
     explicit SortedMap(const A& a) : elems_(a) { }
+    SortedMap(std::initializer_list<std::pair<K, T>> initLst) : SortedMap(initLst.begin(), initLst.end()) { }
+
+    template<class Container, typename = typename std::enable_if_t<!std::is_same_v<std::decay_t<Container>, SortedMap>>>
+    explicit SortedMap(const Container& cont) : SortedMap(std::begin(cont), std::end(cont)) {}
+
+    template<class Iter>
+    explicit SortedMap(Iter first, Iter last)
+        : elems_(first, last)
+    {
+        std::sort(elems_.begin(), elems_.end(), FirstLess());
+        elems_.erase(std::unique(elems_.begin(), elems_.end(), FirstEqual()), elems_.end());
+    }
 
     [[nodiscard]] const std::vector<std::pair<K, T>, A>& elems() const { return elems_; }
 
@@ -265,7 +298,6 @@ public:
         return it->second;
     }
 
-    void clear() { elems_.clear(); }
     [[nodiscard]] auto begin() const { return elems_.begin(); }
     [[nodiscard]] auto end() const { return elems_.end(); }
 
@@ -276,6 +308,12 @@ private:
 template<class SortedRange1, class SortedRange2>
 [[nodiscard]] bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
 {
+    assert(std::is_sorted(std::begin(r1), std::end(r1)));
+    assert(std::is_sorted(std::begin(r2), std::end(r2)));
+
+    if(std::empty(r1) || std::empty(r2))
+        return true;
+
     for(const auto& e : r1)
     {
         auto it = std::lower_bound(std::begin(r2), std::end(r2), e);
@@ -293,9 +331,9 @@ struct LinearAllocatorBufferSpan
 {
     explicit LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total);
 
-    std::uint8_t* ptr;
-    std::size_t offset;
-    std::size_t total;
+    std::uint8_t* pBegin;
+    std::uint8_t* pEnd;
+    std::uint8_t* pCapacityEnd;
 };
 
 
@@ -326,18 +364,11 @@ public:
 
     [[nodiscard]] T* allocate(std::size_t count)
     {
-        constexpr auto alignment = __alignof(T);
-        const std::size_t size = count * sizeof(T);
-
-        std::size_t padding = 0;
-        const std::size_t currentAddress = reinterpret_cast<std::size_t>(buffer_->ptr) + buffer_->offset;
-        if (alignment != 0 && buffer_->offset % alignment != 0)
-        {
-            // Alignment is required. Find the next aligned memory address and update offset
-            padding = CalculatePadding(currentAddress, alignment);
-        }
-
-        if (buffer_->offset + padding + size > buffer_->total)
+        const auto currentAddress = reinterpret_cast<std::size_t>(buffer_->pEnd);
+        const std::size_t padding = CalculatePadding(currentAddress, __alignof(T));
+        const std::size_t countBytes = count * sizeof(T);
+        const std::size_t sumAlloc = padding + countBytes;
+        if (buffer_->pEnd + sumAlloc > buffer_->pCapacityEnd)
         {
 #ifdef _DEBUG
             externalAllocationsCounter_++;
@@ -345,13 +376,14 @@ public:
             return overflowAllocator_.allocate(count);
         }
 
-        buffer_->offset += padding + size;
+        buffer_->pEnd += sumAlloc;
         return reinterpret_cast<T*>(currentAddress + padding);
     }
+
     void deallocate(T* p, std::size_t count)
     {
         auto ptr = reinterpret_cast<std::uint8_t*>(p);
-        if(ptr >= buffer_->ptr && ptr <= (buffer_->ptr + buffer_->total))
+        if(ptr >= buffer_->pBegin && ptr < buffer_->pCapacityEnd)
             return;
 
 #ifdef _DEBUG

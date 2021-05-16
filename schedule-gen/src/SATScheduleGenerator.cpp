@@ -175,7 +175,7 @@ static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
                                           const ScheduleData& data,
                                           std::vector<BoolVar>& buffer)
 {
-    // располагаем пары в начале дня, стараясь не превышать data.RequestedCountLessonsPerDay()
+    // располагаем пары в начале дня
     buffer.clear();
     std::vector<std::int64_t> pairsCoefficients;
     for(auto&& item : lessons.Elems())
@@ -185,9 +185,6 @@ static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
 
         // чем позднее пара - тем выше коэффициент
         std::int64_t coeff = l;
-
-        // +1 если пара превышает желаемое количество пар в день
-        coeff += (l >= data.RequestedCountLessonsPerDay());
 
         // +1 если пара в субботу
         coeff += (ScheduleDayNumberToWeekDay(d) == WeekDay::Saturday);

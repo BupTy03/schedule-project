@@ -40,6 +40,17 @@ private:
 
 struct ScheduleGAStatistics
 {
+    ScheduleGAStatistics()
+        : Time(0)
+        , Iterations(0)
+    {}
+
+    explicit ScheduleGAStatistics(std::chrono::milliseconds time,
+                                  std::size_t iterations)
+        : Time(time)
+        , Iterations(iterations)
+    {}
+
     std::chrono::milliseconds Time;
     std::size_t Iterations;
 };
@@ -74,7 +85,8 @@ private:
 };
 
 
-void Print(const ScheduleIndividual& individ, const std::vector<SubjectRequest>& requests);
+void Print(const ScheduleIndividual& individ,
+           const std::vector<SubjectRequest>& requests);
 
 
 class GAScheduleGenerator : public ScheduleGenerator

@@ -39,14 +39,12 @@ const std::vector<std::size_t>& SubjectRequest::Classrooms() const { return clas
 bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.contains(static_cast<WeekDay>(day % 6)); }
 
 
-ScheduleData::ScheduleData(std::size_t countLessonsPerDay,
-                           std::size_t countGroups,
+ScheduleData::ScheduleData(std::size_t countGroups,
                            std::size_t countProfessors,
                            std::size_t countClassrooms,
                            std::vector<SubjectRequest> subjectRequests,
-                           std::vector<LessonAddress> occupiedLessons)
-        : countLessonsPerDay_(countLessonsPerDay)
-        , countGroups_(countGroups)
+                           std::vector<SubjectWithAddress> occupiedLessons)
+        : countGroups_(countGroups)
         , countProfessors_(countProfessors)
         , countClassrooms_(countClassrooms)
         , subjectRequests_(std::move(subjectRequests))
@@ -56,8 +54,6 @@ ScheduleData::ScheduleData(std::size_t countLessonsPerDay,
 }
 
 std::size_t ScheduleData::MaxCountLessonsPerDay() const { return 6; }
-
-std::size_t ScheduleData::RequestedCountLessonsPerDay() const { return countLessonsPerDay_; }
 
 std::size_t ScheduleData::CountGroups() const { return countGroups_; }
 
@@ -71,8 +67,8 @@ const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const { retur
 
 bool ScheduleData::LessonIsOccupied(const LessonAddress& lessonAddress) const
 {
-    auto it = std::lower_bound(occupiedLessons_.begin(), occupiedLessons_.end(), lessonAddress);
-    return it != occupiedLessons_.end() && *it == lessonAddress;
+    auto it = std::lower_bound(occupiedLessons_.begin(), occupiedLessons_.end(), lessonAddress, SubjectWithAddressLess());
+    return it != occupiedLessons_.end() && it->Address == lessonAddress;
 }
 
 
@@ -82,8 +78,7 @@ void Print(const ScheduleData& data)
     std::cout << "CountProfessors: " << data.CountProfessors() << '\n';
     std::cout << "CountGroups: " << data.CountGroups() << '\n';
     std::cout << "CountSubjects: " << data.CountSubjects() << '\n';
-    std::cout << "CountClassrooms: " << data.CountClassrooms() << '\n';
-    std::cout << "RequestedCountLessonsPerDay: " << data.RequestedCountLessonsPerDay() << std::endl;
+    std::cout << "CountClassrooms: " << data.CountClassrooms() << std::endl;
 }
 
 ScheduleDataValidationResult Validate(const ScheduleData& data)

@@ -36,19 +36,60 @@ private:
     SortedSet<std::size_t> classrooms_;
 };
 
+struct SubjectWithAddress
+{
+    explicit SubjectWithAddress(std::size_t Subject, LessonAddress Address)
+            : Subject(Subject)
+            , Address(Address)
+    {}
+
+    [[nodiscard]] friend bool operator<(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    {
+        return lhs.Subject < rhs.Subject;
+    }
+
+    [[nodiscard]] friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    {
+        return lhs.Subject == rhs.Subject;
+    }
+
+    [[nodiscard]] friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    {
+        return lhs.Subject != rhs.Subject;
+    }
+
+    std::size_t Subject;
+    LessonAddress Address;
+};
+
+struct SubjectWithAddressLess
+{
+    bool operator()(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs) const
+    {
+        return lhs.Address < rhs.Address;
+    }
+
+    bool operator()(const SubjectWithAddress& lhs, const LessonAddress& rhsAddress) const
+    {
+        return lhs.Address < rhsAddress;
+    }
+
+    bool operator()(const LessonAddress& lhsAddress, const SubjectWithAddress& rhs) const
+    {
+        return lhsAddress < rhs.Address;
+    }
+};
 
 class ScheduleData
 {
 public:
-    explicit ScheduleData(std::size_t countLessonsPerDay,
-                          std::size_t countGroups,
+    explicit ScheduleData(std::size_t countGroups,
                           std::size_t countProfessors,
                           std::size_t countClassrooms,
                           std::vector<SubjectRequest> subjectRequests,
-                          std::vector<LessonAddress> occupiedLessons);
+                          std::vector<SubjectWithAddress> occupiedLessons);
 
     [[nodiscard]] std::size_t MaxCountLessonsPerDay() const;
-    [[nodiscard]] std::size_t RequestedCountLessonsPerDay() const;
     [[nodiscard]] std::size_t CountGroups() const;
     [[nodiscard]] std::size_t CountSubjects() const;
     [[nodiscard]] std::size_t CountProfessors() const;
@@ -57,12 +98,11 @@ public:
     [[nodiscard]] bool LessonIsOccupied(const LessonAddress& lessonAddress) const;
 
 private:
-    std::size_t countLessonsPerDay_;
     std::size_t countGroups_;
     std::size_t countProfessors_;
     std::size_t countClassrooms_;
     std::vector<SubjectRequest> subjectRequests_;
-    std::vector<LessonAddress> occupiedLessons_;
+    std::vector<SubjectWithAddress> occupiedLessons_;
 };
 
 

@@ -53,32 +53,6 @@ private:
     std::vector<ScheduleItem> items_;
 };
 
-struct ExceedingComplexityItem
-{
-    std::pair<std::size_t, std::size_t> GroupAndDay = {0,0};
-    std::size_t TotalComplexity = 0;
-};
-
-struct ExceedingComplexityLess
-{
-    [[nodiscard]] bool operator()(const ExceedingComplexityItem& lhs,
-            const ExceedingComplexityItem& rhs) const
-    {
-        return lhs.GroupAndDay < rhs.GroupAndDay;
-    }
-
-    [[nodiscard]] bool operator()(const ExceedingComplexityItem& lhs,
-            const std::pair<std::size_t, std::size_t>& rhsGroupAndDay) const
-    {
-        return lhs.GroupAndDay < rhsGroupAndDay;
-    }
-
-    [[nodiscard]] bool operator()(const std::pair<std::size_t, std::size_t>& lhsGroupAndDay,
-            const ExceedingComplexityItem& rhs) const
-    {
-        return lhsGroupAndDay < rhs.GroupAndDay;
-    }
-};
 
 struct OverlappedClassroom
 {
@@ -138,31 +112,6 @@ struct ViolatedSubjectRequestLess
     }
 };
 
-struct SubjectWithAddress
-{
-    explicit SubjectWithAddress(std::size_t Subject, LessonAddress Address)
-        : Subject(Subject)
-        , Address(Address)
-    {}
-
-    [[nodiscard]] friend bool operator<(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
-    {
-        return lhs.Subject < rhs.Subject;
-    }
-
-    [[nodiscard]] friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
-    {
-        return lhs.Subject == rhs.Subject;
-    }
-
-    [[nodiscard]] friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
-    {
-        return lhs.Subject != rhs.Subject;
-    }
-
-    std::size_t Subject;
-    LessonAddress Address;
-};
 
 
 [[nodiscard]] std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,

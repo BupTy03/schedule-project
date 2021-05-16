@@ -22,9 +22,6 @@
 #include <QJsonDocument>
 
 
-static const auto DEFAULT_LESSONS_PER_DAY_COUNT = 3;
-
-
 MainWindow::MainWindow(std::unique_ptr<ScheduleDataStorage> scheduleData,
                        QWidget* parent)
     : QMainWindow(parent)
@@ -160,12 +157,11 @@ void MainWindow::generateSchedule()
         }
     }
 
-    auto scheduleData = std::make_shared<ScheduleData>(DEFAULT_LESSONS_PER_DAY_COUNT,
-                              static_cast<std::size_t>(groups.size()),
-                              static_cast<std::size_t>(professors.size()),
-                              static_cast<std::size_t>(classrooms.size()),
-                              std::move(subjectRequests),
-                              std::vector<LessonAddress>());
+    auto scheduleData = std::make_shared<ScheduleData>(static_cast<std::size_t>(groups.size()),
+                                                       static_cast<std::size_t>(professors.size()),
+                                                       static_cast<std::size_t>(classrooms.size()),
+                                                       std::move(subjectRequests),
+                                                       std::vector<SubjectWithAddress>());
 
     const auto validationResult = Validate(*scheduleData);
     if(validationResult != ScheduleDataValidationResult::Ok)

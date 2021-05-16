@@ -348,7 +348,7 @@ ScheduleGAStatistics ScheduleGA::Start(const std::vector<SubjectRequest>& reques
 
     const auto beginTime = std::chrono::steady_clock::now();
 
-    ScheduleGAStatistics result = {};
+    ScheduleGAStatistics result;
     std::size_t prevEvaluated = std::numeric_limits<std::size_t>::max();
     for(std::size_t iteration = 0; iteration < IterationsCount(); ++iteration)
     {

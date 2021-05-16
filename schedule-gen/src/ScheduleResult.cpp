@@ -50,7 +50,6 @@ void Print(const OverlappedClassroom& overlappedClassroom)
     std::cout << "}\n" << std::endl;
 }
 
-
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result)
 {
     std::vector<OverlappedClassroom> overlappedClassrooms;
@@ -115,7 +114,8 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
     return overlappedProfessors;
 }
 
-std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data, const ScheduleResult& result)
+std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data,
+                                                                const ScheduleResult& result)
 {
     std::vector<ViolatedSubjectRequest> violatedRequests;
     for(std::size_t g = 0; g < data.CountGroups(); ++g)
