@@ -271,7 +271,11 @@ TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
         SubjectRequest(4, 1, 4, {}, {1}, {0, 1, 2})
     };
 
-    const ScheduleData scheduleData(6, 5, 3, subjectRequests, {});
+    const ScheduleData scheduleData(MakeIndexesRange(6),
+                                    MakeIndexesRange(5),
+                                    MakeIndexesRange(3),
+                                    subjectRequests,
+                                    {});
 
     ScheduleResult scheduleResult;
     scheduleResult.insert(ScheduleItem(LessonAddress(0, 0), 0, 0, 0));
@@ -296,7 +300,11 @@ TEST_CASE("Test.FindOverlappedProfessors", "[Validate]")
             SubjectRequest(4, 1, 4, {}, {1}, {0, 1, 2})
     };
 
-    ScheduleData scheduleData(6, 5, 3, subjectRequests, {});
+    ScheduleData scheduleData(MakeIndexesRange(6),
+                              MakeIndexesRange(5),
+                              MakeIndexesRange(3),
+                              subjectRequests,
+                              {});
 
     ScheduleResult scheduleResult;
     scheduleResult.insert(ScheduleItem(LessonAddress(0, 0), 0, 0, 0));
@@ -326,7 +334,11 @@ TEST_CASE("Test.FindViolatedSubjectRequests", "[Validate]")
             SubjectWithAddress(4, LessonAddress(1, 1 * MAX_LESSONS_PER_DAY + 4))
     };
 
-    const ScheduleData scheduleData(6, 5, 3, subjectRequests, fixedLessons);
+    const ScheduleData scheduleData(MakeIndexesRange(6),
+                                    MakeIndexesRange(5),
+                                    MakeIndexesRange(3),
+                                    subjectRequests,
+                                    fixedLessons);
 
     ScheduleResult scheduleResult;
     scheduleResult.insert(ScheduleItem(LessonAddress(0, 0), 0, 0, 0));

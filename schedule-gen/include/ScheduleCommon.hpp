@@ -29,6 +29,7 @@ enum class WeekDay : std::uint8_t
 
 [[nodiscard]] std::size_t LessonToScheduleDay(std::size_t lesson);
 [[nodiscard]] WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
+[[nodiscard]] std::vector<std::size_t> MakeIndexesRange(std::size_t n);
 
 
 class WeekDays;

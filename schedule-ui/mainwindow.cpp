@@ -157,9 +157,9 @@ void MainWindow::generateSchedule()
         }
     }
 
-    auto scheduleData = std::make_shared<ScheduleData>(static_cast<std::size_t>(groups.size()),
-                                                       static_cast<std::size_t>(professors.size()),
-                                                       static_cast<std::size_t>(classrooms.size()),
+    auto scheduleData = std::make_shared<ScheduleData>(MakeIndexesRange(groups.size()),
+                                                       MakeIndexesRange(professors.size()),
+                                                       MakeIndexesRange(classrooms.size()),
                                                        std::move(subjectRequests),
                                                        std::vector<SubjectWithAddress>());
 

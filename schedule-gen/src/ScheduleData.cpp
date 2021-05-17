@@ -39,27 +39,36 @@ const std::vector<std::size_t>& SubjectRequest::Classrooms() const { return clas
 bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.contains(static_cast<WeekDay>(day % 6)); }
 
 
-ScheduleData::ScheduleData(std::size_t countGroups,
-                           std::size_t countProfessors,
-                           std::size_t countClassrooms,
+ScheduleData::ScheduleData(std::vector<std::size_t> groups,
+                           std::vector<std::size_t> professors,
+                           std::vector<std::size_t> classrooms,
                            std::vector<SubjectRequest> subjectRequests,
                            std::vector<SubjectWithAddress> occupiedLessons)
-        : countGroups_(countGroups)
-        , countProfessors_(countProfessors)
-        , countClassrooms_(countClassrooms)
+        : groups_(std::move(groups))
+        , professors_(std::move(professors))
+        , classrooms_(std::move(classrooms))
         , subjectRequests_(std::move(subjectRequests))
         , occupiedLessons_(std::move(occupiedLessons))
 {
+    std::sort(groups_.begin(), groups_.end());
+    groups_.erase(std::unique(groups_.begin(), groups_.end()), groups_.end());
+
+    std::sort(professors_.begin(), professors_.end());
+    professors_.erase(std::unique(professors_.begin(), professors_.end()), professors_.end());
+
+    std::sort(classrooms_.begin(), classrooms_.end());
+    classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
+
     std::sort(occupiedLessons_.begin(), occupiedLessons_.end());
 }
 
-std::size_t ScheduleData::CountGroups() const { return countGroups_; }
+const std::vector<std::size_t>& ScheduleData::Groups() const { return groups_; }
+
+const std::vector<std::size_t>& ScheduleData::Professors() const { return professors_; }
+
+const std::vector<std::size_t>& ScheduleData::Classrooms() const { return classrooms_; }
 
 std::size_t ScheduleData::CountSubjects() const { return subjectRequests_.size(); }
-
-std::size_t ScheduleData::CountProfessors() const { return countProfessors_; }
-
-std::size_t ScheduleData::CountClassrooms() const { return countClassrooms_; }
 
 const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const { return subjectRequests_; }
 
@@ -70,23 +79,15 @@ bool ScheduleData::LessonIsOccupied(const LessonAddress& lessonAddress) const
 }
 
 
-void Print(const ScheduleData& data)
-{
-    std::cout << "CountProfessors: " << data.CountProfessors() << '\n';
-    std::cout << "CountGroups: " << data.CountGroups() << '\n';
-    std::cout << "CountSubjects: " << data.CountSubjects() << '\n';
-    std::cout << "CountClassrooms: " << data.CountClassrooms() << std::endl;
-}
-
 ScheduleDataValidationResult Validate(const ScheduleData& data)
 {
-    if (data.CountGroups() <= 0)
+    if (std::empty(data.Groups()))
         return ScheduleDataValidationResult::NoGroups;
 
-    if (data.CountProfessors() <= 0)
+    if (std::empty(data.Professors()))
         return ScheduleDataValidationResult::NoProfessors;
 
-    if (data.CountClassrooms() <= 0)
+    if (std::empty(data.Classrooms()))
         return ScheduleDataValidationResult::NoClassrooms;
 
     if (data.CountSubjects() <= 0)

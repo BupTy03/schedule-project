@@ -56,7 +56,7 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         SortedMap<std::size_t, SortedSet<SubjectWithAddress>> classroomsAndSubjects;
-        for(std::size_t g = 0; g < data.CountGroups(); ++g)
+        for(std::size_t g : data.Groups())
         {
             const auto item = result.at(LessonAddress(g, l));
             if(item)
@@ -85,7 +85,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         SortedMap<std::size_t, SortedSet<SubjectWithAddress>> professorsAndSubjects;
-        for(std::size_t g = 0; g < data.CountGroups(); ++g)
+        for(std::size_t g : data.Groups())
         {
             const auto item = result.at(LessonAddress(g, l));
             if(item)
@@ -112,7 +112,7 @@ std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleDa
                                                                 const ScheduleResult& result)
 {
     std::vector<ViolatedSubjectRequest> violatedRequests;
-    for(std::size_t g = 0; g < data.CountGroups(); ++g)
+    for(std::size_t g : data.Groups())
     {
         for (std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
         {

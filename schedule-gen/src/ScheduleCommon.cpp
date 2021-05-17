@@ -1,5 +1,7 @@
 #include "ScheduleCommon.hpp"
 
+#include <numeric>
+
 
 std::size_t LessonToScheduleDay(std::size_t lesson)
 {
@@ -9,6 +11,13 @@ std::size_t LessonToScheduleDay(std::size_t lesson)
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum)
 {
     return static_cast<WeekDay>(dayNum % 6);
+}
+
+std::vector<std::size_t> MakeIndexesRange(std::size_t n)
+{
+    std::vector<std::size_t> result(n);
+    std::iota(result.begin(), result.end(), std::size_t{0});
+    return result;
 }
 
 

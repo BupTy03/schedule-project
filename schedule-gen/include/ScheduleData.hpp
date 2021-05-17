@@ -83,23 +83,23 @@ struct SubjectWithAddressLess
 class ScheduleData
 {
 public:
-    explicit ScheduleData(std::size_t countGroups,
-                          std::size_t countProfessors,
-                          std::size_t countClassrooms,
+    explicit ScheduleData(std::vector<std::size_t> groups,
+                          std::vector<std::size_t> professors,
+                          std::vector<std::size_t> classrooms,
                           std::vector<SubjectRequest> subjectRequests,
                           std::vector<SubjectWithAddress> occupiedLessons);
 
-    [[nodiscard]] std::size_t CountGroups() const;
+    [[nodiscard]] const std::vector<std::size_t>& Groups() const;
+    [[nodiscard]] const std::vector<std::size_t>& Professors() const;
+    [[nodiscard]] const std::vector<std::size_t>& Classrooms() const;
     [[nodiscard]] std::size_t CountSubjects() const;
-    [[nodiscard]] std::size_t CountProfessors() const;
-    [[nodiscard]] std::size_t CountClassrooms() const;
     [[nodiscard]] const std::vector<SubjectRequest>& SubjectRequests() const;
     [[nodiscard]] bool LessonIsOccupied(const LessonAddress& lessonAddress) const;
 
 private:
-    std::size_t countGroups_;
-    std::size_t countProfessors_;
-    std::size_t countClassrooms_;
+    std::vector<std::size_t> groups_;
+    std::vector<std::size_t> professors_;
+    std::vector<std::size_t> classrooms_;
     std::vector<SubjectRequest> subjectRequests_;
     std::vector<SubjectWithAddress> occupiedLessons_;
 };
@@ -115,7 +115,6 @@ enum class ScheduleDataValidationResult
     NoClassrooms
 };
 
-void Print(const ScheduleData& data);
 [[nodiscard]] ScheduleDataValidationResult Validate(const ScheduleData& data);
 [[nodiscard]] std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject);
 [[nodiscard]] bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay);
