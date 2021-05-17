@@ -176,7 +176,7 @@ static void AddMinimizeLatePairsCondition(CpModelBuilder& cp_model,
         const auto[g, p, l, c, s] = item.first;
 
         // чем позднее пара - тем выше коэффициент
-        std::int64_t coeff = l;
+        std::int64_t coeff = l % MAX_LESSONS_PER_DAY;
 
         // +1 если пара в субботу
         coeff += (ScheduleDayNumberToWeekDay(LessonToScheduleDay(l)) == WeekDay::Saturday);
