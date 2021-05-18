@@ -32,6 +32,56 @@ SubjectWithAddress ParseLockedLesson(const nlohmann::json& lockedLesson)
                               ParseLessonAddress(RequireField(lockedLesson, "address")));
 }
 
+WeekDays ParseWeekDays(const nlohmann::json& weekDays)
+{
+    if(!weekDays.is_array())
+        throw std::invalid_argument("Json array expected");
+
+    WeekDays result = WeekDays::emptyWeek();
+    for(auto&& wd : weekDays)
+    {
+        const auto value = wd.get<int>();
+        if(value < 0 || value > 5)
+            throw std::invalid_argument("Week day number must be in range [0, 5]");
+
+        result.insert(static_cast<WeekDay>(value % 6));
+    }
+
+    if(result == WeekDays::emptyWeek())
+        return WeekDays::fullWeek();
+
+    return result;
+}
+
+SortedSet<std::size_t> ParseIDsSet(const nlohmann::json& arr)
+{
+    if(!arr.is_array())
+        throw std::invalid_argument("Json array expected");
+
+    SortedSet<std::size_t> result;
+    for(auto&& value : arr)
+    {
+        const auto v = value.get<std::int64_t>();
+        if(value < 0)
+            throw std::invalid_argument("ID can't be negative");
+
+        result.insert(static_cast<std::size_t>(v));
+    }
+
+    return result;
+}
+
+SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest)
+{
+    return SubjectRequest(
+        RequireField(subjectRequest, "professor").get<std::size_t>(),
+        RequireField(subjectRequest, "hours_count").get<std::size_t>(),
+        RequireField(subjectRequest, "complexity").get<std::size_t>(),
+        ParseWeekDays(RequireField(subjectRequest, "days")),
+        ParseIDsSet(RequireField(subjectRequest, "groups")),
+        ParseIDsSet(RequireField(subjectRequest, "classrooms"))
+        );
+}
 
 static nlohmann::json ComputeResponse(const nlohmann::json& request)
 {

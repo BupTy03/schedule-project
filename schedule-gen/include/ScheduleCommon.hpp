@@ -89,6 +89,9 @@ public:
     void erase(WeekDay d);
     [[nodiscard]] bool contains(WeekDay d) const;
 
+    friend bool operator==(WeekDays lhs, WeekDays rhs) { return lhs.days_ == rhs.days_; }
+    friend bool operator!=(WeekDays lhs, WeekDays rhs) { return !(lhs == rhs); }
+
 private:
     explicit WeekDays(std::uint8_t days);
 
@@ -225,6 +228,9 @@ public:
     {
         return std::lower_bound(elems_.begin(), elems_.end(), value);
     }
+
+    friend bool operator==(const SortedSet& lhs, const SortedSet& rhs) { return lhs.elems_ == rhs.elems_; }
+    friend bool operator!=(const SortedSet& lhs, const SortedSet& rhs) { return !(lhs == rhs); }
 
 private:
     std::vector<T> elems_;

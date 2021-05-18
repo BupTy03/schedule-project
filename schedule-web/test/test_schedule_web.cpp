@@ -69,3 +69,192 @@ TEST_CASE("Parsing locked lessons", "[parsing]")
         REQUIRE_THROWS_AS(lockedLesson = ParseLockedLesson(nlohmann::json::object({{"subject_request", 5}})), std::invalid_argument);
     }
 }
+
+TEST_CASE("Parsing week days set", "[parsing]")
+{
+    SECTION("Normal week days json array parsed successfully")
+    {
+        const auto sat = ParseWeekDays(nlohmann::json::array({0, 1, 2, 3, 4, 5}));
+        REQUIRE(sat == WeekDays::fullWeek());
+    }
+    SECTION("If array is empty - consider as full week")
+    {
+        const auto sat = ParseWeekDays(nlohmann::json::array());
+        REQUIRE(sat == WeekDays::fullWeek());
+    }
+    SECTION("If duplications found - they are ignored")
+    {
+        const auto sat = ParseWeekDays(nlohmann::json::array({0, 0, 1, 2, 3, 3, 3}));
+        REQUIRE(sat == WeekDays({WeekDay::Monday, WeekDay::Tuesday, WeekDay::Wednesday, WeekDay::Thursday}));
+    }
+    SECTION("Negative value is incorrect")
+    {
+        WeekDays sat;
+        REQUIRE_THROWS_AS(sat = ParseWeekDays(nlohmann::json::array({2, -3, 1, -4})), std::invalid_argument);
+    }
+    SECTION("Too big value is incorrect")
+    {
+        WeekDays sat;
+        REQUIRE_THROWS_AS(sat = ParseWeekDays(nlohmann::json::array({2, 6, 1, 0})), std::invalid_argument);
+    }
+}
+
+TEST_CASE("Parsing IDs set")
+{
+    SECTION("Normal IDs json array parsed successfully")
+    {
+        const auto sat = ParseIDsSet(nlohmann::json::array({0, 1, 2, 3, 4, 5}));
+        REQUIRE(sat == SortedSet<std::size_t>({0, 1, 2, 3, 4, 5}));
+    }
+    SECTION("If array is empty - IDs set is empty too")
+    {
+        const auto sat = ParseIDsSet(nlohmann::json::array());
+        REQUIRE(sat == SortedSet<std::size_t>());
+    }
+    SECTION("If duplications found - they are ignored")
+    {
+        const auto sat = ParseIDsSet(nlohmann::json::array({1, 2, 2, 0, 1, 0, 5, 5, 5}));
+        REQUIRE(sat == SortedSet<std::size_t>({0, 1, 2, 5}));
+    }
+    SECTION("Negative value is incorrect")
+    {
+        SortedSet<std::size_t> sat;
+        REQUIRE_THROWS_AS(sat = ParseIDsSet(nlohmann::json::array({2, -3, 1, -4})), std::invalid_argument);
+    }
+}
+
+TEST_CASE("Parsing subject request", "[parsing]")
+{
+    SECTION("Normal subject request json parsed successfully")
+    {
+        const auto subjectRequest = nlohmann::json::object({
+            {"professor", 1},
+            {"hours_count", 3},
+            {"complexity", 1},
+            {"days", nlohmann::json::array({0, 2, 4})},
+            {"groups", nlohmann::json::array({1, 2, 4, 5})},
+            {"classrooms", nlohmann::json::array({2, 11})}
+        });
+
+        SubjectRequest request = ParseSubjectRequest(subjectRequest);
+        REQUIRE(request == SubjectRequest(1, 3, 1, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5}, {2, 11}));
+    }
+    SECTION("Subject request includes fields 'professor', 'hours_count', 'complexity', 'days', 'groups' and 'classrooms'")
+    {
+        auto days = nlohmann::json::array({0, 2, 4});
+        auto groups = nlohmann::json::array({0, 2, 4});
+        auto classrooms = nlohmann::json::array({2, 11});
+
+        SubjectRequest request;
+        REQUIRE_THROWS_AS(request = ParseSubjectRequest(nlohmann::json::object()), std::invalid_argument);
+        REQUIRE_THROWS_AS(request = ParseSubjectRequest(nlohmann::json::object({{"hours_count", 3},
+                                                                                   {"complexity", 1},
+                                                                                   {"days", nlohmann::json::array({0, 2, 4})},
+                                                                                   {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                                   {"classrooms", nlohmann::json::array({2, 11})}
+                                                                               })), std::invalid_argument);
+
+        REQUIRE_THROWS_AS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                                                   {"complexity", 1},
+                                                                                   {"days", nlohmann::json::array({0, 2, 4})},
+                                                                                   {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                                   {"classrooms", nlohmann::json::array({2, 11})}
+                                                                               })), std::invalid_argument);
+
+        REQUIRE_THROWS_AS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                                                   {"hours_count", 3},
+                                                                                   {"days", nlohmann::json::array({0, 2, 4})},
+                                                                                   {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                                   {"classrooms", nlohmann::json::array({2, 11})}
+                                                                               })), std::invalid_argument);
+
+        REQUIRE_THROWS_AS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                                                   {"hours_count", 3},
+                                                                                   {"complexity", 1},
+                                                                                   {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                                   {"classrooms", nlohmann::json::array({2, 11})}
+                                                                               })), std::invalid_argument);
+
+        REQUIRE_THROWS_AS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                                                   {"hours_count", 3},
+                                                                                   {"complexity", 1},
+                                                                                   {"days", nlohmann::json::array({0, 2, 4})},
+                                                                                   {"classrooms", nlohmann::json::array({2, 11})}
+                                                                               })), std::invalid_argument);
+
+        REQUIRE_THROWS_AS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                                                   {"hours_count", 3},
+                                                                                   {"complexity", 1},
+                                                                                   {"days", nlohmann::json::array({0, 2, 4})},
+                                                                                   {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                               })), std::invalid_argument);
+    }
+    SECTION("Throws if fields have invalid values")
+    {
+        SubjectRequest request;
+
+        // negative week day
+        REQUIRE_THROWS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                                {"hours_count", 3},
+                                                                {"complexity", 1},
+                                                                {"days", nlohmann::json::array({0, -2, 4})},
+                                                                {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                {"classrooms", nlohmann::json::array({2, 11})}
+                                                            })));
+
+        // too big week day
+        REQUIRE_THROWS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                                             {"hours_count", 3},
+                                                                             {"complexity", 1},
+                                                                             {"days", nlohmann::json::array({0, 2, 1231231123})},
+                                                                             {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                             {"classrooms", nlohmann::json::array({2, 11})}
+                                                                            })));
+
+        // negative group IDs
+        REQUIRE_THROWS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                              {"hours_count", 3},
+                                                              {"complexity", 1},
+                                                              {"days", nlohmann::json::array({0, 2, 4})},
+                                                              {"groups", nlohmann::json::array({-1, 2, -4, 5})},
+                                                              {"classrooms", nlohmann::json::array({2, 11})}
+                                                             })));
+
+        // negative classroom IDs
+        REQUIRE_THROWS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                              {"hours_count", 3},
+                                                              {"complexity", 1},
+                                                              {"days", nlohmann::json::array({0, 2, 4})},
+                                                              {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                              {"classrooms", nlohmann::json::array({2, -11})}
+                                                             })));
+    }
+    SECTION("Throws when fields have invalid type")
+    {
+        SubjectRequest request;
+
+        REQUIRE_THROWS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", "1"},
+                                                                             {"hours_count", 3},
+                                                                             {"complexity", 1},
+                                                                             {"days", nlohmann::json::array({0, 2, 4})},
+                                                                             {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                                             {"classrooms", nlohmann::json::array({2, 11})}
+                                                                            })));
+
+        REQUIRE_THROWS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                              {"hours_count", 3},
+                                                              {"complexity", 1},
+                                                              {"days", nlohmann::json::object()},
+                                                              {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                              {"classrooms", nlohmann::json::array({2, 11})}
+                                                             })));
+
+        REQUIRE_THROWS(request = ParseSubjectRequest(nlohmann::json::object({{"professor", 1},
+                                                              {"hours_count", 3},
+                                                              {"complexity", 1},
+                                                              {"days", nlohmann::json::object()},
+                                                              {"groups", nlohmann::json::array({1, 2, 4, 5})},
+                                                              {"classrooms", 2}
+                                                             })));
+    }
+}

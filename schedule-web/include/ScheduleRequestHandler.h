@@ -10,6 +10,8 @@
 
 
 nlohmann::json RequireField(const nlohmann::json& object, const std::string& field);
+WeekDays ParseWeekDays(const nlohmann::json& weekDays);
+SortedSet<std::size_t> ParseIDsSet(const nlohmann::json& arr);
 SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest);
 LessonAddress ParseLessonAddress(const nlohmann::json& lessonAddress);
 SubjectWithAddress ParseLockedLesson(const nlohmann::json& lockedLesson);

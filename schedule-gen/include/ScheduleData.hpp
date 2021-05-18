@@ -10,6 +10,7 @@
 class SubjectRequest
 {
 public:
+    SubjectRequest() = default;
     explicit SubjectRequest(std::size_t professor,
                             std::size_t hours,
                             std::size_t complexity,
@@ -27,10 +28,20 @@ public:
     [[nodiscard]] const std::vector<std::size_t>& Classrooms() const;
     [[nodiscard]] bool RequestedWeekDay(std::size_t day) const;
 
+    friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
+    {
+        return lhs.professor_ == rhs.professor_ &&
+            lhs.hours_ == rhs.hours_ &&
+            lhs.complexity_ == rhs.complexity_ &&
+            lhs.days_ == rhs.days_ &&
+            lhs.groups_ == rhs.groups_ &&
+            lhs.classrooms_ == rhs.classrooms_;
+    }
+
 private:
-    std::size_t professor_;
-    std::size_t hours_;
-    std::size_t complexity_;
+    std::size_t professor_ = 0;
+    std::size_t hours_ = 0;
+    std::size_t complexity_ = 0;
     WeekDays days_;
     SortedSet<std::size_t> groups_;
     SortedSet<std::size_t> classrooms_;
