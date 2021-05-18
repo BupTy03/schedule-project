@@ -5,3 +5,4 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(schedule-gen)
 add_subdirectory(schedule-ui)
+add_subdirectory(schedule-web)
