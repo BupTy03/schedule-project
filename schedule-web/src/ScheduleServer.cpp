@@ -3,10 +3,8 @@
 
 #include <Poco/Net/HTTPServer.h>
 
-#include <cassert>
 
-
-int ScheduleServer::main(const std::vector<std::string> &)
+int ScheduleServer::main(const std::vector<std::string>&)
 {
     using namespace Poco::Net;
 

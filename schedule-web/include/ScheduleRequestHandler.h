@@ -1,8 +1,19 @@
 #pragma once
+#include "ScheduleData.hpp"
+
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/Net/HTTPRequestHandler.h>
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
+
+#include <nlohmann/json.hpp>
+
+
+nlohmann::json RequireField(const nlohmann::json& object, const std::string& field);
+SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest);
+LessonAddress ParseLessonAddress(const nlohmann::json& lessonAddress);
+SubjectWithAddress ParseLockedLesson(const nlohmann::json& lockedLesson);
+ScheduleData ParseScheduleData(const nlohmann::json& data);
 
 
 class ScheduleRequestHandler : public Poco::Net::HTTPRequestHandler

@@ -38,6 +38,7 @@ private:
 
 struct SubjectWithAddress
 {
+    SubjectWithAddress() = default;
     explicit SubjectWithAddress(std::size_t Subject, LessonAddress Address)
             : Subject(Subject)
             , Address(Address)
@@ -58,7 +59,7 @@ struct SubjectWithAddress
         return lhs.Subject != rhs.Subject;
     }
 
-    std::size_t Subject;
+    std::size_t Subject = 0;
     LessonAddress Address;
 };
 

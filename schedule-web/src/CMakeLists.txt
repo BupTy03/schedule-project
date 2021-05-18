@@ -21,7 +21,7 @@ add_library(libschedule-web STATIC ${SRC_FILES})
 target_include_directories(libschedule-web PUBLIC ../include)
 target_compile_features(libschedule-web PUBLIC cxx_std_17)
 target_link_libraries(libschedule-web PUBLIC schedule-gen)
-target_link_libraries(libschedule-web PRIVATE CONAN_PKG::Poco CONAN_PKG::nlohmann_json)
+target_link_libraries(libschedule-web PUBLIC CONAN_PKG::Poco CONAN_PKG::nlohmann_json)
 
 add_executable(schedule-web ${SRC_FILES})
 target_include_directories(schedule-web PUBLIC ../include)

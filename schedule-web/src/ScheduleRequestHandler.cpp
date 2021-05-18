@@ -11,13 +11,25 @@ using namespace Poco;
 using namespace Poco::Net;
 
 
-static nlohmann::json RequireField(const nlohmann::json& object, const std::string& field)
+nlohmann::json RequireField(const nlohmann::json& object, const std::string& field)
 {
     auto it = object.find(field);
     if(it == object.end())
         throw std::invalid_argument("Field '" + field + "' is not found");
 
     return *it;
+}
+
+LessonAddress ParseLessonAddress(const nlohmann::json& lessonAddress)
+{
+    return LessonAddress(RequireField(lessonAddress, "group").get<std::size_t>(),
+                         RequireField(lessonAddress, "lesson").get<std::size_t>());
+}
+
+SubjectWithAddress ParseLockedLesson(const nlohmann::json& lockedLesson)
+{
+    return SubjectWithAddress(RequireField(lockedLesson, "subject_request").get<std::size_t>(),
+                              ParseLessonAddress(RequireField(lockedLesson, "address")));
 }
 
 
