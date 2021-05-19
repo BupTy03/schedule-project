@@ -1,5 +1,6 @@
 #include "ScheduleRequestHandler.h"
 #include "ScheduleServer.h"
+#include "GAScheduleGenerator.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -47,9 +48,6 @@ WeekDays ParseWeekDays(const nlohmann::json& weekDays)
         result.insert(static_cast<WeekDay>(value % 6));
     }
 
-    if(result == WeekDays::emptyWeek())
-        return WeekDays::fullWeek();
-
     return result;
 }
 
@@ -83,16 +81,84 @@ SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest)
         );
 }
 
-static nlohmann::json ComputeResponse(const nlohmann::json& request)
+ScheduleData ParseScheduleData(const nlohmann::json& scheduleData)
 {
-    const int a = RequireField(request, "a").get<int>();
-    const int b = RequireField(request, "b").get<int>();
+    auto subjectRequests = RequireField(scheduleData, "subject_requests");
+    if(!subjectRequests.is_array())
+        throw std::invalid_argument("Json array expected");
 
-    return {
-            {"a", a},
-            {"b", b},
-            {"sum", a + b}
-    };
+    std::vector<std::size_t> groups;
+    std::vector<std::size_t> professors;
+    std::vector<std::size_t> classrooms;
+
+    std::vector<SubjectRequest> requests;
+    requests.reserve(subjectRequests.size());
+    for(auto&& subjectRequest : subjectRequests)
+    {
+        requests.emplace_back(ParseSubjectRequest(subjectRequest));
+
+        const SubjectRequest& request = requests.back();
+        groups = Merge(groups, request.Groups());
+        InsertUniqueOrdered(professors, request.Professor());
+        classrooms = Merge(classrooms, request.Classrooms());
+    }
+
+    // 'locked_lessons' field is optional
+    std::vector<SubjectWithAddress> locked;
+    auto lockedLessonsIt = scheduleData.find("locked_lessons");
+    if(lockedLessonsIt != scheduleData.end() && lockedLessonsIt->is_array())
+    {
+        locked.reserve(lockedLessonsIt->size());
+        for(auto&& lockedLesson : *lockedLessonsIt)
+            locked.emplace_back(ParseLockedLesson(lockedLesson));
+    }
+
+    return ScheduleData(std::move(groups),
+                        std::move(professors),
+                        std::move(classrooms),
+                        std::move(requests),
+                        std::move(locked));
+}
+
+std::vector<std::size_t> Merge(const std::vector<std::size_t>& lhs,
+                               const std::vector<std::size_t>& rhs)
+{
+    assert(std::is_sorted(lhs.begin(), lhs.end()));
+    assert(std::is_sorted(rhs.begin(), rhs.end()));
+
+    std::vector<std::size_t> tmp;
+    std::merge(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::back_inserter(tmp));
+    return tmp;
+}
+
+void InsertUniqueOrdered(std::vector<std::size_t>& vec, std::size_t value)
+{
+    auto it = std::lower_bound(vec.begin(), vec.end(), value);
+    if(it == vec.end() || *it != value)
+        vec.emplace(it, value);
+}
+
+nlohmann::json ToJson(const LessonAddress& address)
+{
+    return nlohmann::json::object({{"group", address.Group},
+                                      {"lesson", address.Lesson}});
+}
+
+nlohmann::json ToJson(const ScheduleItem& scheduleItem)
+{
+    return nlohmann::json::object({{"address", ToJson(scheduleItem.Address)},
+                                   {"subject", scheduleItem.Subject},
+                                   {"professor", scheduleItem.Professor},
+                                   {"classroom", scheduleItem.Classroom}});
+}
+
+nlohmann::json ToJson(const ScheduleResult& scheduleResult)
+{
+    auto result = nlohmann::json::array();
+    for(auto&& item : scheduleResult.items())
+        result.emplace_back(ToJson(item));
+
+    return result;
 }
 
 
@@ -101,7 +167,7 @@ void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 {
     URI uri(request.getURI());
     const auto requestStr = uri.toString();
-    if(requestStr.find("/plus") != 0)
+    if(requestStr.find("/makeSchedule") != 0)
     {
         response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
         return;
@@ -113,7 +179,8 @@ void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
 
     nlohmann::json jsonResponse;
     try {
-        jsonResponse = ComputeResponse(nlohmann::json::parse(requestBody));
+        GAScheduleGenerator generator;
+        jsonResponse = ToJson(generator.Generate(ParseScheduleData(nlohmann::json::parse(requestBody))));
         response.setStatus(HTTPResponse::HTTP_OK);
     }
     catch(std::exception& e)

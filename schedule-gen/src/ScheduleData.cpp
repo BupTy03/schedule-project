@@ -16,7 +16,7 @@ SubjectRequest::SubjectRequest(std::size_t professor,
         , groups_(std::move(groups))
         , classrooms_(std::move(classrooms))
 {
-    if(days_.empty())
+    if(days_ == WeekDays::emptyWeek())
         days_ = WeekDays::fullWeek();
 }
 
@@ -60,6 +60,7 @@ ScheduleData::ScheduleData(std::vector<std::size_t> groups,
     classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
 
     std::sort(occupiedLessons_.begin(), occupiedLessons_.end());
+    occupiedLessons_.erase(std::unique(occupiedLessons_.begin(), occupiedLessons_.end()), occupiedLessons_.end());
 }
 
 const std::vector<std::size_t>& ScheduleData::Groups() const { return groups_; }

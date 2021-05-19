@@ -77,11 +77,6 @@ TEST_CASE("Parsing week days set", "[parsing]")
         const auto sat = ParseWeekDays(nlohmann::json::array({0, 1, 2, 3, 4, 5}));
         REQUIRE(sat == WeekDays::fullWeek());
     }
-    SECTION("If array is empty - consider as full week")
-    {
-        const auto sat = ParseWeekDays(nlohmann::json::array());
-        REQUIRE(sat == WeekDays::fullWeek());
-    }
     SECTION("If duplications found - they are ignored")
     {
         const auto sat = ParseWeekDays(nlohmann::json::array({0, 0, 1, 2, 3, 3, 3}));
@@ -99,7 +94,7 @@ TEST_CASE("Parsing week days set", "[parsing]")
     }
 }
 
-TEST_CASE("Parsing IDs set")
+TEST_CASE("Parsing IDs set", "[parsing]")
 {
     SECTION("Normal IDs json array parsed successfully")
     {
@@ -257,4 +252,88 @@ TEST_CASE("Parsing subject request", "[parsing]")
                                                               {"classrooms", 2}
                                                              })));
     }
+}
+
+TEST_CASE("Parsing schedule data", "[parsing]")
+{
+    SECTION("Schedule data includes fields 'subject_requests' ('locked_lessons' is optional)")
+    {
+        ScheduleData data;
+        REQUIRE_THROWS_AS(data = ParseScheduleData(nlohmann::json::object({{"subject_requests", nlohmann::json::array()}})), std::invalid_argument);
+    }
+}
+
+TEST_CASE("We can merge two ranges", "[algorithms]")
+{
+    SECTION("Merging to ranges")
+    {
+        const std::vector<std::size_t> first = {0, 2, 6, 8};
+        const std::vector<std::size_t> second = {1, 3, 4, 5, 7};
+        REQUIRE(Merge(first, second) == std::vector<std::size_t>({0, 1, 2, 3, 4, 5, 6, 7, 8}));
+    }
+    SECTION("If first range is empty - returns second range")
+    {
+        const std::vector<std::size_t> first;
+        const std::vector<std::size_t> second = {1, 3, 4, 5, 7};
+        REQUIRE(Merge(first, second) == second);
+    }
+    SECTION("If second range is empty - returns first range")
+    {
+        const std::vector<std::size_t> first = {0, 2, 6, 8};
+        const std::vector<std::size_t> second;
+        REQUIRE(Merge(first, second) == first);
+    }
+}
+
+TEST_CASE("We can insert ordered and unique values", "[algorithms]")
+{
+    SECTION("Inserting elements in empty range")
+    {
+        std::vector<std::size_t> elems;
+
+        InsertUniqueOrdered(elems, 2);
+        REQUIRE(elems == std::vector<std::size_t>({2}));
+
+        InsertUniqueOrdered(elems, 1);
+        REQUIRE(elems == std::vector<std::size_t>({1, 2}));
+
+        InsertUniqueOrdered(elems, 5);
+        REQUIRE(elems == std::vector<std::size_t>({1, 2, 5}));
+
+        InsertUniqueOrdered(elems, 0);
+        REQUIRE(elems == std::vector<std::size_t>({0, 1, 2, 5}));
+
+        InsertUniqueOrdered(elems, 3);
+        REQUIRE(elems == std::vector<std::size_t>({0, 1, 2, 3, 5}));
+    }
+    SECTION("Inserting element that already exists - has no effect")
+    {
+        const std::vector<std::size_t> initial = {1, 2, 3, 4, 5};
+        std::vector<std::size_t> vec = initial;
+
+        InsertUniqueOrdered(vec, 3);
+        REQUIRE(vec == initial);
+
+        InsertUniqueOrdered(vec, 5);
+        REQUIRE(vec == initial);
+
+        InsertUniqueOrdered(vec, 2);
+        REQUIRE(vec == initial);
+    }
+}
+
+TEST_CASE("Lesson address serialized successfully", "[serializing]")
+{
+    REQUIRE(ToJson(LessonAddress(1, 5)) == nlohmann::json::object({{"group", 1},
+                                                                    {"lesson", 5}}));
+}
+
+TEST_CASE("Schedule item serialized successfully", "[serializing]")
+{
+    ScheduleItem scheduleItem(LessonAddress(3, 7), 1, 2, 4);
+
+    REQUIRE(ToJson(scheduleItem) == nlohmann::json::object({{"address", nlohmann::json::object({{"group", 3}, {"lesson", 7}})},
+                                                             {"subject", 1},
+                                                             {"professor", 2},
+                                                             {"classroom", 4}}));
 }

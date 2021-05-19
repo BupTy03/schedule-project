@@ -38,6 +38,11 @@ public:
             lhs.classrooms_ == rhs.classrooms_;
     }
 
+    friend bool operator!=(const SubjectRequest& lhs, const SubjectRequest& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
 private:
     std::size_t professor_ = 0;
     std::size_t hours_ = 0;
@@ -95,6 +100,7 @@ struct SubjectWithAddressLess
 class ScheduleData
 {
 public:
+    ScheduleData() = default;
     explicit ScheduleData(std::vector<std::size_t> groups,
                           std::vector<std::size_t> professors,
                           std::vector<std::size_t> classrooms,
