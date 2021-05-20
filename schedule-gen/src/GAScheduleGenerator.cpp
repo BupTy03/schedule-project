@@ -40,10 +40,10 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
     LinearAllocatorBufferSpan bufferSpan(buffer.data(), buffer.size());
 
     using IntPair = std::pair<std::size_t, std::size_t>;
-    using MapPair = std::pair<std::size_t, std::array<bool, 6>>;
+    using MapPair = std::pair<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>>;
 
-    using ComplexityMap = SortedMap<std::size_t, std::size_t, LinearAllocator<std::pair<std::size_t, std::size_t>>>;
-    using WindowsMap = SortedMap<std::size_t, std::array<bool, 6>, LinearAllocator<std::pair<std::size_t, std::array<bool, 6>>>>;
+    using ComplexityMap = SortedMap<std::size_t, std::size_t, LinearAllocator<IntPair>>;
+    using WindowsMap = SortedMap<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>, LinearAllocator<MapPair>>;
 
     std::array<ComplexityMap, DAYS_IN_SCHEDULE> dayComplexity_{
             ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),

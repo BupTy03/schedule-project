@@ -33,7 +33,7 @@ void ScheduleModel::setGroups(const std::vector<GroupSchedule>& groups)
 int ScheduleModel::rowCount(const QModelIndex& parent) const
 {
     (void)parent;
-    return MAX_DAYS_PER_WEEK * MAX_LESSONS_PER_DAY_COUNT;
+    return MAX_LESSONS_PER_DAY * DAYS_IN_SCHEDULE_WEEK;
 }
 
 int ScheduleModel::columnCount(const QModelIndex& parent) const
@@ -51,7 +51,7 @@ QVariant ScheduleModel::headerData(int section, Qt::Orientation orientation, int
         return groups_.at(section).first;
 
     // Qt::Orientation::Vertical == orientation
-    return section % MAX_LESSONS_PER_DAY_COUNT + 1;
+    return section % MAX_LESSONS_PER_DAY + 1;
 }
 
 QVariant ScheduleModel::data(const QModelIndex& index, int role) const
@@ -63,9 +63,9 @@ QVariant ScheduleModel::data(const QModelIndex& index, int role) const
     {
     case Qt::ItemDataRole::DisplayRole:
     {
-        const auto day = static_cast<std::size_t>(index.row() / MAX_DAYS_PER_WEEK);
+        const auto day = static_cast<std::size_t>(index.row() / MAX_LESSONS_PER_DAY);
         const auto group = static_cast<std::size_t>(index.column());
-        const auto subject = static_cast<std::size_t>(index.row() % MAX_LESSONS_PER_DAY_COUNT);
+        const auto subject = static_cast<std::size_t>(index.row() % MAX_LESSONS_PER_DAY);
         return ToString(groups_.at(group).second.at(day).at(subject));
     }
     default:

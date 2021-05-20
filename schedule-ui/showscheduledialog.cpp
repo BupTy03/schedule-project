@@ -39,7 +39,7 @@ static std::unique_ptr<QStandardItemModel> BuildWeekDayHeaderModel()
         rotatedTextCell->setSizeHint(QSize(rotatedTextCell->sizeHint().width() + 30, rotatedTextCell->sizeHint().height()));
         rotatedTextCell->setData(1, Qt::UserRole);
 
-        for (int lesson = 1; lesson <= MAX_LESSONS_PER_DAY_COUNT; ++lesson)
+        for (int lesson = 1; lesson <= MAX_LESSONS_PER_DAY; ++lesson)
         {
             auto item = new QStandardItem(QString::number(lesson));
             item->setSizeHint(QSize(item->sizeHint().width() + 20, item->sizeHint().height()));
@@ -73,9 +73,9 @@ static DaySchedule ParseDay(const QJsonArray& scheduleItems)
     return result;
 }
 
-static std::array<DaySchedule, MAX_DAYS_PER_WEEK> ParseDays(const QJsonArray& days)
+static std::array<DaySchedule, DAYS_IN_SCHEDULE_WEEK> ParseDays(const QJsonArray& days)
 {
-    std::array<DaySchedule, MAX_DAYS_PER_WEEK> result;
+    std::array<DaySchedule, DAYS_IN_SCHEDULE_WEEK> result;
     if(result.size() != days.size())
         return {};
 
@@ -133,7 +133,7 @@ static QJsonArray ToJson(const DaySchedule& day)
     return result;
 }
 
-static QJsonArray ToJson(const std::array<DaySchedule, MAX_DAYS_PER_WEEK>& days)
+static QJsonArray ToJson(const std::array<DaySchedule, DAYS_IN_SCHEDULE_WEEK>& days)
 {
     QJsonArray result;
     for(auto&& day : days)

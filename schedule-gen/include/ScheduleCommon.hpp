@@ -12,7 +12,7 @@
 
 
 constexpr std::size_t SCHEDULE_DAYS_COUNT = 12;
-constexpr std::size_t MAX_LESSONS_PER_DAY = 6;
+constexpr std::size_t MAX_LESSONS_PER_DAY = 7;
 constexpr std::size_t DAYS_IN_SCHEDULE_WEEK = 6;
 constexpr std::size_t DAYS_IN_SCHEDULE = DAYS_IN_SCHEDULE_WEEK * 2;
 constexpr std::size_t MAX_LESSONS_COUNT = MAX_LESSONS_PER_DAY * DAYS_IN_SCHEDULE_WEEK * 2;

@@ -1,4 +1,5 @@
 #pragma once
+#include "ScheduleCommon.hpp"
 
 #include <QAbstractTableModel>
 #include <QString>
@@ -6,9 +7,6 @@
 #include <array>
 #include <vector>
 
-
-static constexpr int MAX_DAYS_PER_WEEK = 6;
-static constexpr int MAX_LESSONS_PER_DAY_COUNT = 6;
 
 struct ScheduleModelItem
 {
@@ -20,8 +18,8 @@ struct ScheduleModelItem
 QString ToString(const ScheduleModelItem& item);
 
 
-using DaySchedule = std::array<ScheduleModelItem, MAX_LESSONS_PER_DAY_COUNT>;
-using GroupSchedule = std::pair<QString, std::array<DaySchedule, MAX_DAYS_PER_WEEK>>;
+using DaySchedule = std::array<ScheduleModelItem, MAX_LESSONS_PER_DAY>;
+using GroupSchedule = std::pair<QString, std::array<DaySchedule, DAYS_IN_SCHEDULE_WEEK>>;
 
 
 class ScheduleModel : public QAbstractTableModel

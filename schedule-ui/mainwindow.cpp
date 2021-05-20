@@ -209,9 +209,9 @@ void MainWindow::onScheduleDone()
         for (std::size_t d = 0; d < 6; ++d)
         {
             DaySchedule& daySchedule = evenSchedule.second.at(d);
-            for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
+            for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY; ++l)
             {
-                const auto pResultLesson = resultSchedule->at(LessonAddress(g, d * MAX_LESSONS_PER_DAY_COUNT + l));
+                const auto pResultLesson = resultSchedule->at(LessonAddress(g, d * MAX_LESSONS_PER_DAY + l));
                 if (pResultLesson)
                 {
                     ScheduleModelItem item;
@@ -232,9 +232,9 @@ void MainWindow::onScheduleDone()
         for (std::size_t d = 6; d < SCHEDULE_DAYS_COUNT; ++d)
         {
             DaySchedule& daySchedule = oddSchedule.second.at(d - 6);
-            for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY_COUNT; ++l)
+            for (std::size_t l = 0; l < MAX_LESSONS_PER_DAY; ++l)
             {
-                const auto pResultLesson = resultSchedule->at(LessonAddress(g, d * MAX_LESSONS_PER_DAY_COUNT + l));
+                const auto pResultLesson = resultSchedule->at(LessonAddress(g, d * MAX_LESSONS_PER_DAY + l));
                 if (pResultLesson)
                 {
                     ScheduleModelItem item;

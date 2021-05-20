@@ -3,7 +3,6 @@ add_library(schedule-gen STATIC
         ScheduleData.cpp
         ScheduleResult.cpp
         ScheduleCommon.cpp
-        SATScheduleGenerator.cpp
         GAScheduleGenerator.cpp)
 
 target_include_directories(schedule-gen PUBLIC ../include)
