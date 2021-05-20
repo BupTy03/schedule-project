@@ -432,27 +432,18 @@ void Print(const ScheduleIndividual& individ, const std::vector<SubjectRequest>&
 
 ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
-    std::vector<SubjectRequest> requests;
-    std::vector<std::size_t> subjectNumbers;
-
     const auto& subjectRequests = data.SubjectRequests();
-    for(std::size_t subject = 0; subject < subjectRequests.size(); ++subject)
-    {
-        auto&& r = subjectRequests.at(subject);
-        requests.insert(requests.end(), r.HoursPerWeek(), r);
-        subjectNumbers.insert(subjectNumbers.end(), r.HoursPerWeek(), subject);
-    }
 
-    ScheduleGA algo(std::vector<ScheduleIndividual>(1000, ScheduleIndividual(requests)));
+    ScheduleGA algo(std::vector<ScheduleIndividual>(1000, ScheduleIndividual(subjectRequests)));
     const auto stat = algo.IterationsCount(1000)
             .SelectionCount(200)
             .CrossoverCount(25)
             .MutationChance(45)
-            .Start(requests);
+            .Start(subjectRequests);
 
     const auto& bestIndividual = algo.Best();
-    Print(bestIndividual, requests);
-    std::cout << "Best: " << bestIndividual.Evaluate(requests) << '\n';
+    Print(bestIndividual, subjectRequests);
+    std::cout << "Best: " << bestIndividual.Evaluate(subjectRequests) << '\n';
     std::cout << "Time: " << std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s.\n";
     std::cout << "Iterations: " << stat.Iterations << '\n';
     std::cout.flush();
@@ -467,11 +458,11 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
         while(it != lessons.end())
         {
             const std::size_t r = std::distance(lessons.begin(), it);
-            const auto& request = requests.at(r);
+            const auto& request = subjectRequests.at(r);
             for(std::size_t g : request.Groups())
             {
                 resultSchedule.insert(ScheduleItem(LessonAddress(g, l),
-                                           subjectNumbers.at(r),
+                                           r,
                                            request.Professor(),
                                            classrooms.at(r)));
             }

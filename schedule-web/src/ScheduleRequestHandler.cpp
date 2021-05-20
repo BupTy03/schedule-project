@@ -73,12 +73,10 @@ SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest)
 {
     return SubjectRequest(
         RequireField(subjectRequest, "professor").get<std::size_t>(),
-        RequireField(subjectRequest, "hours_count").get<std::size_t>(),
         RequireField(subjectRequest, "complexity").get<std::size_t>(),
         ParseWeekDays(RequireField(subjectRequest, "days")),
         ParseIDsSet(RequireField(subjectRequest, "groups")),
-        ParseIDsSet(RequireField(subjectRequest, "classrooms"))
-        );
+        ParseIDsSet(RequireField(subjectRequest, "classrooms")));
 }
 
 ScheduleData ParseScheduleData(const nlohmann::json& scheduleData)

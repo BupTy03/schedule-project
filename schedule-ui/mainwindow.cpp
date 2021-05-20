@@ -135,7 +135,6 @@ void MainWindow::generateSchedule()
     const auto classrooms = classroomsListModel_.stringList();
     const auto disciplines = disciplinesModel_->disciplines();
 
-    std::vector<QString> subjects;
     std::vector<SubjectRequest> subjectRequests;
     for (auto&& discipline : disciplines)
     {
@@ -147,13 +146,13 @@ void MainWindow::generateSchedule()
             if(lesson.CountHoursPerWeek <= 0)
                 continue;
 
-            subjects.emplace_back(discipline.Name + " (" + lesson.Name + ')');
-            subjectRequests.emplace_back(professor,
-                                         lesson.CountHoursPerWeek,
-                                         lesson.Complexity,
-                                         lesson.WeekDaysRequested,
-                                         ToGroupsSet(groups, lesson.Groups),
-                                         ToClassroomsSet(classrooms, lesson.Classrooms));
+            const SubjectRequest currentRequest(professor,
+                                                lesson.Complexity,
+                                                lesson.WeekDaysRequested,
+                                                ToGroupsSet(groups, lesson.Groups),
+                                                ToClassroomsSet(classrooms, lesson.Classrooms));
+
+            subjectRequests.insert(subjectRequests.end(), lesson.CountHoursPerWeek, currentRequest);
         }
     }
 
@@ -196,7 +195,8 @@ void MainWindow::onScheduleDone()
             if(lesson.CountHoursPerWeek <= 0)
                 continue;
 
-            subjects.emplace_back(discipline.Name + " (" + lesson.Name + ')');
+            const QString lessonItemName = discipline.Name + " (" + lesson.Name + ')';
+            subjects.insert(subjects.end(), lesson.CountHoursPerWeek, lessonItemName);
         }
     }
 

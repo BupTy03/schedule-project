@@ -4,13 +4,11 @@
 
 
 SubjectRequest::SubjectRequest(std::size_t professor,
-                               std::size_t hours,
                                std::size_t complexity,
                                WeekDays days,
                                SortedSet<std::size_t> groups,
                                SortedSet<std::size_t> classrooms)
         : professor_(professor)
-        , hours_(hours)
         , complexity_(complexity)
         , days_(days)
         , groups_(std::move(groups))
@@ -25,8 +23,6 @@ bool SubjectRequest::RequestedClassroom(std::size_t c) const { return classrooms
 bool SubjectRequest::RequestedGroup(std::size_t g) const { return groups_.contains(g); }
 
 bool SubjectRequest::Requested(WeekDay d) const { return days_.contains(d); }
-
-std::size_t SubjectRequest::HoursPerWeek() const { return hours_; }
 
 std::size_t SubjectRequest::Professor() const { return professor_; }
 
@@ -119,5 +115,5 @@ std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std:
     if(!subj.RequestedGroup(group))
         return 0;
 
-    return subj.HoursPerWeek();
+    return 1;
 }
