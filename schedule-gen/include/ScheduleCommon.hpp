@@ -30,6 +30,110 @@ enum class WeekDay : std::uint8_t
 [[nodiscard]] std::size_t LessonToScheduleDay(std::size_t lesson);
 [[nodiscard]] WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
 [[nodiscard]] std::vector<std::size_t> MakeIndexesRange(std::size_t n);
+[[nodiscard]] constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
+{
+    assert(l < MAX_LESSONS_COUNT);
+
+    constexpr bool lateSaturdayLessonsTable[MAX_LESSONS_COUNT] = {
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+    };
+
+    return lateSaturdayLessonsTable[l];
+}
 
 
 class WeekDays;

@@ -10,7 +10,7 @@ std::size_t LessonToScheduleDay(std::size_t lesson)
 
 WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum)
 {
-    return static_cast<WeekDay>(dayNum % 6);
+    return static_cast<WeekDay>(dayNum % DAYS_IN_SCHEDULE_WEEK);
 }
 
 std::vector<std::size_t> MakeIndexesRange(std::size_t n)
