@@ -13,13 +13,13 @@ class ScheduleData;
 struct ScheduleItem
 {
     explicit ScheduleItem(const LessonAddress& address,
-                          std::size_t subject,
-                          std::size_t professor,
+                          std::size_t subjectRequest,
+                          std::size_t subjectRequestID,
                           std::size_t classroom);
 
     LessonAddress Address;
-    std::size_t Subject;
-    std::size_t Professor;
+    std::size_t SubjectRequest;
+    std::size_t SubjectRequestID;
     std::size_t Classroom;
 };
 

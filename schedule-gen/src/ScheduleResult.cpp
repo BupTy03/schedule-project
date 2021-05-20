@@ -6,12 +6,12 @@
 
 
 ScheduleItem::ScheduleItem(const LessonAddress& address,
-                           std::size_t subject,
-                           std::size_t professor,
+                           std::size_t subjectRequest,
+                           std::size_t subjectRequestID,
                            std::size_t classroom)
         : Address(address)
-        , Subject(subject)
-        , Professor(professor)
+        , SubjectRequest(subjectRequest)
+        , SubjectRequestID(subjectRequestID)
         , Classroom(classroom)
 {}
 
@@ -60,7 +60,7 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
         {
             const auto item = result.at(LessonAddress(g, l));
             if(item)
-                classroomsAndSubjects[item->Classroom].insert(SubjectWithAddress(item->Subject, LessonAddress(g, l)));
+                classroomsAndSubjects[item->Classroom].insert(SubjectWithAddress(item->SubjectRequest, LessonAddress(g, l)));
         }
 
         for(const auto&[classroom, subjects] : classroomsAndSubjects)
@@ -88,8 +88,9 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
         for(std::size_t g : data.Groups())
         {
             const auto item = result.at(LessonAddress(g, l));
+            const auto& request = data.SubjectRequests().at(item->SubjectRequest);
             if(item)
-                professorsAndSubjects[item->Professor].insert(SubjectWithAddress(item->Subject, LessonAddress(g, l)));
+                professorsAndSubjects[request.Professor()].insert(SubjectWithAddress(item->SubjectRequest, LessonAddress(g, l)));
         }
 
         for(const auto&[professor, subjects] : professorsAndSubjects)
@@ -118,13 +119,13 @@ std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleDa
         {
             const std::size_t day = LessonToScheduleDay(l);
             const auto item = result.at(LessonAddress(g, l));
-            if(item && (!WeekDayRequestedForSubject(data, item->Subject, day) || data.LessonIsOccupied(LessonAddress(g, l))))
+            if(item && (!WeekDayRequestedForSubject(data, item->SubjectRequest, day) || data.LessonIsOccupied(LessonAddress(g, l))))
             {
                 auto it = std::lower_bound(violatedRequests.begin(), violatedRequests.end(),
-                                           item->Subject, ViolatedSubjectRequestLess());
+                                           item->SubjectRequest, ViolatedSubjectRequestLess());
 
-                if(it == violatedRequests.end() || it->Subject != item->Subject)
-                    it = violatedRequests.emplace(it, item->Subject);
+                if(it == violatedRequests.end() || it->Subject != item->SubjectRequest)
+                    it = violatedRequests.emplace(it, item->SubjectRequest);
 
                 it->Lessons.insert(LessonAddress(g, l));
             }

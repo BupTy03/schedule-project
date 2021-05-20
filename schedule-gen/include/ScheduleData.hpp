@@ -11,7 +11,8 @@ class SubjectRequest
 {
 public:
     SubjectRequest() = default;
-    explicit SubjectRequest(std::size_t professor,
+    explicit SubjectRequest(std::size_t id,
+                            std::size_t professor,
                             std::size_t complexity,
                             WeekDays days,
                             SortedSet<std::size_t> groups,
@@ -22,6 +23,7 @@ public:
     [[nodiscard]] bool Requested(WeekDay d) const;
     [[nodiscard]] std::size_t Complexity() const;
     [[nodiscard]] std::size_t Professor() const;
+    [[nodiscard]] std::size_t ID() const;
     [[nodiscard]] const std::vector<std::size_t>& Groups() const;
     [[nodiscard]] const std::vector<std::size_t>& Classrooms() const;
     [[nodiscard]] bool RequestedWeekDay(std::size_t day) const;
@@ -41,12 +43,30 @@ public:
     }
 
 private:
+    std::size_t id_ = 0;
     std::size_t professor_ = 0;
     std::size_t complexity_ = 0;
     WeekDays days_;
     SortedSet<std::size_t> groups_;
     SortedSet<std::size_t> classrooms_;
 };
+
+struct SubjectRequestIDLess
+{
+    bool operator()(const SubjectRequest& lhs, const SubjectRequest& rhs) const
+    {
+        return lhs.ID() < rhs.ID();
+    }
+};
+
+struct SubjectRequestIDEqual
+{
+    bool operator()(const SubjectRequest& lhs, const SubjectRequest& rhs) const
+    {
+        return lhs.ID() == rhs.ID();
+    }
+};
+
 
 struct SubjectWithAddress
 {

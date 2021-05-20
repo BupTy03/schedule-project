@@ -3,12 +3,14 @@
 #include <iostream>
 
 
-SubjectRequest::SubjectRequest(std::size_t professor,
+SubjectRequest::SubjectRequest(std::size_t id,
+                               std::size_t professor,
                                std::size_t complexity,
                                WeekDays days,
                                SortedSet<std::size_t> groups,
                                SortedSet<std::size_t> classrooms)
-        : professor_(professor)
+        : id_(id)
+        , professor_(professor)
         , complexity_(complexity)
         , days_(days)
         , groups_(std::move(groups))
@@ -27,6 +29,8 @@ bool SubjectRequest::Requested(WeekDay d) const { return days_.contains(d); }
 std::size_t SubjectRequest::Professor() const { return professor_; }
 
 std::size_t SubjectRequest::Complexity() const { return complexity_; }
+
+std::size_t SubjectRequest::ID() const { return id_; }
 
 const std::vector<std::size_t>& SubjectRequest::Groups() const { return groups_.elems(); }
 
@@ -57,6 +61,9 @@ ScheduleData::ScheduleData(std::vector<std::size_t> groups,
 
     std::sort(occupiedLessons_.begin(), occupiedLessons_.end());
     occupiedLessons_.erase(std::unique(occupiedLessons_.begin(), occupiedLessons_.end()), occupiedLessons_.end());
+
+    std::sort(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDLess());
+    subjectRequests_.erase(std::unique(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDEqual()), subjectRequests_.end());
 }
 
 const std::vector<std::size_t>& ScheduleData::Groups() const { return groups_; }

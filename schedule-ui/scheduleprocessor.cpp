@@ -27,4 +27,7 @@ void ScheduleProcessor::setData(std::shared_ptr<ScheduleData> data)
 {
     data_ = data;
 }
-
+std::shared_ptr<ScheduleData> ScheduleProcessor::data() const
+{
+    return data_;
+}

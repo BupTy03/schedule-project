@@ -463,7 +463,7 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
             {
                 resultSchedule.insert(ScheduleItem(LessonAddress(g, l),
                                            r,
-                                           request.Professor(),
+                                           request.ID(),
                                            classrooms.at(r)));
             }
 

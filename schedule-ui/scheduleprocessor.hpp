@@ -13,7 +13,10 @@ public:
                                QObject* parent = nullptr);
 
     void setData(std::shared_ptr<ScheduleData> data);
+    [[nodiscard]] std::shared_ptr<ScheduleData> data() const;
     [[nodiscard]] std::shared_ptr<ScheduleResult> result() const;
+
+
 
 signals:
     void done();

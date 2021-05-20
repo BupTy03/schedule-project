@@ -136,6 +136,7 @@ void MainWindow::generateSchedule()
     const auto disciplines = disciplinesModel_->disciplines();
 
     std::vector<SubjectRequest> subjectRequests;
+    std::size_t subjectRequestID = 1;
     for (auto&& discipline : disciplines)
     {
         auto professor = professors.indexOf(discipline.Professor);
@@ -143,16 +144,17 @@ void MainWindow::generateSchedule()
 
         for (auto&& lesson : discipline.Lessons)
         {
-            if(lesson.CountHoursPerWeek <= 0)
-                continue;
+            for(std::size_t h = 0; h < lesson.CountHoursPerWeek; ++h)
+            {
+                subjectRequests.emplace_back(subjectRequestID,
+                                             professor,
+                                             lesson.Complexity,
+                                             lesson.WeekDaysRequested,
+                                             ToGroupsSet(groups, lesson.Groups),
+                                             ToClassroomsSet(classrooms, lesson.Classrooms));
 
-            const SubjectRequest currentRequest(professor,
-                                                lesson.Complexity,
-                                                lesson.WeekDaysRequested,
-                                                ToGroupsSet(groups, lesson.Groups),
-                                                ToClassroomsSet(classrooms, lesson.Classrooms));
-
-            subjectRequests.insert(subjectRequests.end(), lesson.CountHoursPerWeek, currentRequest);
+                ++subjectRequestID;
+            }
         }
     }
 
@@ -178,6 +180,7 @@ void MainWindow::onScheduleDone()
 {
     endProcess();
 
+    const auto scheduleData = scheduleProcessor_->data();
     const auto resultSchedule = scheduleProcessor_->result();
     if(resultSchedule->empty())
         return;
@@ -214,10 +217,12 @@ void MainWindow::onScheduleDone()
                 const auto pResultLesson = resultSchedule->at(LessonAddress(g, d * MAX_LESSONS_PER_DAY + l));
                 if (pResultLesson)
                 {
+                    const auto& request = scheduleData->SubjectRequests().at(pResultLesson->SubjectRequest);
+
                     ScheduleModelItem item;
                     item.ClassRoom = classrooms.at(pResultLesson->Classroom);
-                    item.Professor = professors.at(pResultLesson->Professor);
-                    item.Subject = subjects.at(pResultLesson->Subject);
+                    item.Professor = professors.at(request.Professor());
+                    item.Subject = subjects.at(pResultLesson->SubjectRequest);
                     daySchedule.at(l) = item;
                 }
                 else
@@ -237,10 +242,12 @@ void MainWindow::onScheduleDone()
                 const auto pResultLesson = resultSchedule->at(LessonAddress(g, d * MAX_LESSONS_PER_DAY + l));
                 if (pResultLesson)
                 {
+                    const auto& request = scheduleData->SubjectRequests().at(pResultLesson->SubjectRequest);
+
                     ScheduleModelItem item;
                     item.ClassRoom = classrooms.at(pResultLesson->Classroom);
-                    item.Professor = professors.at(pResultLesson->Professor);
-                    item.Subject = subjects.at(pResultLesson->Subject);
+                    item.Professor = professors.at(request.Professor());
+                    item.Subject = subjects.at(pResultLesson->SubjectRequest);
                     daySchedule.at(l) = item;
                 }
                 else

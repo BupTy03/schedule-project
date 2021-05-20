@@ -72,6 +72,7 @@ SortedSet<std::size_t> ParseIDsSet(const nlohmann::json& arr)
 SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest)
 {
     return SubjectRequest(
+        RequireField(subjectRequest, "id").get<std::size_t>(),
         RequireField(subjectRequest, "professor").get<std::size_t>(),
         RequireField(subjectRequest, "complexity").get<std::size_t>(),
         ParseWeekDays(RequireField(subjectRequest, "days")),
@@ -145,8 +146,7 @@ nlohmann::json ToJson(const LessonAddress& address)
 nlohmann::json ToJson(const ScheduleItem& scheduleItem)
 {
     return nlohmann::json::object({{"address", ToJson(scheduleItem.Address)},
-                                   {"subject", scheduleItem.Subject},
-                                   {"professor", scheduleItem.Professor},
+                                   {"subject_request_id", scheduleItem.SubjectRequestID},
                                    {"classroom", scheduleItem.Classroom}});
 }
 
