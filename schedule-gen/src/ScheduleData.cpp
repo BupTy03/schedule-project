@@ -7,8 +7,8 @@ SubjectRequest::SubjectRequest(std::size_t id,
                                std::size_t professor,
                                std::size_t complexity,
                                WeekDays days,
-                               SortedSet<std::size_t> groups,
-                               SortedSet<std::size_t> classrooms)
+                               std::vector<std::size_t> groups,
+                               std::vector<ClassroomAddress> classrooms)
         : id_(id)
         , professor_(professor)
         , complexity_(complexity)
@@ -18,11 +18,23 @@ SubjectRequest::SubjectRequest(std::size_t id,
 {
     if(days_ == WeekDays::emptyWeek())
         days_ = WeekDays::fullWeek();
+
+    std::sort(groups_.begin(), groups_.end());
+    groups_.erase(std::unique(groups_.begin(), groups_.end()), groups_.end());
+
+    std::sort(classrooms_.begin(), classrooms_.end());
+    classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
 }
 
-bool SubjectRequest::RequestedClassroom(std::size_t c) const { return classrooms_.contains(c); }
+bool SubjectRequest::RequestedClassroom(const ClassroomAddress& classroomAddress) const
+{
+    return std::binary_search(classrooms_.begin(), classrooms_.end(), classroomAddress);
+}
 
-bool SubjectRequest::RequestedGroup(std::size_t g) const { return groups_.contains(g); }
+bool SubjectRequest::RequestedGroup(std::size_t g) const
+{
+    return std::binary_search(groups_.begin(), groups_.end(), g);
+}
 
 bool SubjectRequest::Requested(WeekDay d) const { return days_.contains(d); }
 
@@ -32,16 +44,16 @@ std::size_t SubjectRequest::Complexity() const { return complexity_; }
 
 std::size_t SubjectRequest::ID() const { return id_; }
 
-const std::vector<std::size_t>& SubjectRequest::Groups() const { return groups_.elems(); }
+const std::vector<std::size_t>& SubjectRequest::Groups() const { return groups_; }
 
-const std::vector<std::size_t>& SubjectRequest::Classrooms() const { return classrooms_.elems(); }
+const std::vector<ClassroomAddress>& SubjectRequest::Classrooms() const { return classrooms_; }
 
 bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.contains(static_cast<WeekDay>(day % 6)); }
 
 
 ScheduleData::ScheduleData(std::vector<std::size_t> groups,
                            std::vector<std::size_t> professors,
-                           std::vector<std::size_t> classrooms,
+                           std::vector<ClassroomAddress> classrooms,
                            std::vector<SubjectRequest> subjectRequests,
                            std::vector<SubjectWithAddress> occupiedLessons)
         : groups_(std::move(groups))
@@ -70,7 +82,7 @@ const std::vector<std::size_t>& ScheduleData::Groups() const { return groups_; }
 
 const std::vector<std::size_t>& ScheduleData::Professors() const { return professors_; }
 
-const std::vector<std::size_t>& ScheduleData::Classrooms() const { return classrooms_; }
+const std::vector<ClassroomAddress>& ScheduleData::Classrooms() const { return classrooms_; }
 
 std::size_t ScheduleData::CountSubjects() const { return subjectRequests_.size(); }
 
@@ -108,9 +120,9 @@ bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, s
     return data.SubjectRequests().at(subject).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
 }
 
-bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t classroom)
+bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, const ClassroomAddress& classroomAddress)
 {
-    return data.SubjectRequests().at(subject).RequestedClassroom(classroom);
+    return data.SubjectRequests().at(subject).RequestedClassroom(classroomAddress);
 }
 
 std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject)

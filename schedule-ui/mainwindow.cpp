@@ -160,7 +160,7 @@ void MainWindow::generateSchedule()
 
     auto scheduleData = std::make_shared<ScheduleData>(MakeIndexesRange(groups.size()),
                                                        MakeIndexesRange(professors.size()),
-                                                       MakeIndexesRange(classrooms.size()),
+                                                       GenerateClassrooms(classrooms.size()),
                                                        std::move(subjectRequests),
                                                        std::vector<SubjectWithAddress>());
 

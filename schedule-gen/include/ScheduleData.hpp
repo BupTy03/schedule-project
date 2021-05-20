@@ -15,17 +15,17 @@ public:
                             std::size_t professor,
                             std::size_t complexity,
                             WeekDays days,
-                            SortedSet<std::size_t> groups,
-                            SortedSet<std::size_t> classrooms);
+                            std::vector<std::size_t> groups,
+                            std::vector<ClassroomAddress> classrooms);
 
-    [[nodiscard]] bool RequestedClassroom(std::size_t c) const;
+    [[nodiscard]] bool RequestedClassroom(const ClassroomAddress& classroomAddress) const;
     [[nodiscard]] bool RequestedGroup(std::size_t g) const;
     [[nodiscard]] bool Requested(WeekDay d) const;
     [[nodiscard]] std::size_t Complexity() const;
     [[nodiscard]] std::size_t Professor() const;
     [[nodiscard]] std::size_t ID() const;
     [[nodiscard]] const std::vector<std::size_t>& Groups() const;
-    [[nodiscard]] const std::vector<std::size_t>& Classrooms() const;
+    [[nodiscard]] const std::vector<ClassroomAddress>& Classrooms() const;
     [[nodiscard]] bool RequestedWeekDay(std::size_t day) const;
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
@@ -47,8 +47,8 @@ private:
     std::size_t professor_ = 0;
     std::size_t complexity_ = 0;
     WeekDays days_;
-    SortedSet<std::size_t> groups_;
-    SortedSet<std::size_t> classrooms_;
+    std::vector<std::size_t> groups_;
+    std::vector<ClassroomAddress> classrooms_;
 };
 
 struct SubjectRequestIDLess
@@ -119,13 +119,13 @@ public:
     ScheduleData() = default;
     explicit ScheduleData(std::vector<std::size_t> groups,
                           std::vector<std::size_t> professors,
-                          std::vector<std::size_t> classrooms,
+                          std::vector<ClassroomAddress> classrooms,
                           std::vector<SubjectRequest> subjectRequests,
                           std::vector<SubjectWithAddress> occupiedLessons);
 
     [[nodiscard]] const std::vector<std::size_t>& Groups() const;
     [[nodiscard]] const std::vector<std::size_t>& Professors() const;
-    [[nodiscard]] const std::vector<std::size_t>& Classrooms() const;
+    [[nodiscard]] const std::vector<ClassroomAddress>& Classrooms() const;
     [[nodiscard]] std::size_t CountSubjects() const;
     [[nodiscard]] const std::vector<SubjectRequest>& SubjectRequests() const;
     [[nodiscard]] bool LessonIsOccupied(const LessonAddress& lessonAddress) const;
@@ -133,7 +133,7 @@ public:
 private:
     std::vector<std::size_t> groups_;
     std::vector<std::size_t> professors_;
-    std::vector<std::size_t> classrooms_;
+    std::vector<ClassroomAddress> classrooms_;
     std::vector<SubjectRequest> subjectRequests_;
     std::vector<SubjectWithAddress> occupiedLessons_;
 };
@@ -152,4 +152,4 @@ enum class ScheduleDataValidationResult
 [[nodiscard]] ScheduleDataValidationResult Validate(const ScheduleData& data);
 [[nodiscard]] std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject);
 [[nodiscard]] bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay);
-[[nodiscard]] bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t classroom);
+[[nodiscard]] bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, const ClassroomAddress& classroomAddress);

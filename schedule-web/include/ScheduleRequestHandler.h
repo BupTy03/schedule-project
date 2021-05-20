@@ -12,7 +12,8 @@
 
 nlohmann::json RequireField(const nlohmann::json& object, const std::string& field);
 WeekDays ParseWeekDays(const nlohmann::json& weekDays);
-SortedSet<std::size_t> ParseIDsSet(const nlohmann::json& arr);
+std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr);
+std::vector<ClassroomAddress> ParseClassrooms(const nlohmann::json& arr);
 SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest);
 LessonAddress ParseLessonAddress(const nlohmann::json& lessonAddress);
 SubjectWithAddress ParseLockedLesson(const nlohmann::json& lockedLesson);
@@ -21,8 +22,18 @@ ScheduleData ParseScheduleData(const nlohmann::json& scheduleData);
 nlohmann::json ToJson(const ScheduleItem& scheduleItem);
 nlohmann::json ToJson(const ScheduleResult& scheduleResult);
 
-std::vector<std::size_t> Merge(const std::vector<std::size_t>& lhs,
-                               const std::vector<std::size_t>& rhs);
+
+template<typename T>
+std::vector<T> Merge(const std::vector<T>& lhs,
+                     const std::vector<T>& rhs)
+{
+    assert(std::is_sorted(lhs.begin(), lhs.end()));
+    assert(std::is_sorted(rhs.begin(), rhs.end()));
+
+    std::vector<T> tmp;
+    std::merge(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::back_inserter(tmp));
+    return tmp;
+}
 
 void InsertUniqueOrdered(std::vector<std::size_t>& vec, std::size_t value);
 

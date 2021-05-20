@@ -32,6 +32,7 @@ enum class WeekDay : std::uint8_t
 [[nodiscard]] std::vector<std::size_t> MakeIndexesRange(std::size_t n);
 [[nodiscard]] constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
 {
+    static_assert(MAX_LESSONS_COUNT == 84, "re-fill lateSaturdayLessonsTable");
     assert(l < MAX_LESSONS_COUNT);
 
     constexpr bool lateSaturdayLessonsTable[MAX_LESSONS_COUNT] = {
@@ -134,6 +135,36 @@ enum class WeekDay : std::uint8_t
 
     return lateSaturdayLessonsTable[l];
 }
+
+struct ClassroomAddress
+{
+    ClassroomAddress() = default;
+    explicit ClassroomAddress(std::size_t building, std::size_t classroom)
+        : Building(building)
+        , Classroom(classroom)
+    {}
+
+    static ClassroomAddress NoClassroom();
+
+    friend bool operator==(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
+    {
+        return lhs.Building == rhs.Building && lhs.Classroom == rhs.Classroom;
+    }
+    friend bool operator!=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(lhs == rhs); }
+
+    friend bool operator<(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
+    {
+        return (lhs.Building < rhs.Building) || (lhs.Building == rhs.Building && lhs.Classroom < rhs.Classroom);
+    }
+    friend bool operator>(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return rhs < lhs; }
+    friend bool operator<=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(rhs < lhs); }
+    friend bool operator>=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(lhs < rhs); }
+
+    std::size_t Building;
+    std::size_t Classroom;
+};
+
+std::vector<ClassroomAddress> GenerateClassrooms(std::size_t n);
 
 
 class WeekDays;

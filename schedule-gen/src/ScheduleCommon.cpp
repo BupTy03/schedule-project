@@ -2,6 +2,9 @@
 
 #include <numeric>
 
+#undef min
+#undef max
+
 
 std::size_t LessonToScheduleDay(std::size_t lesson)
 {
@@ -18,6 +21,23 @@ std::vector<std::size_t> MakeIndexesRange(std::size_t n)
     std::vector<std::size_t> result(n);
     std::iota(result.begin(), result.end(), std::size_t{0});
     return result;
+}
+
+std::vector<ClassroomAddress> GenerateClassrooms(std::size_t n)
+{
+    std::vector<ClassroomAddress> result;
+    result.reserve(n);
+    for(std::size_t classroom = 0; classroom < n; ++classroom)
+        result.emplace_back(0, classroom);
+
+    return result;
+}
+
+
+ClassroomAddress ClassroomAddress::NoClassroom()
+{
+    return ClassroomAddress(std::numeric_limits<std::size_t>::max(),
+                            std::numeric_limits<std::size_t>::max());
 }
 
 

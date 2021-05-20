@@ -49,7 +49,6 @@ void MoveRows(QAbstractItemModel& from, QAbstractItemModel& to, QList<QModelInde
 
 QString Join(const SortedSet<QString>& strSet, const QString& glue);
 
-SortedSet<std::size_t> IndexesSet(std::size_t count);
-SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const StringsSet& currentGroups);
-SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const StringsSet& currentClassrooms);
+std::vector<std::size_t> ToGroupsSet(const QStringList& allGroups, const StringsSet& currentGroups);
+std::vector<ClassroomAddress> ToClassroomsSet(const QStringList& allClassrooms, const StringsSet& currentClassrooms);
 QString ToWarningMessage(ScheduleDataValidationResult validationResult);

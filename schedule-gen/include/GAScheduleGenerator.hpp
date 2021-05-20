@@ -11,7 +11,7 @@ class ScheduleIndividual
 public:
     explicit ScheduleIndividual(const std::vector<SubjectRequest>& requests);
 
-    [[nodiscard]] const std::vector<std::size_t>& Classrooms() const;
+    [[nodiscard]] const std::vector<ClassroomAddress>& Classrooms() const;
     [[nodiscard]] const std::vector<std::size_t>& Lessons() const;
 
     void Mutate(const std::vector<SubjectRequest>& requests, std::mt19937& randGen);
@@ -23,7 +23,7 @@ private:
                                                     std::size_t currentRequest,
                                                     std::size_t currentLesson) const;
 
-    [[nodiscard]] bool ClassroomsIntersects(std::size_t currentLesson, std::size_t currentClassroom) const;
+    [[nodiscard]] bool ClassroomsIntersects(std::size_t currentLesson, const ClassroomAddress& currentClassroom) const;
     void Init(const std::vector<SubjectRequest>& requests, std::size_t requestIndex);
     void Change(const std::vector<SubjectRequest>& requests, std::mt19937& randGen);
 
@@ -34,7 +34,7 @@ private:
 private:
     mutable bool evaluated_;
     mutable std::size_t evaluatedValue_;
-    std::vector<std::size_t> classrooms_;
+    std::vector<ClassroomAddress> classrooms_;
     std::vector<std::size_t> lessons_;
 };
 

@@ -8,16 +8,16 @@
 ScheduleIndividual::ScheduleIndividual(const std::vector<SubjectRequest> &requests)
         : evaluated_(false)
         , evaluatedValue_(std::numeric_limits<std::size_t>::max())
-        , classrooms_(requests.size(), std::numeric_limits<std::size_t>::max())
+        , classrooms_(requests.size(), ClassroomAddress::NoClassroom())
         , lessons_(requests.size(), std::numeric_limits<std::size_t>::max())
 {
     for(std::size_t i = 0; i < requests.size(); ++i)
         Init(requests, i);
 }
 
-const std::vector<std::size_t> &ScheduleIndividual::Classrooms() const { return classrooms_; }
+const std::vector<ClassroomAddress>& ScheduleIndividual::Classrooms() const { return classrooms_; }
 
-const std::vector<std::size_t> &ScheduleIndividual::Lessons() const { return lessons_; }
+const std::vector<std::size_t>& ScheduleIndividual::Lessons() const { return lessons_; }
 
 void ScheduleIndividual::Mutate(const std::vector<SubjectRequest>& requests, std::mt19937& randGen)
 {
@@ -187,7 +187,7 @@ bool ScheduleIndividual::GroupsOrProfessorsIntersects(const std::vector<SubjectR
     return false;
 }
 
-bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson, std::size_t currentClassroom) const
+bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson, const ClassroomAddress& currentClassroom) const
 {
     auto it = std::find(classrooms_.begin(), classrooms_.end(), currentClassroom);
     while(it != classrooms_.end())
@@ -227,7 +227,7 @@ void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests, std::
             if(GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson))
                 continue;
 
-            for(std::size_t classroom : classrooms)
+            for(auto&& classroom : classrooms)
             {
                 if(!ClassroomsIntersects(scheduleLesson, classroom))
                 {
@@ -261,7 +261,7 @@ void ScheduleIndividual::ChooseClassroom(const std::vector<SubjectRequest>& requ
     const auto& classrooms = request.Classrooms();
 
     std::uniform_int_distribution<std::size_t> classroomDistrib(0, classrooms.size() - 1);
-    std::size_t scheduleClassroom = classrooms.at(classroomDistrib(randGen));
+    ClassroomAddress scheduleClassroom = classrooms.at(classroomDistrib(randGen));
 
     std::size_t chooseClassroomTry = 0;
     while(chooseClassroomTry < classrooms.size() && ClassroomsIntersects(lessons_.at(requestIndex), scheduleClassroom))
@@ -420,7 +420,9 @@ void Print(const ScheduleIndividual& individ, const std::vector<SubjectRequest>&
             {
                 const std::size_t r = std::distance(lessons.begin(), it);
                 const auto& request = requests.at(r);
-                std::cout << "[s:" << r << ", p:" << request.Professor() << ", c:" << classrooms.at(r) << "]";
+                std::cout << "[s:" << r <<
+                    ", p:" << request.Professor() <<
+                    ", c:(" << classrooms.at(r).Building << ", " << classrooms.at(r).Classroom << ")]";
 
                 it = std::find(std::next(it), lessons.end(), l);
             }
@@ -462,7 +464,7 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
             resultSchedule.insert(ScheduleItem(l,
                                                r,
                                                request.ID(),
-                                               classrooms.at(r)));
+                                               classrooms.at(r).Classroom));
 
             it = std::find(std::next(it), lessons.end(), l);
         }

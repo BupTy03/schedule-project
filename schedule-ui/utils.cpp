@@ -73,21 +73,12 @@ QString Join(const SortedSet<QString>& strSet, const QString& glue)
     return lst.join(glue);
 }
 
-SortedSet<std::size_t> IndexesSet(std::size_t count)
-{
-    SortedSet<std::size_t> result;
-    for(std::size_t i = 0; i < count; ++i)
-        result.insert(i);
-
-    return result;
-}
-
-SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const StringsSet& currentGroups)
+std::vector<std::size_t> ToGroupsSet(const QStringList& allGroups, const StringsSet& currentGroups)
 {
     if(currentGroups.empty())
-        return IndexesSet(allGroups.size());
+        return MakeIndexesRange(allGroups.size());
 
-    SortedSet<std::size_t> result;
+    std::vector<std::size_t> result;
     for(auto&& g : currentGroups)
     {
         const auto groupIndex = allGroups.indexOf(g);
@@ -95,17 +86,20 @@ SortedSet<std::size_t> ToGroupsSet(const QStringList& allGroups, const StringsSe
         if(groupIndex < 0)
             continue;
 
-        result.insert(groupIndex);
+        result.emplace_back(groupIndex);
     }
 
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()), result.end());
+    result.shrink_to_fit();
     return result;
 }
 
-SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const StringsSet& currentClassrooms)
+std::vector<ClassroomAddress> ToClassroomsSet(const QStringList& allClassrooms, const StringsSet& currentClassrooms)
 {
-    SortedSet<std::size_t> result;
+    std::vector<ClassroomAddress> result;
     if(currentClassrooms.empty())
-        return IndexesSet(allClassrooms.size());
+        return GenerateClassrooms(allClassrooms.size());
 
     for(auto&& c : currentClassrooms)
     {
@@ -114,9 +108,12 @@ SortedSet<std::size_t> ToClassroomsSet(const QStringList& allClassrooms, const S
         if(classroomIndex < 0)
             continue;
 
-        result.insert(classroomIndex);
+        result.emplace_back(ClassroomAddress(0, classroomIndex));
     }
 
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()), result.end());
+    result.shrink_to_fit();
     return result;
 }
 

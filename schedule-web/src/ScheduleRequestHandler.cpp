@@ -51,21 +51,53 @@ WeekDays ParseWeekDays(const nlohmann::json& weekDays)
     return result;
 }
 
-SortedSet<std::size_t> ParseIDsSet(const nlohmann::json& arr)
+std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
 {
     if(!arr.is_array())
         throw std::invalid_argument("Json array expected");
 
-    SortedSet<std::size_t> result;
+    std::vector<std::size_t> result;
+    result.reserve(arr.size());
     for(auto&& value : arr)
     {
         const auto v = value.get<std::int64_t>();
         if(value < 0)
             throw std::invalid_argument("ID can't be negative");
 
-        result.insert(static_cast<std::size_t>(v));
+        result.emplace_back(static_cast<std::size_t>(v));
     }
 
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()), result.end());
+    result.shrink_to_fit();
+    return result;
+}
+
+std::vector<ClassroomAddress> ParseClassrooms(const nlohmann::json& arr)
+{
+    if(!arr.is_array())
+        throw std::invalid_argument("Json array expected");
+
+    std::vector<ClassroomAddress> result;
+    for(std::size_t building = 0; building < arr.size(); ++building)
+    {
+        auto&& classrooms = arr.at(building);
+        if(!classrooms.is_array())
+            throw std::invalid_argument("Json array expected");
+
+        for(auto&& cr : classrooms)
+        {
+            std::int64_t classroom = cr.get<std::int64_t>();
+            if(classroom < 0)
+                throw std::invalid_argument("Classroom ID must be positive number");
+
+            result.emplace_back(building, classroom);
+        }
+    }
+
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()), result.end());
+    result.shrink_to_fit();
     return result;
 }
 
@@ -77,7 +109,7 @@ SubjectRequest ParseSubjectRequest(const nlohmann::json& subjectRequest)
         RequireField(subjectRequest, "complexity").get<std::size_t>(),
         ParseWeekDays(RequireField(subjectRequest, "days")),
         ParseIDsSet(RequireField(subjectRequest, "groups")),
-        ParseIDsSet(RequireField(subjectRequest, "classrooms")));
+        ParseClassrooms(RequireField(subjectRequest, "classrooms")));
 }
 
 ScheduleData ParseScheduleData(const nlohmann::json& scheduleData)
@@ -88,7 +120,7 @@ ScheduleData ParseScheduleData(const nlohmann::json& scheduleData)
 
     std::vector<std::size_t> groups;
     std::vector<std::size_t> professors;
-    std::vector<std::size_t> classrooms;
+    std::vector<ClassroomAddress> classrooms;
 
     std::vector<SubjectRequest> requests;
     requests.reserve(subjectRequests.size());
@@ -119,16 +151,6 @@ ScheduleData ParseScheduleData(const nlohmann::json& scheduleData)
                         std::move(locked));
 }
 
-std::vector<std::size_t> Merge(const std::vector<std::size_t>& lhs,
-                               const std::vector<std::size_t>& rhs)
-{
-    assert(std::is_sorted(lhs.begin(), lhs.end()));
-    assert(std::is_sorted(rhs.begin(), rhs.end()));
-
-    std::vector<std::size_t> tmp;
-    std::merge(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::back_inserter(tmp));
-    return tmp;
-}
 
 void InsertUniqueOrdered(std::vector<std::size_t>& vec, std::size_t value)
 {
