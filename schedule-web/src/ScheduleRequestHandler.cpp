@@ -4,12 +4,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Poco/URI.h"
-#include "Poco/StringTokenizer.h"
-#include "Poco/Net/SecureStreamSocket.h"
-#include "Poco/Net/SecureServerSocket.h"
-#include "Poco/Net/X509Certificate.h"
-#include "Poco/Net/HTTPServerRequestImpl.h"
+#include <Poco/URI.h>
+#include <Poco/StringTokenizer.h>
 
 
 using namespace Poco;
@@ -174,31 +170,6 @@ void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
     if(requestStr.find("/makeSchedule") != 0)
     {
         response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-        return;
-    }
-
-    Poco::Util::Application& app = Poco::Util::Application::instance();
-    app.logger().information("Request from " + request.clientAddress().toString());
-
-    try
-    {
-        Poco::Net::HTTPServerRequestImpl& r = dynamic_cast<Poco::Net::HTTPServerRequestImpl&>(request);
-        SecureStreamSocket secureStreamSocket(r.socket());
-        if (secureStreamSocket.havePeerCertificate())
-        {
-            Poco::Net::X509Certificate cert = secureStreamSocket.peerCertificate();
-            app.logger().information("Client certificate: " + cert.subjectName());
-        }
-        else
-        {
-            app.logger().information("No client certificate available.");
-        }
-    }
-    catch(std::exception& e)
-    {
-        std::cout << "Exception: " << e.what() << std::endl;
-        response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-        response.send();
         return;
     }
 

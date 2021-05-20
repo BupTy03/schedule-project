@@ -1,19 +1,19 @@
 #include "ScheduleServer.h"
 #include "ScheduleRequestHandler.h"
 
-#include "Poco/Net/HTTPServer.h"
-#include "Poco/Net/SecureServerSocket.h"
+#include <Poco/Net/HTTPServer.h>
 
 
 int ScheduleServer::main(const std::vector<std::string>&)
 {
     using namespace Poco::Net;
 
-    // set-up a server socket
-    SecureServerSocket svs(8000);
-    HTTPServer s(new ScheduleRequestHandlerFactory, svs, new HTTPServerParams);
+    HTTPServer s(new ScheduleRequestHandlerFactory, ServerSocket(8000), new HTTPServerParams);
     s.start();
-    waitForTerminationRequest();
+
+    int ch = 0;
+    while((ch = std::getchar()) != 'q');
+
     s.stop();
     return Application::EXIT_OK;
 }
