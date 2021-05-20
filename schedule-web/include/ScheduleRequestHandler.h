@@ -18,7 +18,6 @@ LessonAddress ParseLessonAddress(const nlohmann::json& lessonAddress);
 SubjectWithAddress ParseLockedLesson(const nlohmann::json& lockedLesson);
 ScheduleData ParseScheduleData(const nlohmann::json& scheduleData);
 
-nlohmann::json ToJson(const LessonAddress& address);
 nlohmann::json ToJson(const ScheduleItem& scheduleItem);
 nlohmann::json ToJson(const ScheduleResult& scheduleResult);
 

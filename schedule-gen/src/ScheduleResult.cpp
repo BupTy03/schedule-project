@@ -5,11 +5,11 @@
 #include <algorithm>
 
 
-ScheduleItem::ScheduleItem(const LessonAddress& address,
+ScheduleItem::ScheduleItem(std::size_t lessonAddress,
                            std::size_t subjectRequest,
                            std::size_t subjectRequestID,
                            std::size_t classroom)
-        : Address(address)
+        : Address(lessonAddress)
         , SubjectRequest(subjectRequest)
         , SubjectRequestID(subjectRequestID)
         , Classroom(classroom)
@@ -20,10 +20,10 @@ bool ScheduleResult::empty() const { return items_.empty(); }
 
 const std::vector<ScheduleItem>& ScheduleResult::items() const { return items_; }
 
-const ScheduleItem* ScheduleResult::at(const LessonAddress& address) const
+const ScheduleItem* ScheduleResult::at(std::size_t lessonAddress) const
 {
-    auto it = std::lower_bound(items_.begin(), items_.end(), address, ScheduleItemLess());
-    if(it == items_.end() || it->Address != address)
+    auto it = std::lower_bound(items_.begin(), items_.end(), lessonAddress, ScheduleItemLess());
+    if(it == items_.end() || it->Address != lessonAddress)
         return nullptr;
 
     return &(*it);
@@ -56,10 +56,10 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         SortedMap<std::size_t, SortedSet<SubjectWithAddress>> classroomsAndSubjects;
-        for(std::size_t g : data.Groups())
+        const auto item = result.at(l);
+        if(item)
         {
-            const auto item = result.at(LessonAddress(g, l));
-            if(item)
+            for (std::size_t g : data.Groups())
                 classroomsAndSubjects[item->Classroom].insert(SubjectWithAddress(item->SubjectRequest, LessonAddress(g, l)));
         }
 
@@ -85,11 +85,11 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         SortedMap<std::size_t, SortedSet<SubjectWithAddress>> professorsAndSubjects;
-        for(std::size_t g : data.Groups())
+        const auto item = result.at(l);
+        if(item)
         {
-            const auto item = result.at(LessonAddress(g, l));
             const auto& request = data.SubjectRequests().at(item->SubjectRequest);
-            if(item)
+            for(std::size_t g : data.Groups())
                 professorsAndSubjects[request.Professor()].insert(SubjectWithAddress(item->SubjectRequest, LessonAddress(g, l)));
         }
 
@@ -113,21 +113,21 @@ std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleDa
                                                                 const ScheduleResult& result)
 {
     std::vector<ViolatedSubjectRequest> violatedRequests;
-    for(std::size_t g : data.Groups())
+    for(auto&& item : result.items())
     {
-        for (std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
+        const std::size_t day = LessonToScheduleDay(item.Address);
+
+        const auto& request = data.SubjectRequests().at(item.SubjectRequest);
+        for(std::size_t g : request.Groups())
         {
-            const std::size_t day = LessonToScheduleDay(l);
-            const auto item = result.at(LessonAddress(g, l));
-            if(item && (!WeekDayRequestedForSubject(data, item->SubjectRequest, day) || data.LessonIsOccupied(LessonAddress(g, l))))
+            if(!WeekDayRequestedForSubject(data, item.SubjectRequest, day) || data.LessonIsOccupied(LessonAddress(g, item.Address)))
             {
-                auto it = std::lower_bound(violatedRequests.begin(), violatedRequests.end(),
-                                           item->SubjectRequest, ViolatedSubjectRequestLess());
+                auto it = std::lower_bound(violatedRequests.begin(), violatedRequests.end(), item.SubjectRequest, ViolatedSubjectRequestLess());
 
-                if(it == violatedRequests.end() || it->Subject != item->SubjectRequest)
-                    it = violatedRequests.emplace(it, item->SubjectRequest);
+                if (it == violatedRequests.end() || it->Subject != item.SubjectRequest)
+                    it = violatedRequests.emplace(it, item.SubjectRequest);
 
-                it->Lessons.insert(LessonAddress(g, l));
+                it->Lessons.insert(LessonAddress(g, item.Address));
             }
         }
     }

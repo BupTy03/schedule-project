@@ -459,13 +459,10 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
         {
             const std::size_t r = std::distance(lessons.begin(), it);
             const auto& request = subjectRequests.at(r);
-            for(std::size_t g : request.Groups())
-            {
-                resultSchedule.insert(ScheduleItem(LessonAddress(g, l),
-                                           r,
-                                           request.ID(),
-                                           classrooms.at(r)));
-            }
+            resultSchedule.insert(ScheduleItem(l,
+                                               r,
+                                               request.ID(),
+                                               classrooms.at(r)));
 
             it = std::find(std::next(it), lessons.end(), l);
         }

@@ -137,15 +137,9 @@ void InsertUniqueOrdered(std::vector<std::size_t>& vec, std::size_t value)
         vec.emplace(it, value);
 }
 
-nlohmann::json ToJson(const LessonAddress& address)
-{
-    return nlohmann::json::object({{"group", address.Group},
-                                      {"lesson", address.Lesson}});
-}
-
 nlohmann::json ToJson(const ScheduleItem& scheduleItem)
 {
-    return nlohmann::json::object({{"address", ToJson(scheduleItem.Address)},
+    return nlohmann::json::object({{"address", scheduleItem.Address},
                                    {"subject_request_id", scheduleItem.SubjectRequestID},
                                    {"classroom", scheduleItem.Classroom}});
 }

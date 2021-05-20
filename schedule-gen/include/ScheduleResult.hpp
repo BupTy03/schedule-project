@@ -12,12 +12,12 @@ class ScheduleData;
 
 struct ScheduleItem
 {
-    explicit ScheduleItem(const LessonAddress& address,
+    explicit ScheduleItem(std::size_t lessonAddress,
                           std::size_t subjectRequest,
                           std::size_t subjectRequestID,
                           std::size_t classroom);
 
-    LessonAddress Address;
+    std::size_t Address;
     std::size_t SubjectRequest;
     std::size_t SubjectRequestID;
     std::size_t Classroom;
@@ -29,13 +29,13 @@ struct ScheduleItemLess
     {
         return lhs.Address < rhs.Address;
     }
-    [[nodiscard]] bool operator()(const ScheduleItem& lhs, const LessonAddress& rhsAddress) const
+    [[nodiscard]] bool operator()(const ScheduleItem& lhs, std::size_t rhsLessonAddress) const
     {
-        return lhs.Address < rhsAddress;
+        return lhs.Address < rhsLessonAddress;
     }
-    [[nodiscard]] bool operator()(const LessonAddress& lhsAddress, const ScheduleItem& rhs) const
+    [[nodiscard]] bool operator()(std::size_t lhsLessonAddress, const ScheduleItem& rhs) const
     {
-        return lhsAddress < rhs.Address;
+        return lhsLessonAddress < rhs.Address;
     }
 };
 
@@ -47,7 +47,7 @@ public:
     [[nodiscard]] const std::vector<ScheduleItem>& items() const;
 
     std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
-    [[nodiscard]] const ScheduleItem* at(const LessonAddress& address) const;
+    [[nodiscard]] const ScheduleItem* at(std::size_t lessonAddress) const;
 
 private:
     std::vector<ScheduleItem> items_;

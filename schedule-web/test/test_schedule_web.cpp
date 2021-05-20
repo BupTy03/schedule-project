@@ -125,14 +125,14 @@ TEST_CASE("Parsing subject request", "[parsing]")
         const auto subjectRequest = nlohmann::json::object({
             {"id", 0},
             {"professor", 1},
-            {"complexity", 1},
+            {"complexity", 2},
             {"days", nlohmann::json::array({0, 2, 4})},
             {"groups", nlohmann::json::array({1, 2, 4, 5})},
             {"classrooms", nlohmann::json::array({2, 11})}
         });
 
         SubjectRequest request = ParseSubjectRequest(subjectRequest);
-        REQUIRE(request == SubjectRequest(0, 1, 1, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5}, {2, 11}));
+        REQUIRE(request == SubjectRequest(0, 1, 2, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5}, {2, 11}));
     }
     SECTION("Subject request includes fields 'id', 'professor', 'complexity', 'days', 'groups' and 'classrooms'")
     {
@@ -255,17 +255,11 @@ TEST_CASE("We can insert ordered and unique values", "[algorithms]")
     }
 }
 
-TEST_CASE("Lesson address serialized successfully", "[serializing]")
-{
-    REQUIRE(ToJson(LessonAddress(1, 5)) == nlohmann::json::object({{"group", 1},
-                                                                    {"lesson", 5}}));
-}
-
 TEST_CASE("Schedule item serialized successfully", "[serializing]")
 {
-    ScheduleItem scheduleItem(LessonAddress(3, 7), 2, 1, 4);
+    ScheduleItem scheduleItem(7, 2, 1, 4);
 
-    REQUIRE(ToJson(scheduleItem) == nlohmann::json::object({{"address", nlohmann::json::object({{"group", 3}, {"lesson", 7}})},
+    REQUIRE(ToJson(scheduleItem) == nlohmann::json::object({{"address", 7},
                                                              {"subject_request_id", 1},
                                                              {"classroom", 4}}));
 }
