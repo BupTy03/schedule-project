@@ -198,6 +198,11 @@ TEST_CASE("Parsing schedule data", "[parsing]")
         ScheduleData data;
         REQUIRE_THROWS_AS(data = ParseScheduleData(nlohmann::json::object({{"locked_lessons", nlohmann::json::array()}})), std::invalid_argument);
     }
+    SECTION("'subject_requests' array must not be empty")
+    {
+        ScheduleData data;
+        REQUIRE_THROWS_AS(data = ParseScheduleData(nlohmann::json::object({{"subject_requests", nlohmann::json::array()}})), std::invalid_argument);
+    }
 }
 
 TEST_CASE("We can merge two ranges", "[algorithms]")

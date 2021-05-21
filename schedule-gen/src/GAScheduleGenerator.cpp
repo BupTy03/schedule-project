@@ -12,6 +12,7 @@ ScheduleIndividual::ScheduleIndividual(const std::vector<SubjectRequest>& reques
     , lessons_(requests.size(), std::numeric_limits<std::size_t>::max())
     , buffer_(DEFAULT_BUFFER_SIZE)
 {
+    assert(!requests.empty());
     for(std::size_t i = 0; i < requests.size(); ++i)
         Init(requests, i);
 }
@@ -57,6 +58,7 @@ ScheduleIndividual& ScheduleIndividual::operator=(ScheduleIndividual&& other) no
 
 void ScheduleIndividual::Mutate(const std::vector<SubjectRequest>& requests, std::mt19937& randGen)
 {
+    assert(!requests.empty());
     assert(requests.size() == classrooms_.size());
     assert(requests.size() == lessons_.size());
 
@@ -66,6 +68,7 @@ void ScheduleIndividual::Mutate(const std::vector<SubjectRequest>& requests, std
 
 std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requests) const
 {
+    assert(!requests.empty());
     if(evaluated_)
         return evaluatedValue_;
 
@@ -248,6 +251,7 @@ bool ScheduleIndividual::GroupsOrProfessorsIntersects(const std::vector<SubjectR
                                                       std::size_t currentRequest,
                                                       std::size_t currentLesson) const
 {
+    assert(!requests.empty());
     const auto& thisRequest = requests.at(currentRequest);
     auto it = std::find(lessons_.begin(), lessons_.end(), currentLesson);
     while(it != lessons_.end())
@@ -287,6 +291,7 @@ bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson,
 void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests,
                               std::size_t requestIndex)
 {
+    assert(!requests.empty());
     assert(requests.size() == classrooms_.size());
     assert(requests.size() == lessons_.size());
 
@@ -333,9 +338,9 @@ void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests,
 void ScheduleIndividual::Change(const std::vector<SubjectRequest>& requests,
                                 std::mt19937& randGen)
 {
+    assert(!requests.empty());
     assert(requests.size() == classrooms_.size());
     assert(requests.size() == lessons_.size());
-    assert(!requests.emty());
 
     std::uniform_int_distribution<std::size_t> distrib(0, requests.size() - 1);
     const std::size_t requestIndex = distrib(randGen);
@@ -350,6 +355,7 @@ void ScheduleIndividual::ChooseClassroom(const std::vector<SubjectRequest>& requ
                                          std::size_t requestIndex,
                                          std::mt19937& randGen)
 {
+    assert(!requests.empty());
     assert(!classrooms.empty());
 
     const auto& request = requests.at(requestIndex);
@@ -373,6 +379,8 @@ void ScheduleIndividual::ChooseLesson(const std::vector<SubjectRequest>& request
                                       std::size_t requestIndex,
                                       std::mt19937& randGen)
 {
+    assert(!requests.empty());
+
     static_assert(MAX_LESSONS_COUNT != 0, "MAX_LESSONS_COUNT must be greater than zero");
     std::uniform_int_distribution<std::size_t> lessonsDistrib(0, MAX_LESSONS_COUNT - 1);
     std::size_t scheduleLesson = lessonsDistrib(randGen);
@@ -432,6 +440,7 @@ const ScheduleIndividual& ScheduleGA::Best() const { return individuals_.front()
 
 ScheduleGAStatistics ScheduleGA::Start(const std::vector<SubjectRequest>& requests)
 {
+    assert(!requests.empty());
     assert(selectionCount_ < individuals_.size());
     assert(crossoverCount_ < selectionCount_);
 
@@ -540,18 +549,12 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
     const auto& subjectRequests = data.SubjectRequests();
 
-    ScheduleGA algo(std::vector<ScheduleIndividual>(10, ScheduleIndividual(subjectRequests)));
-    const auto stat = algo.IterationsCount(100)
-        .SelectionCount(3)
-        .CrossoverCount(3)
-        .MutationChance(49)
-        .Start(subjectRequests);
-
-//    const auto stat = algo.IterationsCount(1100)
-//            .SelectionCount(360)
-//            .CrossoverCount(220)
-//            .MutationChance(49)
-//            .Start(subjectRequests);
+    ScheduleGA algo(std::vector<ScheduleIndividual>(100, ScheduleIndividual(subjectRequests)));
+    const auto stat = algo.IterationsCount(1100)
+            .SelectionCount(36)
+            .CrossoverCount(22)
+            .MutationChance(49)
+            .Start(subjectRequests);
 
     const auto& bestIndividual = algo.Best();
     Print(bestIndividual, subjectRequests);

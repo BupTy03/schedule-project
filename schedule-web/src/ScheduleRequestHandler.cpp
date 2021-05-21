@@ -118,6 +118,9 @@ ScheduleData ParseScheduleData(const nlohmann::json& scheduleData)
     if(!subjectRequests.is_array())
         throw std::invalid_argument("Json array expected");
 
+    if(subjectRequests.empty())
+        throw std::invalid_argument("'subject_requests' array is empty");
+
     std::vector<std::size_t> groups;
     std::vector<std::size_t> professors;
     std::vector<ClassroomAddress> classrooms;
