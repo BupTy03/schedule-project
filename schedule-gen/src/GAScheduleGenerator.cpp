@@ -297,16 +297,21 @@ void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests,
                 continue;
 
             const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
-            if(!GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson))
+
+            // lessons count is less in Saturday than in other days
+            if(IsLateScheduleLessonInSaturday(scheduleLesson))
+                continue;
+
+            if(GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson))
+                continue;
+
+            for(auto&& classroom : classrooms)
             {
-                for(auto&& classroom : classrooms)
+                if(!ClassroomsIntersects(scheduleLesson, classroom))
                 {
-                    if(!ClassroomsIntersects(scheduleLesson, classroom))
-                    {
-                        classrooms_.at(requestIndex) = classroom;
-                        lessons_.at(requestIndex) = scheduleLesson;
-                        return;
-                    }
+                    classrooms_.at(requestIndex) = classroom;
+                    lessons_.at(requestIndex) = scheduleLesson;
+                    return;
                 }
             }
         }
@@ -338,13 +343,13 @@ void ScheduleIndividual::ChooseClassroom(const std::vector<SubjectRequest>& requ
     auto scheduleClassroom = classrooms.at(classroomDistrib(randGen));
 
     std::size_t chooseClassroomTry = 0;
-    while(chooseClassroomTry < classrooms.size() * 2 && ClassroomsIntersects(lessons_.at(requestIndex), scheduleClassroom))
+    while(chooseClassroomTry < classrooms.size() && ClassroomsIntersects(lessons_.at(requestIndex), scheduleClassroom))
     {
         scheduleClassroom = classrooms.at(classroomDistrib(randGen));
         ++chooseClassroomTry;
     }
 
-    if(chooseClassroomTry < classrooms.size() * 2)
+    if(chooseClassroomTry < classrooms.size())
         classrooms_.at(requestIndex) = scheduleClassroom;
 }
 
@@ -358,8 +363,8 @@ void ScheduleIndividual::ChooseLesson(const std::vector<SubjectRequest>& request
     const auto& request = requests.at(requestIndex);
 
     std::size_t chooseLessonTry = 0;
-    while(chooseLessonTry < MAX_LESSONS_COUNT * 2 &&
-          (!request.RequestedWeekDay(scheduleLesson / MAX_LESSONS_PER_DAY) ||
+    while(chooseLessonTry < MAX_LESSONS_COUNT &&
+          (IsLateScheduleLessonInSaturday(scheduleLesson) || !request.RequestedWeekDay(LessonToScheduleDay(scheduleLesson)) ||
            ClassroomsIntersects(scheduleLesson, classrooms_.at(requestIndex)) ||
            GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson)))
     {
@@ -367,7 +372,7 @@ void ScheduleIndividual::ChooseLesson(const std::vector<SubjectRequest>& request
         ++chooseLessonTry;
     }
 
-    if(chooseLessonTry < MAX_LESSONS_COUNT * 2)
+    if(chooseLessonTry < MAX_LESSONS_COUNT)
         lessons_.at(requestIndex) = scheduleLesson;
 }
 
