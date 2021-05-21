@@ -20,22 +20,16 @@ bool ScheduleResult::empty() const { return items_.empty(); }
 
 const std::vector<ScheduleItem>& ScheduleResult::items() const { return items_; }
 
-const ScheduleItem* ScheduleResult::at(std::size_t lessonAddress) const
+Range<std::vector<ScheduleItem>::const_iterator> ScheduleResult::at(std::size_t lessonAddress) const
 {
-    auto it = std::lower_bound(items_.begin(), items_.end(), lessonAddress, ScheduleItemLess());
-    if(it == items_.end() || it->Address != lessonAddress)
-        return nullptr;
-
-    return &(*it);
+    auto itPair = std::equal_range(items_.begin(), items_.end(), lessonAddress, ScheduleItemLess());
+    return make_range(itPair.first, itPair.second);
 }
 
 std::vector<ScheduleItem>::iterator ScheduleResult::insert(const ScheduleItem& item)
 {
     auto it = std::lower_bound(items_.begin(), items_.end(), item.Address, ScheduleItemLess());
-    if(it == items_.end() || it->Address != item.Address)
-        it = items_.insert(it, item);
-
-    return it;
+    return items_.insert(it, item);
 }
 
 
@@ -56,11 +50,11 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         SortedMap<std::size_t, SortedSet<SubjectWithAddress>> classroomsAndSubjects;
-        const auto item = result.at(l);
-        if(item)
+        const auto lessonsRange = result.at(l);
+        for(auto&& item : lessonsRange)
         {
-            for (std::size_t g : data.Groups())
-                classroomsAndSubjects[item->Classroom].insert(SubjectWithAddress(item->SubjectRequest, LessonAddress(g, l)));
+            for (std::size_t g : data.SubjectRequests().at(item.SubjectRequest).Groups())
+                classroomsAndSubjects[item.Classroom].insert(SubjectWithAddress(item.SubjectRequest, LessonAddress(g, l)));
         }
 
         for(const auto&[classroom, subjects] : classroomsAndSubjects)
@@ -85,12 +79,12 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         SortedMap<std::size_t, SortedSet<SubjectWithAddress>> professorsAndSubjects;
-        const auto item = result.at(l);
-        if(item)
+        const auto lessonsRange = result.at(l);
+        for(auto&& item : lessonsRange)
         {
-            const auto& request = data.SubjectRequests().at(item->SubjectRequest);
-            for(std::size_t g : data.Groups())
-                professorsAndSubjects[request.Professor()].insert(SubjectWithAddress(item->SubjectRequest, LessonAddress(g, l)));
+            const auto& request = data.SubjectRequests().at(item.SubjectRequest);
+            for(std::size_t g : data.SubjectRequests().at(item.SubjectRequest).Groups())
+                professorsAndSubjects[request.Professor()].insert(SubjectWithAddress(item.SubjectRequest, LessonAddress(g, l)));
         }
 
         for(const auto&[professor, subjects] : professorsAndSubjects)

@@ -326,6 +326,8 @@ void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests,
             }
         }
     }
+
+    std::cout << "Warning: unable to place a subject request\n";
 }
 
 void ScheduleIndividual::Change(const std::vector<SubjectRequest>& requests,
@@ -538,12 +540,18 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
     const auto& subjectRequests = data.SubjectRequests();
 
-    ScheduleGA algo(std::vector<ScheduleIndividual>(100, ScheduleIndividual(subjectRequests)));
-    const auto stat = algo.IterationsCount(1100)
-            .SelectionCount(36)
-            .CrossoverCount(22)
-            .MutationChance(49)
-            .Start(subjectRequests);
+    ScheduleGA algo(std::vector<ScheduleIndividual>(10, ScheduleIndividual(subjectRequests)));
+    const auto stat = algo.IterationsCount(100)
+        .SelectionCount(3)
+        .CrossoverCount(3)
+        .MutationChance(49)
+        .Start(subjectRequests);
+
+//    const auto stat = algo.IterationsCount(1100)
+//            .SelectionCount(360)
+//            .CrossoverCount(220)
+//            .MutationChance(49)
+//            .Start(subjectRequests);
 
     const auto& bestIndividual = algo.Best();
     Print(bestIndividual, subjectRequests);

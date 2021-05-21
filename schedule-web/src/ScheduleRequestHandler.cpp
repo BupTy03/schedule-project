@@ -194,7 +194,12 @@ void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
     nlohmann::json jsonResponse;
     try {
         GAScheduleGenerator generator;
-        jsonResponse = ToJson(generator.Generate(ParseScheduleData(nlohmann::json::parse(requestBody))));
+
+        const auto jsonRequest = nlohmann::json::parse(requestBody);
+        jsonResponse = ToJson(generator.Generate(ParseScheduleData(jsonRequest)));
+
+        std::cout << "Subject requests count: " << jsonRequest["subject_requests"].size() << std::endl;
+        std::cout << "Subject responses count: " << jsonResponse.size() << std::endl;
         response.setStatus(HTTPResponse::HTTP_OK);
     }
     catch(std::exception& e)

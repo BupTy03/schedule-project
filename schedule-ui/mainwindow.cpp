@@ -216,16 +216,16 @@ void MainWindow::onScheduleDone()
             {
                 daySchedule.at(l) = ScheduleModelItem{};
 
-                const auto pResultLesson = resultSchedule->at(d * MAX_LESSONS_PER_DAY + l);
-                if (pResultLesson)
+                auto lessonsRange = resultSchedule->at(d * MAX_LESSONS_PER_DAY + l);
+                for(auto&& lesson : lessonsRange)
                 {
-                    const auto& request = scheduleData->SubjectRequests().at(pResultLesson->SubjectRequest);
+                    const auto& request = scheduleData->SubjectRequests().at(lesson.SubjectRequest);
                     if(request.RequestedGroup(g))
                     {
                         ScheduleModelItem item;
-                        item.ClassRoom = classrooms.at(pResultLesson->Classroom);
+                        item.ClassRoom = classrooms.at(lesson.Classroom);
                         item.Professor = professors.at(request.Professor());
-                        item.Subject = subjects.at(pResultLesson->SubjectRequest);
+                        item.Subject = subjects.at(lesson.SubjectRequest);
                         daySchedule.at(l) = item;
                     }
                 }
@@ -241,16 +241,16 @@ void MainWindow::onScheduleDone()
             {
                 daySchedule.at(l) = ScheduleModelItem{};
 
-                const auto pResultLesson = resultSchedule->at(d * MAX_LESSONS_PER_DAY + l);
-                if (pResultLesson)
+                auto lessonsRange = resultSchedule->at(d * MAX_LESSONS_PER_DAY + l);
+                for(auto&& lesson : lessonsRange)
                 {
-                    const auto& request = scheduleData->SubjectRequests().at(pResultLesson->SubjectRequest);
+                    const auto& request = scheduleData->SubjectRequests().at(lesson.SubjectRequest);
                     if(request.RequestedGroup(g))
                     {
                         ScheduleModelItem item;
-                        item.ClassRoom = classrooms.at(pResultLesson->Classroom);
+                        item.ClassRoom = classrooms.at(lesson.Classroom);
                         item.Professor = professors.at(request.Professor());
-                        item.Subject = subjects.at(pResultLesson->SubjectRequest);
+                        item.Subject = subjects.at(lesson.SubjectRequest);
                         daySchedule.at(l) = item;
                     }
                 }

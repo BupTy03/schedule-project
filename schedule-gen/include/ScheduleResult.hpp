@@ -39,6 +39,26 @@ struct ScheduleItemLess
     }
 };
 
+template<typename Iter>
+struct Range
+{
+    explicit Range(Iter first, Iter last)
+        : first_(first)
+        , last_(last)
+    {}
+
+    auto begin() const { return first_; }
+    auto end() const { return last_; }
+
+private:
+    Iter first_;
+    Iter last_;
+};
+
+template<typename Iter>
+Range<Iter> make_range(Iter first, Iter last) { return Range<Iter>(first, last); }
+
+
 class ScheduleResult
 {
 public:
@@ -47,7 +67,7 @@ public:
     [[nodiscard]] const std::vector<ScheduleItem>& items() const;
 
     std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
-    [[nodiscard]] const ScheduleItem* at(std::size_t lessonAddress) const;
+    [[nodiscard]] Range<std::vector<ScheduleItem>::const_iterator> at(std::size_t lessonAddress) const;
 
 private:
     std::vector<ScheduleItem> items_;
