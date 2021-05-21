@@ -39,6 +39,10 @@ ClassroomAddress ClassroomAddress::NoClassroom()
     return ClassroomAddress(std::numeric_limits<std::size_t>::max(),
                             std::numeric_limits<std::size_t>::max());
 }
+ClassroomAddress ClassroomAddress::Any()
+{
+    return ClassroomAddress(0, 0);
+}
 
 
 WeekDays::WeekDays()

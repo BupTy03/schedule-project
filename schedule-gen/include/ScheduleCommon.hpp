@@ -145,6 +145,7 @@ struct ClassroomAddress
     {}
 
     static ClassroomAddress NoClassroom();
+    static ClassroomAddress Any();
 
     friend bool operator==(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
     {

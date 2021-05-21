@@ -266,6 +266,10 @@ bool ScheduleIndividual::GroupsOrProfessorsIntersects(const std::vector<SubjectR
 bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson,
                                               const ClassroomAddress& currentClassroom) const
 {
+    assert(currentClassroom != ClassroomAddress::NoClassroom());
+    if(currentClassroom == ClassroomAddress::Any())
+        return false;
+
     auto it = std::find(classrooms_.begin(), classrooms_.end(), currentClassroom);
     while(it != classrooms_.end())
     {
@@ -305,19 +309,23 @@ void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests,
             if(GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson))
                 continue;
 
+            lessons_.at(requestIndex) = scheduleLesson;
+            if(classrooms.empty())
+            {
+                classrooms_.at(requestIndex) = ClassroomAddress::Any();
+                return;
+            }
+
             for(auto&& classroom : classrooms)
             {
                 if(!ClassroomsIntersects(scheduleLesson, classroom))
                 {
                     classrooms_.at(requestIndex) = classroom;
-                    lessons_.at(requestIndex) = scheduleLesson;
                     return;
                 }
             }
         }
     }
-
-    assert(false);
 }
 
 void ScheduleIndividual::Change(const std::vector<SubjectRequest>& requests,
@@ -325,10 +333,14 @@ void ScheduleIndividual::Change(const std::vector<SubjectRequest>& requests,
 {
     assert(requests.size() == classrooms_.size());
     assert(requests.size() == lessons_.size());
+    assert(!requests.emty());
 
     std::uniform_int_distribution<std::size_t> distrib(0, requests.size() - 1);
     const std::size_t requestIndex = distrib(randGen);
-    ChooseClassroom(requests, requestIndex, randGen);
+
+    if(!requests.at(requestIndex).Classrooms().empty())
+        ChooseClassroom(requests, requestIndex, randGen);
+
     ChooseLesson(requests, requestIndex, randGen);
 }
 
@@ -336,6 +348,8 @@ void ScheduleIndividual::ChooseClassroom(const std::vector<SubjectRequest>& requ
                                          std::size_t requestIndex,
                                          std::mt19937& randGen)
 {
+    assert(!classrooms.empty());
+
     const auto& request = requests.at(requestIndex);
     const auto& classrooms = request.Classrooms();
 
@@ -357,6 +371,7 @@ void ScheduleIndividual::ChooseLesson(const std::vector<SubjectRequest>& request
                                       std::size_t requestIndex,
                                       std::mt19937& randGen)
 {
+    static_assert(MAX_LESSONS_COUNT != 0, "MAX_LESSONS_COUNT must be greater than zero");
     std::uniform_int_distribution<std::size_t> lessonsDistrib(0, MAX_LESSONS_COUNT - 1);
     std::size_t scheduleLesson = lessonsDistrib(randGen);
 
@@ -421,6 +436,9 @@ ScheduleGAStatistics ScheduleGA::Start(const std::vector<SubjectRequest>& reques
     std::random_device randomDevice;
     std::mt19937 randGen(randomDevice());
 
+    assert(SelectionCount() > 0);
+    assert(individuals_.size() > 0);
+    assert(requests.size() > 0);
     std::uniform_int_distribution<std::size_t> selectionBestDist(0, SelectionCount() - 1);
     std::uniform_int_distribution<std::size_t> selectionDist(0, individuals_.size() - 1);
     std::uniform_int_distribution<std::size_t> requestsDist(0, requests.size() - 1);
@@ -436,7 +454,7 @@ ScheduleGAStatistics ScheduleGA::Start(const std::vector<SubjectRequest>& reques
     for(std::size_t iteration = 0; iteration < IterationsCount(); ++iteration)
     {
         // mutate
-        std::for_each(std::execution::par, individuals_.begin(), individuals_.end(), [&](ScheduleIndividual& individual)
+        std::for_each(std::execution::par,individuals_.begin(), individuals_.end(), [&](ScheduleIndividual& individual)
         {
             std::random_device rd;
             std::mt19937 rg(rd());
