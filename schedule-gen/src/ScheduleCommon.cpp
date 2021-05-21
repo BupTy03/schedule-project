@@ -83,15 +83,6 @@ std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment)
     return baseAddress % alignment;
 }
 
-LinearAllocatorBufferSpan::LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total)
-        : pBegin(ptr)
-        , pEnd(pBegin)
-        , pCapacityEnd(pBegin + total)
-{
-    assert(ptr != nullptr);
-    assert(total > 0);
-}
-
 LessonsMatrixItemAddress::LessonsMatrixItemAddress(std::size_t group,
                                                    std::size_t professor,
                                                    std::size_t lesson,

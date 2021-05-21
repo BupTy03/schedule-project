@@ -8,23 +8,35 @@
 
 class ScheduleIndividual
 {
+    static constexpr std::size_t DEFAULT_BUFFER_SIZE = 1024;
 public:
     explicit ScheduleIndividual(const std::vector<SubjectRequest>& requests);
 
-    [[nodiscard]] const std::vector<ClassroomAddress>& Classrooms() const;
-    [[nodiscard]] const std::vector<std::size_t>& Lessons() const;
+    ScheduleIndividual(const ScheduleIndividual& other);
+    ScheduleIndividual& operator=(const ScheduleIndividual& other);
+
+    ScheduleIndividual(ScheduleIndividual&& other) noexcept;
+    ScheduleIndividual& operator=(ScheduleIndividual&& other) noexcept;
+
+    void swap(ScheduleIndividual& other) noexcept;
+
+    const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
+    const std::vector<std::size_t>& Lessons() const { return lessons_; }
 
     void Mutate(const std::vector<SubjectRequest>& requests, std::mt19937& randGen);
     std::size_t Evaluate(const std::vector<SubjectRequest>& requests) const;
     void Crossover(ScheduleIndividual& other, std::size_t requestIndex);
 
 private:
-    [[nodiscard]] bool GroupsOrProfessorsIntersects(const std::vector<SubjectRequest>& requests,
-                                                    std::size_t currentRequest,
-                                                    std::size_t currentLesson) const;
+    bool GroupsOrProfessorsIntersects(const std::vector<SubjectRequest>& requests,
+                                      std::size_t currentRequest,
+                                      std::size_t currentLesson) const;
 
-    [[nodiscard]] bool ClassroomsIntersects(std::size_t currentLesson, const ClassroomAddress& currentClassroom) const;
+    bool ClassroomsIntersects(std::size_t currentLesson,
+                              const ClassroomAddress& currentClassroom) const;
+
     void Init(const std::vector<SubjectRequest>& requests, std::size_t requestIndex);
+
     void Change(const std::vector<SubjectRequest>& requests, std::mt19937& randGen);
 
 private:
@@ -36,15 +48,15 @@ private:
     mutable std::size_t evaluatedValue_;
     std::vector<ClassroomAddress> classrooms_;
     std::vector<std::size_t> lessons_;
+    mutable std::vector<std::uint8_t> buffer_;
 };
+
+void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs);
+
 
 struct ScheduleGAStatistics
 {
-    ScheduleGAStatistics()
-        : Time(0)
-        , Iterations(0)
-    {}
-
+    ScheduleGAStatistics() : Time(0) , Iterations(0) {}
     explicit ScheduleGAStatistics(std::chrono::milliseconds time,
                                   std::size_t iterations)
         : Time(time)

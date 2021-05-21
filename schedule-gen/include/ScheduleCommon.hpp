@@ -443,6 +443,23 @@ public:
         return it->second;
     }
 
+    auto lower_bound(const K& key)
+    {
+        return std::lower_bound(elems_.begin(), elems_.end(), key, FirstLess());
+    }
+
+    auto emplace_hint(
+        typename std::vector<std::pair<K, T>, A>::iterator hint,
+        const K& key,
+        const T& value)
+    {
+        FirstLess comp;
+        if((hint == begin() || (hint != end() && comp(*std::prev(hint), key))) && (hint == end() || !comp(*hint, key)))
+            hint = lower_bound(key);
+
+        return elems_.emplace(hint, key, value);
+    }
+
     [[nodiscard]] auto begin() const { return elems_.begin(); }
     [[nodiscard]] auto end() const { return elems_.end(); }
 
@@ -474,11 +491,20 @@ template<class SortedRange1, class SortedRange2>
 
 struct LinearAllocatorBufferSpan
 {
-    explicit LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total);
+    explicit LinearAllocatorBufferSpan(std::uint8_t* ptr, std::size_t total)
+        : pBegin(ptr)
+        , pEnd(ptr)
+        , pCapacityEnd(ptr + total)
+        , peak(0)
+    {
+        assert(ptr != nullptr);
+        assert(total > 0);
+    }
 
     std::uint8_t* pBegin;
     std::uint8_t* pEnd;
     std::uint8_t* pCapacityEnd;
+    std::size_t peak;
 };
 
 
@@ -513,6 +539,7 @@ public:
         const std::size_t padding = CalculatePadding(currentAddress, __alignof(T));
         const std::size_t countBytes = count * sizeof(T);
         const std::size_t sumAlloc = padding + countBytes;
+        buffer_->peak += sumAlloc;
         if (buffer_->pEnd + sumAlloc > buffer_->pCapacityEnd)
         {
 #ifdef _DEBUG

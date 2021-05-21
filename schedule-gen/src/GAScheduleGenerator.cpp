@@ -5,19 +5,55 @@
 #include <execution>
 
 
-ScheduleIndividual::ScheduleIndividual(const std::vector<SubjectRequest> &requests)
-        : evaluated_(false)
-        , evaluatedValue_(std::numeric_limits<std::size_t>::max())
-        , classrooms_(requests.size(), ClassroomAddress::NoClassroom())
-        , lessons_(requests.size(), std::numeric_limits<std::size_t>::max())
+ScheduleIndividual::ScheduleIndividual(const std::vector<SubjectRequest>& requests)
+    : evaluated_(false)
+    , evaluatedValue_(std::numeric_limits<std::size_t>::max())
+    , classrooms_(requests.size(), ClassroomAddress::NoClassroom())
+    , lessons_(requests.size(), std::numeric_limits<std::size_t>::max())
+    , buffer_(DEFAULT_BUFFER_SIZE)
 {
     for(std::size_t i = 0; i < requests.size(); ++i)
         Init(requests, i);
 }
 
-const std::vector<ClassroomAddress>& ScheduleIndividual::Classrooms() const { return classrooms_; }
+void ScheduleIndividual::swap(ScheduleIndividual& other) noexcept
+{
+    std::swap(evaluated_, other.evaluated_);
+    std::swap(evaluatedValue_, other.evaluatedValue_);
+    std::swap(classrooms_, other.classrooms_);
+    std::swap(lessons_, other.lessons_);
+}
 
-const std::vector<std::size_t>& ScheduleIndividual::Lessons() const { return lessons_; }
+ScheduleIndividual::ScheduleIndividual(const ScheduleIndividual& other)
+    : evaluated_(other.evaluated_)
+    , evaluatedValue_(other.evaluatedValue_)
+    , classrooms_(other.classrooms_)
+    , lessons_(other.lessons_)
+    , buffer_(DEFAULT_BUFFER_SIZE)
+{
+}
+
+ScheduleIndividual& ScheduleIndividual::operator=(const ScheduleIndividual& other)
+{
+    ScheduleIndividual tmp(other);
+    tmp.swap(*this);
+    return *this;
+}
+
+ScheduleIndividual::ScheduleIndividual(ScheduleIndividual&& other) noexcept
+    : evaluated_(other.evaluated_)
+    , evaluatedValue_(other.evaluatedValue_)
+    , classrooms_(std::move(other.classrooms_))
+    , lessons_(std::move(other.lessons_))
+    , buffer_(DEFAULT_BUFFER_SIZE)
+{
+}
+
+ScheduleIndividual& ScheduleIndividual::operator=(ScheduleIndividual&& other) noexcept
+{
+    other.swap(*this);
+    return *this;
+}
 
 void ScheduleIndividual::Mutate(const std::vector<SubjectRequest>& requests, std::mt19937& randGen)
 {
@@ -36,16 +72,19 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
     evaluated_ = true;
     evaluatedValue_ = 0;
 
-    std::array<std::uint8_t, 20480> buffer{};
-    LinearAllocatorBufferSpan bufferSpan(buffer.data(), buffer.size());
+    constexpr auto NO_BUILDING = std::numeric_limits<std::size_t>::max();
 
-    using IntPair = std::pair<std::size_t, std::size_t>;
-    using MapPair = std::pair<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>>;
+    LinearAllocatorBufferSpan bufferSpan(buffer_.data(), buffer_.size());
+    {
+        using IntPair = std::pair<std::size_t, std::size_t>;
+        using MapPair = std::pair<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>>;
+        using BuilingMap = std::pair<std::size_t, std::array<std::size_t, MAX_LESSONS_PER_DAY>>;
 
-    using ComplexityMap = SortedMap<std::size_t, std::size_t, LinearAllocator<IntPair>>;
-    using WindowsMap = SortedMap<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>, LinearAllocator<MapPair>>;
+        using ComplexityMap = SortedMap<std::size_t, std::size_t, LinearAllocator<IntPair>>;
+        using WindowsMap = SortedMap<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>, LinearAllocator<MapPair>>;
+        using BuildingsMap = SortedMap<std::size_t, std::array<std::size_t, MAX_LESSONS_PER_DAY>, LinearAllocator<BuilingMap>>;
 
-    std::array<ComplexityMap, DAYS_IN_SCHEDULE> dayComplexity_{
+        std::array<ComplexityMap, DAYS_IN_SCHEDULE> dayComplexity{
             ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
             ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
             ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
@@ -58,9 +97,9 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
             ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
             ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
             ComplexityMap(LinearAllocator<IntPair>(&bufferSpan))
-    };
+        };
 
-    std::array<WindowsMap, DAYS_IN_SCHEDULE> dayWindows_{
+        std::array<WindowsMap, DAYS_IN_SCHEDULE> dayWindows{
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
@@ -73,9 +112,9 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan))
-    };
+        };
 
-    std::array<WindowsMap, DAYS_IN_SCHEDULE> professorsDayWindows_{
+        std::array<WindowsMap, DAYS_IN_SCHEDULE> professorsDayWindows{
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
@@ -88,70 +127,107 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
             WindowsMap(LinearAllocator<MapPair>(&bufferSpan))
-    };
+        };
 
-    for(std::size_t r = 0; r < lessons_.size(); ++r)
-    {
-        const auto& request = requests.at(r);
-        const std::size_t lesson = lessons_.at(r);
-        const std::size_t day = LessonToScheduleDay(lesson);
-        const std::size_t lessonInDay = lesson % MAX_LESSONS_PER_DAY;
+        std::array<BuildingsMap, DAYS_IN_SCHEDULE> buildingsInDay{
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan)),
+            BuildingsMap(LinearAllocator<BuilingMap>(&bufferSpan))
+        };
 
-        professorsDayWindows_.at(day)[request.Professor()][lessonInDay] = true;
-        for(std::size_t group : request.Groups())
+        for(std::size_t r = 0; r < lessons_.size(); ++r)
         {
-            dayComplexity_.at(day)[group] += (lessonInDay * request.Complexity());
-            dayWindows_.at(day)[group][lessonInDay] = true;
-        }
-    }
+            const auto& request = requests[r];
+            const std::size_t lesson = lessons_[r];
+            const std::size_t day = lesson / MAX_LESSONS_PER_DAY;
+            const std::size_t lessonInDay = lesson % MAX_LESSONS_PER_DAY;
 
-    // evaluating summary complexity of day for group
-    for(auto&& day : dayComplexity_)
-    {
-        for(auto&& p : day)
-            evaluatedValue_ = std::max(evaluatedValue_, p.second);
-    }
-
-    // evaluating summary lessons gaps
-    for(auto&& day : dayWindows_)
-    {
-        for(auto&& p : day)
-        {
-            std::size_t prevLesson = 0;
-            for(std::size_t lessonNum = 0; lessonNum < MAX_LESSONS_PER_DAY; ++lessonNum)
+            professorsDayWindows[day][request.Professor()][lessonInDay] = true;
+            for(std::size_t group : request.Groups())
             {
-                if(p.second.at(lessonNum))
-                {
-                    const std::size_t lessonsGap = lessonNum - prevLesson;
-                    prevLesson = lessonNum;
+                dayComplexity[day][group] += (lessonInDay * request.Complexity());
+                dayWindows[day][group][lessonInDay] = true;
 
-                    if(lessonsGap > 1)
-                        evaluatedValue_ += lessonsGap * 3;
+                auto& buildingsDay = buildingsInDay[day];
+                auto it = buildingsDay.lower_bound(group);
+                if(it == buildingsDay.end() || it->first != group)
+                {
+                    std::array<std::size_t, MAX_LESSONS_PER_DAY> emptyBuildings;
+                    emptyBuildings.fill(NO_BUILDING);
+                    it = buildingsDay.emplace_hint(it, group, emptyBuildings);
+                }
+
+                it->second[lessonInDay] = classrooms_[r].Building;
+            }
+        }
+
+        for(std::size_t d = 0; d < DAYS_IN_SCHEDULE; ++d)
+        {
+            // evaluating summary complexity of day for group
+            for(auto&& p : dayComplexity[d])
+                evaluatedValue_ = std::max(evaluatedValue_, p.second);
+
+            // evaluating summary lessons gaps for groups
+            for(auto&& p : dayWindows[d])
+            {
+                std::size_t prevLesson = 0;
+                for(std::size_t lessonNum = 0; lessonNum < MAX_LESSONS_PER_DAY; ++lessonNum)
+                {
+                    if(p.second.at(lessonNum))
+                    {
+                        const std::size_t lessonsGap = lessonNum - prevLesson;
+                        prevLesson = lessonNum;
+
+                        if(lessonsGap > 1)
+                            evaluatedValue_ += lessonsGap * 3;
+                    }
+                }
+            }
+
+            // evaluating summary lessons gaps for professors
+            for(auto&& p : professorsDayWindows[d])
+            {
+                std::size_t prevLesson = 0;
+                for(std::size_t lessonNum = 0; lessonNum < MAX_LESSONS_PER_DAY; ++lessonNum)
+                {
+                    if(p.second.at(lessonNum))
+                    {
+                        const std::size_t lessonsGap = lessonNum - prevLesson;
+                        prevLesson = lessonNum;
+
+                        if(lessonsGap > 1)
+                            evaluatedValue_ += lessonsGap * 2;
+                    }
+                }
+            }
+
+            // evaluating count transitions between buildings per day
+            for(auto&& p : buildingsInDay[d])
+            {
+                std::size_t prevBuilding = NO_BUILDING;
+                for(std::size_t lessonNum = 0; lessonNum < MAX_LESSONS_PER_DAY; ++lessonNum)
+                {
+                    const auto currentBuilding = p.second.at(lessonNum);
+                    if( !(currentBuilding == NO_BUILDING || prevBuilding == NO_BUILDING || currentBuilding == prevBuilding) )
+                        evaluatedValue_ += 64;
+
+                    prevBuilding = currentBuilding;
                 }
             }
         }
+
     }
 
-    // evaluating summary lessons gaps for professors
-    for(auto&& day : professorsDayWindows_)
-    {
-        for(auto&& p : day)
-        {
-            std::size_t prevLesson = 0;
-            for(std::size_t lessonNum = 0; lessonNum < MAX_LESSONS_PER_DAY; ++lessonNum)
-            {
-                if(p.second.at(lessonNum))
-                {
-                    const std::size_t lessonsGap = lessonNum - prevLesson;
-                    prevLesson = lessonNum;
-
-                    if(lessonsGap > 1)
-                        evaluatedValue_ += lessonsGap * 2;
-                }
-            }
-        }
-    }
-
+    buffer_.resize(std::max(bufferSpan.peak, buffer_.size()));
     return evaluatedValue_;
 }
 
@@ -187,7 +263,8 @@ bool ScheduleIndividual::GroupsOrProfessorsIntersects(const std::vector<SubjectR
     return false;
 }
 
-bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson, const ClassroomAddress& currentClassroom) const
+bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson,
+                                              const ClassroomAddress& currentClassroom) const
 {
     auto it = std::find(classrooms_.begin(), classrooms_.end(), currentClassroom);
     while(it != classrooms_.end())
@@ -203,7 +280,8 @@ bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson, const C
     return false;
 }
 
-void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests, std::size_t requestIndex)
+void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests,
+                              std::size_t requestIndex)
 {
     assert(requests.size() == classrooms_.size());
     assert(requests.size() == lessons_.size());
@@ -219,21 +297,16 @@ void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests, std::
                 continue;
 
             const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
-
-            // lessons count is less in Saturday than in other days
-            if(IsLateScheduleLessonInSaturday(scheduleLesson))
-                continue;
-
-            if(GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson))
-                continue;
-
-            for(auto&& classroom : classrooms)
+            if(!GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson))
             {
-                if(!ClassroomsIntersects(scheduleLesson, classroom))
+                for(auto&& classroom : classrooms)
                 {
-                    classrooms_.at(requestIndex) = classroom;
-                    lessons_.at(requestIndex) = scheduleLesson;
-                    return;
+                    if(!ClassroomsIntersects(scheduleLesson, classroom))
+                    {
+                        classrooms_.at(requestIndex) = classroom;
+                        lessons_.at(requestIndex) = scheduleLesson;
+                        return;
+                    }
                 }
             }
         }
@@ -242,7 +315,8 @@ void ScheduleIndividual::Init(const std::vector<SubjectRequest>& requests, std::
     assert(false);
 }
 
-void ScheduleIndividual::Change(const std::vector<SubjectRequest>& requests, std::mt19937& randGen)
+void ScheduleIndividual::Change(const std::vector<SubjectRequest>& requests,
+                                std::mt19937& randGen)
 {
     assert(requests.size() == classrooms_.size());
     assert(requests.size() == lessons_.size());
@@ -261,16 +335,16 @@ void ScheduleIndividual::ChooseClassroom(const std::vector<SubjectRequest>& requ
     const auto& classrooms = request.Classrooms();
 
     std::uniform_int_distribution<std::size_t> classroomDistrib(0, classrooms.size() - 1);
-    ClassroomAddress scheduleClassroom = classrooms.at(classroomDistrib(randGen));
+    auto scheduleClassroom = classrooms.at(classroomDistrib(randGen));
 
     std::size_t chooseClassroomTry = 0;
-    while(chooseClassroomTry < classrooms.size() && ClassroomsIntersects(lessons_.at(requestIndex), scheduleClassroom))
+    while(chooseClassroomTry < classrooms.size() * 2 && ClassroomsIntersects(lessons_.at(requestIndex), scheduleClassroom))
     {
         scheduleClassroom = classrooms.at(classroomDistrib(randGen));
         ++chooseClassroomTry;
     }
 
-    if(chooseClassroomTry < classrooms.size())
+    if(chooseClassroomTry < classrooms.size() * 2)
         classrooms_.at(requestIndex) = scheduleClassroom;
 }
 
@@ -284,8 +358,8 @@ void ScheduleIndividual::ChooseLesson(const std::vector<SubjectRequest>& request
     const auto& request = requests.at(requestIndex);
 
     std::size_t chooseLessonTry = 0;
-    while(chooseLessonTry < MAX_LESSONS_COUNT &&
-          (IsLateScheduleLessonInSaturday(scheduleLesson) || !request.RequestedWeekDay(LessonToScheduleDay(scheduleLesson)) ||
+    while(chooseLessonTry < MAX_LESSONS_COUNT * 2 &&
+          (!request.RequestedWeekDay(scheduleLesson / MAX_LESSONS_PER_DAY) ||
            ClassroomsIntersects(scheduleLesson, classrooms_.at(requestIndex)) ||
            GroupsOrProfessorsIntersects(requests, requestIndex, scheduleLesson)))
     {
@@ -293,10 +367,15 @@ void ScheduleIndividual::ChooseLesson(const std::vector<SubjectRequest>& request
         ++chooseLessonTry;
     }
 
-    if(chooseLessonTry < MAX_LESSONS_COUNT)
+    if(chooseLessonTry < MAX_LESSONS_COUNT * 2)
         lessons_.at(requestIndex) = scheduleLesson;
 }
 
+
+void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs)
+{
+    lhs.swap(rhs);
+}
 
 ScheduleGA::ScheduleGA(std::vector<ScheduleIndividual> individuals)
         : iterationsCount_(1000)
@@ -436,11 +515,11 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
     const auto& subjectRequests = data.SubjectRequests();
 
-    ScheduleGA algo(std::vector<ScheduleIndividual>(1000, ScheduleIndividual(subjectRequests)));
-    const auto stat = algo.IterationsCount(1000)
-            .SelectionCount(200)
-            .CrossoverCount(25)
-            .MutationChance(45)
+    ScheduleGA algo(std::vector<ScheduleIndividual>(100, ScheduleIndividual(subjectRequests)));
+    const auto stat = algo.IterationsCount(1100)
+            .SelectionCount(36)
+            .CrossoverCount(22)
+            .MutationChance(49)
             .Start(subjectRequests);
 
     const auto& bestIndividual = algo.Best();
