@@ -8,7 +8,7 @@ int ScheduleServer::main(const std::vector<std::string>&)
 {
     using namespace Poco::Net;
 
-    HTTPServer s(new ScheduleRequestHandlerFactory, ServerSocket(8000), new HTTPServerParams);
+    HTTPServer s(new ScheduleRequestHandlerFactory, ServerSocket(9304), new HTTPServerParams);
     s.start();
 
     int ch = 0;
