@@ -103,6 +103,38 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
     return overlappedProfessors;
 }
 
+std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
+                                                   const ScheduleResult& result)
+{
+    std::vector<OverlappedGroups> overlapped;
+    for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
+    {
+        const auto lessonsRange = result.at(l);
+        for(auto f = lessonsRange.begin(); f != lessonsRange.end(); ++f)
+        {
+            for(auto s = lessonsRange.begin(); s != lessonsRange.end(); ++s)
+            {
+                if(f == s)
+                    continue;
+
+                OverlappedGroups ovGroups;
+                ovGroups.FirstSubjectID = f->SubjectRequestID;
+                ovGroups.SecondSubjectID = s->SubjectRequestID;
+                const auto& firstGroups = data.SubjectRequests().at(f->SubjectRequest).Groups();
+                const auto& secondGroups = data.SubjectRequests().at(s->SubjectRequest).Groups();
+                std::set_intersection(firstGroups.begin(), firstGroups.end(), secondGroups.begin(), secondGroups.end(), std::back_inserter(ovGroups.Groups));
+                overlapped.emplace_back(std::move(ovGroups));
+            }
+        }
+    }
+
+    overlapped.erase(std::remove_if(overlapped.begin(), overlapped.end(), [](const OverlappedGroups& og){
+        return og.Groups.empty();
+    }), overlapped.end());
+
+    return overlapped;
+}
+
 std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data,
                                                                 const ScheduleResult& result)
 {

@@ -25,7 +25,9 @@ public:
 
     void Mutate(const std::vector<SubjectRequest>& requests, std::mt19937& randGen);
     std::size_t Evaluate(const std::vector<SubjectRequest>& requests) const;
-    void Crossover(ScheduleIndividual& other, std::size_t requestIndex);
+    void Crossover(ScheduleIndividual& other,
+                   const std::vector<SubjectRequest>& requests,
+                   std::size_t requestIndex);
 
 private:
     bool GroupsOrProfessorsIntersects(const std::vector<SubjectRequest>& requests,

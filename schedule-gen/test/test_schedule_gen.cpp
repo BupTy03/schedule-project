@@ -244,6 +244,7 @@ TEST_CASE("Test.set_intersects", "[Algorithms]")
     REQUIRE(set_intersects(std::vector<int>(), std::vector<int>()));
     REQUIRE(set_intersects(std::vector<int>({}), std::vector<int>({3, 4})));
     REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({})));
+    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 6, 7, 8, 9, 10}), std::vector<int>({1, 2, 4, 5, 6, 7, 9, 10})));
 
     REQUIRE_FALSE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({6, 7, 8})));
     REQUIRE_FALSE(set_intersects(std::vector<int>({1, 2, 5}), std::vector<int>({3, 4})));
@@ -260,6 +261,8 @@ TEST_CASE("Test.CalculatePadding", "[Utils]")
     REQUIRE(CalculatePadding(0, 8) == 0);
     REQUIRE(CalculatePadding(1, 0) == 0);
 }
+
+#if 0
 
 TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
 {
@@ -352,3 +355,5 @@ TEST_CASE("Test.FindViolatedSubjectRequests", "[Validate]")
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(0, 0)); }) != result.end());
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Lessons.contains(LessonAddress(1, 1 * MAX_LESSONS_PER_DAY + 4)); }) != result.end());
 }
+
+#endif

@@ -234,11 +234,23 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
     return evaluatedValue_;
 }
 
-void ScheduleIndividual::Crossover(ScheduleIndividual& other, std::size_t requestIndex)
+void ScheduleIndividual::Crossover(ScheduleIndividual& other,
+                                   const std::vector<SubjectRequest>& requests,
+                                   std::size_t requestIndex)
 {
+    assert(!requests.empty());
+    assert(requests.size() == lessons_.size());
     assert(classrooms_.size() == lessons_.size());
     assert(other.classrooms_.size() == other.lessons_.size());
     assert(other.lessons_.size() == lessons_.size());
+
+    if(ClassroomsIntersects(other.lessons_.at(requestIndex), other.classrooms_.at(requestIndex)) ||
+        other.ClassroomsIntersects(lessons_.at(requestIndex), classrooms_.at(requestIndex)))
+        return;
+
+    if(GroupsOrProfessorsIntersects(requests, requestIndex, other.lessons_.at(requestIndex)) ||
+        other.GroupsOrProfessorsIntersects(requests, requestIndex, lessons_.at(requestIndex)))
+        return;
 
     evaluated_ = false;
     other.evaluated_ = false;
@@ -496,7 +508,7 @@ ScheduleGAStatistics ScheduleGA::Start(const std::vector<SubjectRequest>& reques
             auto& firstInd = individuals_.at(selectionBestDist(randGen));
             auto& secondInd = individuals_.at(selectionDist(randGen));
 
-            firstInd.Crossover(secondInd, requestsDist(randGen));
+            firstInd.Crossover(secondInd, requests, requestsDist(randGen));
             firstInd.Evaluate(requests);
             secondInd.Evaluate(requests);
         }
@@ -535,7 +547,12 @@ void Print(const ScheduleIndividual& individ, const std::vector<SubjectRequest>&
                 const auto& request = requests.at(r);
                 std::cout << "[s:" << r <<
                     ", p:" << request.Professor() <<
-                    ", c:(" << classrooms.at(r).Building << ", " << classrooms.at(r).Classroom << ")]";
+                    ", c:(" << classrooms.at(r).Building << ", " << classrooms.at(r).Classroom << "), g: {";
+
+                for(auto&& g : request.Groups())
+                    std::cout << ' ' << g;
+
+                std::cout << " }]";
 
                 it = std::find(std::next(it), lessons.end(), l);
             }
@@ -583,5 +600,7 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
         }
     }
 
+    const auto overlappedGroups = FindOverlappedGroups(data, resultSchedule);
+    std::cout << "Overlapped groups: " << overlappedGroups.size() << '\n';
     return resultSchedule;
 }

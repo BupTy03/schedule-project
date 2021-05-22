@@ -133,12 +133,22 @@ struct ViolatedSubjectRequestLess
 };
 
 
+struct OverlappedGroups
+{
+    std::size_t FirstSubjectID = 0;
+    std::size_t SecondSubjectID = 0;
+    std::vector<std::size_t> Groups;
+};
+
 
 [[nodiscard]] std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
                                                                         const ScheduleResult& result);
 
 [[nodiscard]] std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data,
                                                                         const ScheduleResult& result);
+
+[[nodiscard]] std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
+                                                                 const ScheduleResult& result);
 
 [[nodiscard]] std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data,
                                                                               const ScheduleResult& result);
