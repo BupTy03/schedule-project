@@ -5,6 +5,9 @@
 #include <execution>
 
 
+constexpr std::size_t NO_LESSON = std::numeric_limits<std::size_t>::max();
+
+
 ScheduleIndividual::ScheduleIndividual(const std::vector<SubjectRequest>& requests)
     : evaluated_(false)
     , evaluatedValue_(std::numeric_limits<std::size_t>::max())
@@ -151,6 +154,12 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
         {
             const auto& request = requests[r];
             const std::size_t lesson = lessons_[r];
+            if(lesson == NO_LESSON)
+            {
+                evaluatedValue_ += 100;
+                continue;
+            }
+
             const std::size_t day = lesson / MAX_LESSONS_PER_DAY;
             const std::size_t lessonInDay = lesson % MAX_LESSONS_PER_DAY;
 
@@ -167,6 +176,12 @@ std::size_t ScheduleIndividual::Evaluate(const std::vector<SubjectRequest>& requ
                     std::array<std::size_t, MAX_LESSONS_PER_DAY> emptyBuildings;
                     emptyBuildings.fill(NO_BUILDING);
                     it = buildingsDay.emplace_hint(it, group, emptyBuildings);
+                }
+
+                if(classrooms_[r] == ClassroomAddress::NoClassroom())
+                {
+                    evaluatedValue_ += 100;
+                    continue;
                 }
 
                 it->second[lessonInDay] = classrooms_[r].Building;
@@ -263,6 +278,9 @@ bool ScheduleIndividual::GroupsOrProfessorsIntersects(const std::vector<SubjectR
                                                       std::size_t currentRequest,
                                                       std::size_t currentLesson) const
 {
+    if(currentLesson == NO_LESSON)
+        return false;
+
     assert(!requests.empty());
     const auto& thisRequest = requests.at(currentRequest);
     auto it = std::find(lessons_.begin(), lessons_.end(), currentLesson);
@@ -282,8 +300,7 @@ bool ScheduleIndividual::GroupsOrProfessorsIntersects(const std::vector<SubjectR
 bool ScheduleIndividual::ClassroomsIntersects(std::size_t currentLesson,
                                               const ClassroomAddress& currentClassroom) const
 {
-    assert(currentClassroom != ClassroomAddress::NoClassroom());
-    if(currentClassroom == ClassroomAddress::Any())
+    if(currentClassroom == ClassroomAddress::NoClassroom() || currentClassroom == ClassroomAddress::Any())
         return false;
 
     auto it = std::find(classrooms_.begin(), classrooms_.end(), currentClassroom);
