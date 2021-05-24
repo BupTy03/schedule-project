@@ -1,16 +1,54 @@
 #pragma once
 #include "ScheduleGenerator.hpp"
 
+#include <vector>
 #include <random>
 #include <chrono>
-#include <vector>
+#include <tuple>
+
+
+class GAScheduleGenerator : public ScheduleGenerator
+{
+public:
+    ScheduleResult Generate(const ScheduleData& data) override;
+};
+
+bool GroupsOrProfessorsOrClassroomsIntersects(const std::vector<SubjectRequest>& requests,
+                                              const std::vector<std::size_t>& lessons,
+                                              const std::vector<ClassroomAddress>& classrooms,
+                                              std::size_t currentRequest,
+                                              std::size_t currentLesson);
+
+bool GroupsOrProfessorsIntersects(const std::vector<SubjectRequest>& requests,
+                                  const std::vector<std::size_t>& lessons,
+                                  std::size_t currentRequest,
+                                  std::size_t currentLesson);
+
+bool ClassroomsIntersects(const std::vector<std::size_t>& lessons,
+                          const std::vector<ClassroomAddress>& classrooms,
+                          std::size_t currentLesson,
+                          const ClassroomAddress& currentClassroom);
+
+void InitChromosomes(std::vector<std::size_t>& lessons,
+                     std::vector<ClassroomAddress>& classrooms,
+                     const std::vector<SubjectRequest>& requests,
+                     std::size_t requestIndex);
+
+std::tuple<std::vector<std::size_t>, std::vector<ClassroomAddress>> InitChromosomes(const std::vector<SubjectRequest>& requests);
+
+std::size_t EvaluateSchedule(LinearAllocatorBufferSpan& bufferSpan,
+                             const std::vector<SubjectRequest>& requests,
+                             const std::vector<std::size_t>& lessons,
+                             const std::vector<ClassroomAddress>& classrooms);
 
 
 class ScheduleIndividual
 {
     static constexpr std::size_t DEFAULT_BUFFER_SIZE = 1024;
 public:
-    explicit ScheduleIndividual(const std::vector<SubjectRequest>& requests);
+    explicit ScheduleIndividual(std::random_device& randomDevice,
+                                const std::vector<SubjectRequest>* pRequests);
+    void swap(ScheduleIndividual& other) noexcept;
 
     ScheduleIndividual(const ScheduleIndividual& other);
     ScheduleIndividual& operator=(const ScheduleIndividual& other);
@@ -18,93 +56,103 @@ public:
     ScheduleIndividual(ScheduleIndividual&& other) noexcept;
     ScheduleIndividual& operator=(ScheduleIndividual&& other) noexcept;
 
-    void swap(ScheduleIndividual& other) noexcept;
+    const std::vector<SubjectRequest>& Requests() const;
+    const std::vector<ClassroomAddress>& Classrooms() const;
+    const std::vector<std::size_t>& Lessons() const;
 
-    const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
-    const std::vector<std::size_t>& Lessons() const { return lessons_; }
-
-    void Mutate(const std::vector<SubjectRequest>& requests, std::mt19937& randGen);
-    std::size_t Evaluate(const std::vector<SubjectRequest>& requests) const;
-    void Crossover(ScheduleIndividual& other,
-                   const std::vector<SubjectRequest>& requests,
-                   std::size_t requestIndex);
+    std::size_t MutationProbability() const;
+    void Mutate();
+    std::size_t Evaluate() const;
+    void Crossover(ScheduleIndividual& other);
 
 private:
-    bool GroupsOrProfessorsIntersects(const std::vector<SubjectRequest>& requests,
-                                      std::size_t currentRequest,
-                                      std::size_t currentLesson) const;
-
-    bool ClassroomsIntersects(std::size_t currentLesson,
-                              const ClassroomAddress& currentClassroom) const;
-
-    void Init(const std::vector<SubjectRequest>& requests, std::size_t requestIndex);
-
-    void Change(const std::vector<SubjectRequest>& requests, std::mt19937& randGen);
+    void ChangeClassroom(std::size_t requestIndex);
+    void ChangeLesson(std::size_t requestIndex);
 
 private:
-    void ChooseClassroom(const std::vector<SubjectRequest>& requests, std::size_t requestIndex, std::mt19937& randGen);
-    void ChooseLesson(const std::vector<SubjectRequest>& requests, std::size_t requestIndex, std::mt19937& randGen);
-
-private:
-    mutable bool evaluated_;
+    const std::vector<SubjectRequest>* pRequests_;
     mutable std::size_t evaluatedValue_;
+
     std::vector<ClassroomAddress> classrooms_;
     std::vector<std::size_t> lessons_;
+
     mutable std::vector<std::uint8_t> buffer_;
+    mutable std::mt19937 randomGenerator_;
 };
 
+struct ScheduleIndividualLess
+{
+    bool operator()(const ScheduleIndividual& lhs, const ScheduleIndividual& rhs) const
+    {
+        return lhs.Evaluate() < rhs.Evaluate();
+    }
+};
+
+struct ScheduleIndividualEvaluator
+{
+    void operator()(ScheduleIndividual& individual) const
+    {
+        individual.Evaluate();
+    }
+};
+
+struct ScheduleIndividualMutator
+{
+    explicit ScheduleIndividualMutator(std::size_t mutationChance)
+        : MutationChance(mutationChance)
+    { }
+
+    void operator()(ScheduleIndividual& individual) const
+    {
+        if(individual.MutationProbability() <= MutationChance)
+        {
+            individual.Mutate();
+            individual.Evaluate();
+        }
+    }
+
+    std::size_t MutationChance;
+};
+
+
 void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs);
+
+bool ReadyToCrossover(const ScheduleIndividual& first,
+                      const ScheduleIndividual& second,
+                      std::size_t requestIndex);
+
+void Print(const ScheduleIndividual& individ);
 
 
 struct ScheduleGAStatistics
 {
-    ScheduleGAStatistics() : Time(0) , Iterations(0) {}
-    explicit ScheduleGAStatistics(std::chrono::milliseconds time,
-                                  std::size_t iterations)
-        : Time(time)
-        , Iterations(iterations)
-    {}
-
     std::chrono::milliseconds Time;
-    std::size_t Iterations;
 };
+
+
+struct ScheduleGAParams
+{
+    std::size_t IndividualsCount = 0;
+    std::size_t IterationsCount = 0;
+    std::size_t SelectionCount = 0;
+    std::size_t CrossoverCount = 0;
+    std::size_t MutationChance = 0;
+};
+
 
 class ScheduleGA
 {
 public:
-    explicit ScheduleGA(std::vector<ScheduleIndividual> individuals);
+    ScheduleGA();
+    explicit ScheduleGA(const ScheduleGAParams& params);
 
-    ScheduleGA& IterationsCount(std::size_t iterations);
-    [[nodiscard]] std::size_t IterationsCount() const;
-
-    ScheduleGA& SelectionCount(std::size_t selectionCount);
-    [[nodiscard]] std::size_t SelectionCount() const;
-
-    ScheduleGA& CrossoverCount(std::size_t crossoverCount);
-    [[nodiscard]] std::size_t CrossoverCount() const;
-
-    ScheduleGA& MutationChance(std::size_t mutationChance);
-    [[nodiscard]] std::size_t MutationChance() const;
-
-    [[nodiscard]] const ScheduleIndividual& Best() const;
+    static ScheduleGAParams DefaultParams();
+    const ScheduleGAParams& Params() const;
 
     ScheduleGAStatistics Start(const std::vector<SubjectRequest>& requests);
+    const std::vector<ScheduleIndividual>& Individuals() const;
 
 private:
-    std::size_t iterationsCount_;
-    std::size_t selectionCount_;
-    std::size_t crossoverCount_;
-    std::size_t mutationChance_;
+    ScheduleGAParams params_;
     std::vector<ScheduleIndividual> individuals_;
-};
-
-
-void Print(const ScheduleIndividual& individ,
-           const std::vector<SubjectRequest>& requests);
-
-
-class GAScheduleGenerator : public ScheduleGenerator
-{
-public:
-    ScheduleResult Generate(const ScheduleData& data) override;
 };
