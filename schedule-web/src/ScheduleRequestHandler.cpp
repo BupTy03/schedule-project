@@ -222,6 +222,9 @@ ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(const std::map<std:
 
 Poco::Net::HTTPRequestHandler* ScheduleRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
 {
+    if(!request.serverAddress().host().isLoopback())
+        return nullptr;
+
     URI uri(request.getURI());
     if(uri.getPath() == "/makeSchedule")
     {
