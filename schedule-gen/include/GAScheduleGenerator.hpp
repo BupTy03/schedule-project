@@ -7,12 +7,6 @@
 #include <tuple>
 
 
-class GAScheduleGenerator : public ScheduleGenerator
-{
-public:
-    ScheduleResult Generate(const ScheduleData& data) override;
-};
-
 bool GroupsOrProfessorsOrClassroomsIntersects(const std::vector<SubjectRequest>& requests,
                                               const std::vector<std::size_t>& lessons,
                                               const std::vector<ClassroomAddress>& classrooms,
@@ -139,6 +133,8 @@ struct ScheduleGAParams
     std::size_t MutationChance = 0;
 };
 
+std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params);
+
 
 class ScheduleGA
 {
@@ -155,4 +151,15 @@ public:
 private:
     ScheduleGAParams params_;
     std::vector<ScheduleIndividual> individuals_;
+};
+
+
+class GAScheduleGenerator : public ScheduleGenerator
+{
+public:
+    void SetOptions(const std::map<std::string, ScheduleGenOption>& options) override;
+    ScheduleResult Generate(const ScheduleData& data) override;
+
+public:
+    ScheduleGAParams params_ = ScheduleGA::DefaultParams();
 };

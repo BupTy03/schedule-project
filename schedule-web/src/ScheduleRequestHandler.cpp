@@ -7,6 +7,8 @@
 #include <Poco/URI.h>
 #include <Poco/StringTokenizer.h>
 
+#include <cassert>
+
 
 using namespace Poco;
 using namespace Poco::Net;
@@ -178,28 +180,23 @@ nlohmann::json ToJson(const ScheduleResult& scheduleResult)
     return result;
 }
 
+ScheduleRequestHandler::ScheduleRequestHandler(std::unique_ptr<ScheduleGenerator> generator)
+    : generator_(std::move(generator))
+{
+    assert(generator_ != nullptr);
+}
 
 void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
                                          Poco::Net::HTTPServerResponse& response)
 {
-    URI uri(request.getURI());
-    const auto requestStr = uri.toString();
-    if(requestStr.find("/makeSchedule") != 0)
-    {
-        response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
-        return;
-    }
-
     std::istream& in = request.stream();
     std::vector<char> requestBody(request.getContentLength(), '\0');
     in.read(requestBody.data(), requestBody.size());
 
     nlohmann::json jsonResponse;
     try {
-        GAScheduleGenerator generator;
-
         const auto jsonRequest = nlohmann::json::parse(requestBody);
-        jsonResponse = ToJson(generator.Generate(ParseScheduleData(jsonRequest)));
+        jsonResponse = ToJson(generator_->Generate(ParseScheduleData(jsonRequest)));
 
         std::cout << "Subject requests count: " << jsonRequest["subject_requests"].size() << std::endl;
         std::cout << "Subject responses count: " << jsonResponse.size() << std::endl;
@@ -217,8 +214,21 @@ void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
     out.flush();
 }
 
-
-Poco::Net::HTTPRequestHandler* ScheduleRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest&) {
-    return new ScheduleRequestHandler();
+ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(const std::map<std::string, ScheduleGenOption>* pOptions)
+    : pOptions_(pOptions)
+{
+    assert(pOptions_ != nullptr);
 }
 
+Poco::Net::HTTPRequestHandler* ScheduleRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
+{
+    URI uri(request.getURI());
+    if(uri.getPath() == "/makeSchedule")
+    {
+        auto generator = std::make_unique<GAScheduleGenerator>();
+        generator->SetOptions(*pOptions_);
+        return new ScheduleRequestHandler(std::move(generator));
+    }
+    else
+        return nullptr;
+}

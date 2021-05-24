@@ -14,18 +14,22 @@ constexpr std::size_t NO_BUILDING = std::numeric_limits<std::size_t>::max();
 constexpr std::size_t NOT_EVALUATED = std::numeric_limits<std::size_t>::max();
 
 
+std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
+{
+    os << "IndividualsCount: " << params.IndividualsCount << '\n';
+    os << "IterationsCount: " << params.IterationsCount << '\n';
+    os << "SelectionCount: " << params.IterationsCount << '\n';
+    os << "CrossoverCount: " << params.CrossoverCount << '\n';
+    os << "MutationChance: " << params.MutationChance << '\n';
+    return os;
+}
+
+
 ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
     const auto& subjectRequests = data.SubjectRequests();
 
-    ScheduleGAParams params;
-    params.IndividualsCount = 1000;
-    params.IterationsCount = 1100;
-    params.SelectionCount = 360;
-    params.CrossoverCount = 220;
-    params.MutationChance = 49;
-
-    ScheduleGA algo(params);
+    ScheduleGA algo(params_);
     const auto stat = algo.Start(subjectRequests);
 
     const auto& bestIndividual = algo.Individuals().front();
@@ -55,10 +59,32 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
     }
 
     const auto overlappedGroups = FindOverlappedGroups(data, resultSchedule);
-    std::cout << "Overlapped groups: " << overlappedGroups.size() << '\n';
+    std::cout << "Overlapped groups: " << overlappedGroups.size() << std::endl;
     return resultSchedule;
 }
 
+void GAScheduleGenerator::SetOptions(const std::map<std::string, ScheduleGenOption>& options)
+{
+    ScheduleGenerator::SetOptions(options);
+
+    if(options.empty())
+        return;
+
+    try
+    {
+        params_.IndividualsCount = RequireOption<std::uint32_t>(options, "individuals_count");
+        params_.IterationsCount = RequireOption<std::uint32_t>(options, "iterations_count");
+        params_.SelectionCount = RequireOption<std::uint32_t>(options, "selection_count");
+        params_.CrossoverCount = RequireOption<std::uint32_t>(options, "crossover_count");
+        params_.MutationChance = RequireOption<std::uint32_t>(options, "mutation_chance");
+    }
+    catch(std::exception& e)
+    {
+        std::cout << "Warning: " << e.what() << '\n';
+        params_ = ScheduleGA::DefaultParams();
+        std::cout << "Reset GA options to defaults:\n" << params_ << std::endl;
+    }
+}
 
 
 bool GroupsOrProfessorsOrClassroomsIntersects(const std::vector<SubjectRequest>& requests,

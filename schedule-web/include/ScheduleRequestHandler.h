@@ -1,6 +1,7 @@
 #pragma once
 #include "ScheduleData.hpp"
 #include "ScheduleResult.hpp"
+#include "ScheduleGenerator.hpp"
 
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
@@ -41,13 +42,21 @@ void InsertUniqueOrdered(std::vector<std::size_t>& vec, std::size_t value);
 class ScheduleRequestHandler : public Poco::Net::HTTPRequestHandler
 {
 public:
+    explicit ScheduleRequestHandler(std::unique_ptr<ScheduleGenerator> generator);
     void handleRequest(Poco::Net::HTTPServerRequest& request,
                        Poco::Net::HTTPServerResponse& response) override;
+
+private:
+    std::unique_ptr<ScheduleGenerator> generator_;
 };
 
 
 class ScheduleRequestHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory
 {
 public:
+    explicit ScheduleRequestHandlerFactory(const std::map<std::string, ScheduleGenOption>* pOptions);
     Poco::Net::HTTPRequestHandler* createRequestHandler(const Poco::Net::HTTPServerRequest&) override;
+
+private:
+    const std::map<std::string, ScheduleGenOption>* pOptions_;
 };
