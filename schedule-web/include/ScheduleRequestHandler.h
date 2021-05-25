@@ -23,6 +23,15 @@ ScheduleData ParseScheduleData(const nlohmann::json& scheduleData);
 nlohmann::json ToJson(const ScheduleItem& scheduleItem);
 nlohmann::json ToJson(const ScheduleResult& scheduleResult);
 
+void to_json(nlohmann::json& j, const OverlappedClassroom& overlappedClassroom);
+void to_json(nlohmann::json& j, const OverlappedProfessor& overlappedProfessor);
+void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups);
+void to_json(nlohmann::json& j, const ViolatedWeekdayRequest& violatedWeekdayRequest);
+void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult);
+
+void from_json(const nlohmann::json& j, ScheduleItem& scheduleItem);
+void from_json(const nlohmann::json& j, ScheduleResult& scheduleResult);
+
 
 template<typename T>
 std::vector<T> Merge(const std::vector<T>& lhs,
@@ -39,10 +48,10 @@ std::vector<T> Merge(const std::vector<T>& lhs,
 void InsertUniqueOrdered(std::vector<std::size_t>& vec, std::size_t value);
 
 
-class ScheduleRequestHandler : public Poco::Net::HTTPRequestHandler
+class MakeScheduleRequestHandler : public Poco::Net::HTTPRequestHandler
 {
 public:
-    explicit ScheduleRequestHandler(std::unique_ptr<ScheduleGenerator> generator);
+    explicit MakeScheduleRequestHandler(std::unique_ptr<ScheduleGenerator> generator);
     void handleRequest(Poco::Net::HTTPServerRequest& request,
                        Poco::Net::HTTPServerResponse& response) override;
 
@@ -50,6 +59,12 @@ private:
     std::unique_ptr<ScheduleGenerator> generator_;
 };
 
+class CheckScheduleRequestHandler : public Poco::Net::HTTPRequestHandler
+{
+public:
+    void handleRequest(Poco::Net::HTTPServerRequest& request,
+                       Poco::Net::HTTPServerResponse& response) override;
+};
 
 class ScheduleRequestHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory
 {

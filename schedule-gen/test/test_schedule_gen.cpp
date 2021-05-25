@@ -7,6 +7,16 @@
 #include <array>
 
 
+static std::vector<ClassroomAddress> MakeClassroomsRange(std::size_t n)
+{
+    std::vector<ClassroomAddress> result;
+    result.reserve(n);
+    for(std::size_t i = 0; i < n; ++i)
+        result.emplace_back(0, i);
+
+    return result;
+}
+
 TEST_CASE("TestScheduleDayNumberToWeekDay", "[utils]")
 {
     const std::array<WeekDay, 12> scheduleDays = {
@@ -262,36 +272,53 @@ TEST_CASE("Test.CalculatePadding", "[Utils]")
     REQUIRE(CalculatePadding(1, 0) == 0);
 }
 
-#if 0
-
 TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
 {
+//    explicit SubjectRequest(std::size_t id,
+//        std::size_t professor,
+//        std::size_t complexity,
+//        WeekDays days,
+//        std::vector<std::size_t> groups,
+//        std::vector<ClassroomAddress> classrooms);
+
     const std::vector<SubjectRequest> subjectRequests = {
-        SubjectRequest(0, 1, 0, {}, {0}, {0, 1, 2}),
-        SubjectRequest(1, 1, 1, {}, {3}, {0, 1, 2}),
-        SubjectRequest(2, 1, 2, {}, {1}, {0, 1, 2}),
-        SubjectRequest(3, 1, 3, {}, {2}, {0, 1, 2}),
-        SubjectRequest(4, 1, 4, {}, {1}, {0, 1, 2})
+        SubjectRequest(0, 1, 1, {}, {0}, MakeClassroomsRange(3)),
+        SubjectRequest(1, 1, 1, {}, {3}, MakeClassroomsRange(3)),
+        SubjectRequest(2, 1, 2, {}, {1}, MakeClassroomsRange(3)),
+        SubjectRequest(3, 1, 3, {}, {2}, MakeClassroomsRange(3)),
+        SubjectRequest(4, 1, 4, {}, {1}, MakeClassroomsRange(3))
     };
+
+//    explicit ScheduleData(std::vector<std::size_t> groups,
+//        std::vector<std::size_t> professors,
+//        std::vector<ClassroomAddress> classrooms,
+//        std::vector<SubjectRequest> subjectRequests,
+//        std::vector<SubjectWithAddress> occupiedLessons);
 
     const ScheduleData scheduleData(MakeIndexesRange(6),
                                     MakeIndexesRange(5),
-                                    MakeIndexesRange(3),
+                                    MakeClassroomsRange(3),
                                     subjectRequests,
                                     {});
+//    std::size_t Address;
+//    std::size_t SubjectRequest;
+//    std::size_t SubjectRequestID;
+//    std::size_t Classroom;
 
     ScheduleResult scheduleResult;
-    scheduleResult.insert(ScheduleItem(LessonAddress(0, 0), 0, 0, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(3, 0), 1, 1, 0));
-    scheduleResult.insert(ScheduleItem(LessonAddress(4, 0), 2, 2, 1));
-    scheduleResult.insert(ScheduleItem(LessonAddress(2, 0), 3, 3, 2));
-    scheduleResult.insert(ScheduleItem(LessonAddress(1, 0), 4, 4, 1));
+    scheduleResult.insert(ScheduleItem(0, 0, 0, 0));
+    scheduleResult.insert(ScheduleItem(0, 1, 1, 0));
+    scheduleResult.insert(ScheduleItem(0, 2, 2, 1));
+    scheduleResult.insert(ScheduleItem(0, 3, 3, 2));
+    scheduleResult.insert(ScheduleItem(0, 4, 4, 1));
 
     const auto result = FindOverlappedClassrooms(scheduleData, scheduleResult);
     REQUIRE(result.size() == 2);
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 0; }) != result.end());
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 1; }) != result.end());
 }
+
+#if 0
 
 TEST_CASE("Test.FindOverlappedProfessors", "[Validate]")
 {

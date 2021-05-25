@@ -12,15 +12,16 @@ class ScheduleData;
 
 struct ScheduleItem
 {
+    ScheduleItem() = default;
     explicit ScheduleItem(std::size_t lessonAddress,
                           std::size_t subjectRequest,
                           std::size_t subjectRequestID,
                           std::size_t classroom);
 
-    std::size_t Address;
-    std::size_t SubjectRequest;
-    std::size_t SubjectRequestID;
-    std::size_t Classroom;
+    std::size_t Address = 0;
+    std::size_t SubjectRequest = 0;
+    std::size_t SubjectRequestID = 0;
+    std::size_t Classroom = 0;
 };
 
 struct ScheduleItemLess
@@ -76,68 +77,38 @@ private:
 
 struct OverlappedClassroom
 {
-    explicit OverlappedClassroom(std::size_t Classroom, SortedSet<LessonAddress> Lessons)
-        : Classroom(Classroom)
-        , Lessons(std::move(Lessons))
-    {}
-
+    std::size_t Address = 0;
     std::size_t Classroom = 0;
-    SortedSet<LessonAddress> Lessons;
+    std::vector<std::size_t> SubjectRequestsIDs;
 };
-
-void Print(const OverlappedClassroom& overlappedClassroom);
 
 struct OverlappedProfessor
 {
-    explicit OverlappedProfessor(std::size_t Professor, SortedSet<LessonAddress> Lessons)
-        : Professor(Professor)
-        , Lessons(std::move(Lessons))
-    {}
-
+    std::size_t Address = 0;
     std::size_t Professor = 0;
-    SortedSet<LessonAddress> Lessons;
+    std::vector<std::size_t> SubjectRequestsIDs;
 };
-
-struct ViolatedSubjectRequest
-{
-    explicit ViolatedSubjectRequest(std::size_t Subject)
-        : Subject(Subject)
-        , Lessons()
-    {}
-
-    explicit ViolatedSubjectRequest(std::size_t Subject, SortedSet<LessonAddress> Lessons)
-        : Subject(Subject)
-        , Lessons(std::move(Lessons))
-    {}
-
-    std::size_t Subject = 0;
-    SortedSet<LessonAddress> Lessons;
-};
-
-struct ViolatedSubjectRequestLess
-{
-    [[nodiscard]] bool operator()(const ViolatedSubjectRequest& lhs, const ViolatedSubjectRequest& rhs) const
-    {
-        return lhs.Subject < rhs.Subject;
-    }
-
-    [[nodiscard]] bool operator()(const ViolatedSubjectRequest& lhs, std::size_t rhsSubject) const
-    {
-        return lhs.Subject < rhsSubject;
-    }
-
-    [[nodiscard]] bool operator()(std::size_t lhsSubject, const ViolatedSubjectRequest& rhs) const
-    {
-        return lhsSubject < rhs.Subject;
-    }
-};
-
 
 struct OverlappedGroups
 {
-    std::size_t FirstSubjectID = 0;
-    std::size_t SecondSubjectID = 0;
+    std::size_t Address = 0;
     std::vector<std::size_t> Groups;
+    std::vector<std::size_t> SubjectRequestsIDs;
+};
+
+struct ViolatedWeekdayRequest
+{
+    std::size_t Address = 0;
+    std::size_t SubjectRequestID = 0;
+};
+
+
+struct CheckScheduleResult
+{
+    std::vector<OverlappedClassroom> OverlappedClassroomsList;
+    std::vector<OverlappedProfessor> OverlappedProfessorsList;
+    std::vector<OverlappedGroups> OverlappedGroupsList;
+    std::vector<ViolatedWeekdayRequest> ViolatedWeekdayRequestsList;
 };
 
 
@@ -150,5 +121,8 @@ struct OverlappedGroups
 [[nodiscard]] std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
                                                                  const ScheduleResult& result);
 
-[[nodiscard]] std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data,
+[[nodiscard]] std::vector<ViolatedWeekdayRequest> FindViolatedWeekdayRequests(const ScheduleData& data,
                                                                               const ScheduleResult& result);
+
+CheckScheduleResult CheckSchedule(const ScheduleData& data,
+                                  const ScheduleResult& result);

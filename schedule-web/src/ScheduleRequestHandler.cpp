@@ -180,13 +180,69 @@ nlohmann::json ToJson(const ScheduleResult& scheduleResult)
     return result;
 }
 
-ScheduleRequestHandler::ScheduleRequestHandler(std::unique_ptr<ScheduleGenerator> generator)
+void to_json(nlohmann::json& j, const OverlappedClassroom& overlappedClassroom)
+{
+    j = nlohmann::json{ { "address", overlappedClassroom.Address },
+                            { "classroom", overlappedClassroom.Classroom },
+                            { "subject_ids", overlappedClassroom.SubjectRequestsIDs } };
+}
+
+void to_json(nlohmann::json& j, const OverlappedProfessor& overlappedProfessor)
+{
+    j = nlohmann::json{ { "address", overlappedProfessor.Address },
+                        { "professor", overlappedProfessor.Professor },
+                        { "subject_ids", overlappedProfessor.SubjectRequestsIDs } };
+}
+
+void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups)
+{
+    j = nlohmann::json{ { "address", overlappedGroups.Address },
+                        { "groups", overlappedGroups.Groups },
+                        { "subject_ids", overlappedGroups.SubjectRequestsIDs } };
+}
+
+void to_json(nlohmann::json& j, const ViolatedWeekdayRequest& violatedWeekdayRequest)
+{
+    j = nlohmann::json{{"address", violatedWeekdayRequest.Address},
+                       {"subject_id", violatedWeekdayRequest.SubjectRequestID}};
+}
+
+void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult)
+{
+    j = nlohmann::json{{"overlapped_classrooms", checkScheduleResult.OverlappedClassroomsList},
+                       {"overlapped_professors", checkScheduleResult.OverlappedProfessorsList},
+                       {"overlapped_groups", checkScheduleResult.OverlappedGroupsList},
+                       {"violated_weekday_requests", checkScheduleResult.ViolatedWeekdayRequestsList}};
+}
+
+void from_json(const nlohmann::json& j, ScheduleItem& scheduleItem)
+{
+    j.at("address").get_to(scheduleItem.Address);
+    j.at("classroom").get_to(scheduleItem.Classroom);
+    j.at("subject_request_id").get_to(scheduleItem.SubjectRequestID);
+}
+
+void from_json(const nlohmann::json& j, ScheduleResult& scheduleResult)
+{
+    if(!j.is_array())
+        throw std::invalid_argument("Json array expected");
+
+    for(std::size_t i = 0; i < j.size(); ++i)
+    {
+        ScheduleItem item = j.at(i);
+        item.SubjectRequest = i;
+        scheduleResult.insert(item);
+    }
+}
+
+
+MakeScheduleRequestHandler::MakeScheduleRequestHandler(std::unique_ptr<ScheduleGenerator> generator)
     : generator_(std::move(generator))
 {
     assert(generator_ != nullptr);
 }
 
-void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
+void MakeScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
                                          Poco::Net::HTTPServerResponse& response)
 {
     std::istream& in = request.stream();
@@ -214,6 +270,34 @@ void ScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request
     out.flush();
 }
 
+
+void CheckScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
+                                                Poco::Net::HTTPServerResponse& response)
+{
+    std::istream& in = request.stream();
+    std::vector<char> requestBody(request.getContentLength(), '\0');
+    in.read(requestBody.data(), requestBody.size());
+
+    nlohmann::json jsonResponse;
+    try {
+        const auto jsonRequest = nlohmann::json::parse(requestBody);
+        const auto checkScheduleResult = CheckSchedule(ParseScheduleData(jsonRequest), jsonRequest.at("placed_lessons"));
+        jsonResponse = checkScheduleResult;
+        response.setStatus(HTTPResponse::HTTP_OK);
+    }
+    catch(std::exception& e)
+    {
+        jsonResponse = {{"error", e.what()}};
+        response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+    }
+
+    response.setContentType("text/json");
+    std::ostream& out = response.send();
+    out << jsonResponse.dump(4);
+    out.flush();
+}
+
+
 ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(const std::map<std::string, ScheduleGenOption>* pOptions)
     : pOptions_(pOptions)
 {
@@ -230,8 +314,14 @@ Poco::Net::HTTPRequestHandler* ScheduleRequestHandlerFactory::createRequestHandl
     {
         auto generator = std::make_unique<GAScheduleGenerator>();
         generator->SetOptions(*pOptions_);
-        return new ScheduleRequestHandler(std::move(generator));
+        return new MakeScheduleRequestHandler(std::move(generator));
+    }
+    else if(uri.getPath() == "/checkSchedule")
+    {
+        return new CheckScheduleRequestHandler;
     }
     else
+    {
         return nullptr;
+    }
 }

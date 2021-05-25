@@ -2,6 +2,7 @@
 #include "ScheduleData.hpp"
 
 #include <iostream>
+#include <functional>
 #include <algorithm>
 
 
@@ -32,40 +33,27 @@ std::vector<ScheduleItem>::iterator ScheduleResult::insert(const ScheduleItem& i
     return items_.insert(it, item);
 }
 
-
-void Print(const OverlappedClassroom& overlappedClassroom)
-{
-    std::cout << "Overlapped classroom: " << overlappedClassroom.Classroom << " {\n";
-    for(auto lesson : overlappedClassroom.Lessons)
-    {
-        std::cout << "    (g: " << lesson.Group << ", l: " << lesson.Lesson << ")\n";
-    }
-
-    std::cout << "}\n" << std::endl;
-}
-
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result)
 {
     std::vector<OverlappedClassroom> overlappedClassrooms;
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
-        SortedMap<std::size_t, SortedSet<SubjectWithAddress>> classroomsAndSubjects;
+        std::map<std::size_t, std::vector<std::size_t>> classroomsAndSubjects;
         const auto lessonsRange = result.at(l);
         for(auto&& item : lessonsRange)
-        {
-            for (std::size_t g : data.SubjectRequests().at(item.SubjectRequest).Groups())
-                classroomsAndSubjects[item.Classroom].insert(SubjectWithAddress(item.SubjectRequest, LessonAddress(g, l)));
-        }
+            classroomsAndSubjects[item.Classroom].emplace_back(item.SubjectRequest);
 
-        for(const auto&[classroom, subjects] : classroomsAndSubjects)
+        for(auto&[classroom, subjects] : classroomsAndSubjects)
         {
             if(subjects.size() > 1)
             {
-                SortedSet<LessonAddress> lessons;
-                for(auto&& subject : subjects)
-                    lessons.insert(subject.Address);
+                std::sort(subjects.begin(), subjects.end());
 
-                overlappedClassrooms.emplace_back(classroom, std::move(lessons));
+                OverlappedClassroom overlappedClassroom;
+                overlappedClassroom.Address = l;
+                overlappedClassroom.Classroom = classroom;
+                overlappedClassroom.SubjectRequestsIDs = std::move(subjects);
+                overlappedClassrooms.emplace_back(std::move(overlappedClassroom));
             }
         }
     }
@@ -78,24 +66,25 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
     std::vector<OverlappedProfessor> overlappedProfessors;
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
-        SortedMap<std::size_t, SortedSet<SubjectWithAddress>> professorsAndSubjects;
+        std::map<std::size_t, std::vector<std::size_t>> professorsAndSubjects;
         const auto lessonsRange = result.at(l);
         for(auto&& item : lessonsRange)
         {
             const auto& request = data.SubjectRequests().at(item.SubjectRequest);
-            for(std::size_t g : data.SubjectRequests().at(item.SubjectRequest).Groups())
-                professorsAndSubjects[request.Professor()].insert(SubjectWithAddress(item.SubjectRequest, LessonAddress(g, l)));
+            professorsAndSubjects[request.Professor()].emplace_back(item.SubjectRequest);
         }
 
-        for(const auto&[professor, subjects] : professorsAndSubjects)
+        for(auto&[professor, subjects] : professorsAndSubjects)
         {
             if(subjects.size() > 1)
             {
-                SortedSet<LessonAddress> lessons;
-                for(auto&& subject : subjects)
-                    lessons.insert(subject.Address);
+                std::sort(subjects.begin(), subjects.end());
 
-                overlappedProfessors.emplace_back(professor, std::move(lessons));
+                OverlappedProfessor overlappedProfessor;
+                overlappedProfessor.Address = l;
+                overlappedProfessor.Professor = professor;
+                overlappedProfessor.SubjectRequestsIDs = std::move(subjects);
+                overlappedProfessors.emplace_back(std::move(overlappedProfessor));
             }
         }
     }
@@ -110,6 +99,7 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         const auto lessonsRange = result.at(l);
+        std::map<std::pair<std::size_t, std::size_t>, std::vector<std::size_t>> subjectGroupsIntersections;
         for(auto f = lessonsRange.begin(); f != lessonsRange.end(); ++f)
         {
             for(auto s = lessonsRange.begin(); s != lessonsRange.end(); ++s)
@@ -117,46 +107,64 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
                 if(f == s)
                     continue;
 
-                OverlappedGroups ovGroups;
-                ovGroups.FirstSubjectID = f->SubjectRequestID;
-                ovGroups.SecondSubjectID = s->SubjectRequestID;
+                if(subjectGroupsIntersections.count({s->SubjectRequestID, f->SubjectRequestID}))
+                    continue;
+
                 const auto& firstGroups = data.SubjectRequests().at(f->SubjectRequest).Groups();
                 const auto& secondGroups = data.SubjectRequests().at(s->SubjectRequest).Groups();
-                std::set_intersection(firstGroups.begin(), firstGroups.end(), secondGroups.begin(), secondGroups.end(), std::back_inserter(ovGroups.Groups));
-                overlapped.emplace_back(std::move(ovGroups));
+
+                std::vector<std::size_t> intersectedGroups;
+                std::set_intersection(firstGroups.begin(), firstGroups.begin(), secondGroups.begin(), secondGroups.end(), std::back_inserter(intersectedGroups));
+                if(intersectedGroups.empty())
+                    continue;
+
+                subjectGroupsIntersections.emplace(std::pair{f->SubjectRequestID, s->SubjectRequestID}, std::move(intersectedGroups));
             }
         }
-    }
 
-    overlapped.erase(std::remove_if(overlapped.begin(), overlapped.end(), [](const OverlappedGroups& og){
-        return og.Groups.empty();
-    }), overlapped.end());
+        for(auto&[subjPair, groups] : subjectGroupsIntersections)
+        {
+            OverlappedGroups overlappedGroups;
+            overlappedGroups.Address = l;
+            overlappedGroups.Groups = std::move(groups);
+            overlappedGroups.SubjectRequestsIDs = {subjPair.first, subjPair.second};
+            overlapped.emplace_back(std::move(overlappedGroups));
+        }
+    }
 
     return overlapped;
 }
 
-std::vector<ViolatedSubjectRequest> FindViolatedSubjectRequests(const ScheduleData& data,
+std::vector<ViolatedWeekdayRequest> FindViolatedWeekdayRequests(const ScheduleData& data,
                                                                 const ScheduleResult& result)
 {
-    std::vector<ViolatedSubjectRequest> violatedRequests;
-    for(auto&& item : result.items())
+    std::vector<ViolatedWeekdayRequest> violatedRequests;
+    for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
-        const std::size_t day = LessonToScheduleDay(item.Address);
-
-        const auto& request = data.SubjectRequests().at(item.SubjectRequest);
-        for(std::size_t g : request.Groups())
+        for(auto&& item : result.at(l))
         {
-            if(!WeekDayRequestedForSubject(data, item.SubjectRequest, day) || data.LessonIsOccupied(LessonAddress(g, item.Address)))
+            const std::size_t day = LessonToScheduleDay(item.Address);
+            const auto& request = data.SubjectRequests().at(item.SubjectRequest);
+            if(!WeekDayRequestedForSubject(data, item.SubjectRequest, day))
             {
-                auto it = std::lower_bound(violatedRequests.begin(), violatedRequests.end(), item.SubjectRequest, ViolatedSubjectRequestLess());
-
-                if (it == violatedRequests.end() || it->Subject != item.SubjectRequest)
-                    it = violatedRequests.emplace(it, item.SubjectRequest);
-
-                it->Lessons.insert(LessonAddress(g, item.Address));
+                ViolatedWeekdayRequest violatedRequest;
+                violatedRequest.Address = l;
+                violatedRequest.SubjectRequestID = item.SubjectRequestID;
+                violatedRequests.emplace_back(violatedRequest);
             }
         }
     }
 
     return violatedRequests;
+}
+
+CheckScheduleResult CheckSchedule(const ScheduleData& data,
+                                  const ScheduleResult& result)
+{
+    CheckScheduleResult checkResult;
+    checkResult.OverlappedClassroomsList = FindOverlappedClassrooms(data, result);
+    checkResult.OverlappedProfessorsList = FindOverlappedProfessors(data, result);
+    checkResult.OverlappedGroupsList = FindOverlappedGroups(data, result);
+    checkResult.ViolatedWeekdayRequestsList = FindViolatedWeekdayRequests(data, result);
+    return checkResult;
 }
