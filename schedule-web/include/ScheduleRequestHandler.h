@@ -30,7 +30,7 @@ void to_json(nlohmann::json& j, const ViolatedWeekdayRequest& violatedWeekdayReq
 void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult);
 
 void from_json(const nlohmann::json& j, ScheduleItem& scheduleItem);
-void from_json(const nlohmann::json& j, ScheduleResult& scheduleResult);
+ScheduleResult ParseScheduleResult(const nlohmann::json& j, const ScheduleData& data);
 
 
 template<typename T>

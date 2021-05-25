@@ -222,17 +222,25 @@ void from_json(const nlohmann::json& j, ScheduleItem& scheduleItem)
     j.at("subject_request_id").get_to(scheduleItem.SubjectRequestID);
 }
 
-void from_json(const nlohmann::json& j, ScheduleResult& scheduleResult)
+ScheduleResult ParseScheduleResult(const nlohmann::json& j, const ScheduleData& data)
 {
+    ScheduleResult scheduleResult;
     if(!j.is_array())
         throw std::invalid_argument("Json array expected");
 
-    for(std::size_t i = 0; i < j.size(); ++i)
+    const auto& subjectRequests = data.SubjectRequests();
+    for(auto&& elem : j)
     {
-        ScheduleItem item = j.at(i);
-        item.SubjectRequest = i;
-        scheduleResult.insert(item);
+        ScheduleItem item = elem;
+        auto it = std::lower_bound(subjectRequests.begin(), subjectRequests.end(), item.SubjectRequestID, SubjectRequestIDLess());
+        if(it != subjectRequests.end() && it->ID() == item.SubjectRequestID)
+        {
+            item.SubjectRequest = std::distance(subjectRequests.begin(), it);
+            scheduleResult.insert(item);
+        }
     }
+
+    return scheduleResult;
 }
 
 
@@ -281,7 +289,10 @@ void CheckScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& re
     nlohmann::json jsonResponse;
     try {
         const auto jsonRequest = nlohmann::json::parse(requestBody);
-        const auto checkScheduleResult = CheckSchedule(ParseScheduleData(jsonRequest), jsonRequest.at("placed_lessons"));
+        const auto scheduleData = ParseScheduleData(jsonRequest);
+        ScheduleResult scheduleResult = ParseScheduleResult(jsonRequest.at("placed_lessons"), scheduleData);
+
+        const auto checkScheduleResult = CheckSchedule(scheduleData, scheduleResult);
         jsonResponse = checkScheduleResult;
         response.setStatus(HTTPResponse::HTTP_OK);
     }

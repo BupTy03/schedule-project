@@ -57,6 +57,14 @@ struct SubjectRequestIDLess
     {
         return lhs.ID() < rhs.ID();
     }
+    bool operator()(const SubjectRequest& lhs, std::size_t rhsID) const
+    {
+        return lhs.ID() < rhsID;
+    }
+    bool operator()(std::size_t lhsID, const SubjectRequest& rhs) const
+    {
+        return lhsID < rhs.ID();
+    }
 };
 
 struct SubjectRequestIDEqual

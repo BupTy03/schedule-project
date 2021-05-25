@@ -41,7 +41,7 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
         std::map<std::size_t, std::vector<std::size_t>> classroomsAndSubjects;
         const auto lessonsRange = result.at(l);
         for(auto&& item : lessonsRange)
-            classroomsAndSubjects[item.Classroom].emplace_back(item.SubjectRequest);
+            classroomsAndSubjects[item.Classroom].emplace_back(item.SubjectRequestID);
 
         for(auto&[classroom, subjects] : classroomsAndSubjects)
         {
@@ -71,7 +71,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
         for(auto&& item : lessonsRange)
         {
             const auto& request = data.SubjectRequests().at(item.SubjectRequest);
-            professorsAndSubjects[request.Professor()].emplace_back(item.SubjectRequest);
+            professorsAndSubjects[request.Professor()].emplace_back(item.SubjectRequestID);
         }
 
         for(auto&[professor, subjects] : professorsAndSubjects)
@@ -107,14 +107,15 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
                 if(f == s)
                     continue;
 
-                if(subjectGroupsIntersections.count({s->SubjectRequestID, f->SubjectRequestID}))
+                if(subjectGroupsIntersections.count({s->SubjectRequestID, f->SubjectRequestID}) > 0)
                     continue;
 
                 const auto& firstGroups = data.SubjectRequests().at(f->SubjectRequest).Groups();
                 const auto& secondGroups = data.SubjectRequests().at(s->SubjectRequest).Groups();
 
                 std::vector<std::size_t> intersectedGroups;
-                std::set_intersection(firstGroups.begin(), firstGroups.begin(), secondGroups.begin(), secondGroups.end(), std::back_inserter(intersectedGroups));
+                std::set_intersection(firstGroups.begin(), firstGroups.end(),
+                                      secondGroups.begin(), secondGroups.end(), std::back_inserter(intersectedGroups));
                 if(intersectedGroups.empty())
                     continue;
 
