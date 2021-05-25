@@ -14,12 +14,10 @@ struct ScheduleItem
 {
     ScheduleItem() = default;
     explicit ScheduleItem(std::size_t lessonAddress,
-                          std::size_t subjectRequest,
                           std::size_t subjectRequestID,
                           std::size_t classroom);
 
     std::size_t Address = 0;
-    std::size_t SubjectRequest = 0;
     std::size_t SubjectRequestID = 0;
     std::size_t Classroom = 0;
 };
@@ -64,6 +62,8 @@ class ScheduleResult
 {
 public:
     ScheduleResult() = default;
+    explicit ScheduleResult(std::vector<ScheduleItem> items);
+
     [[nodiscard]] bool empty() const;
     [[nodiscard]] const std::vector<ScheduleItem>& items() const;
 

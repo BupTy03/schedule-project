@@ -15,7 +15,8 @@ conan_define_targets()
 set(SRC_FILES
 		main.cpp
 		ScheduleServer.cpp
-		ScheduleRequestHandler.cpp)
+		ScheduleRequestHandler.cpp
+		ScheduleDataSerialization.cpp)
 
 add_library(libschedule-web STATIC ${SRC_FILES})
 target_include_directories(libschedule-web PUBLIC ../include)

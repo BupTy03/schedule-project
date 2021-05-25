@@ -7,15 +7,19 @@
 
 
 ScheduleItem::ScheduleItem(std::size_t lessonAddress,
-                           std::size_t subjectRequest,
                            std::size_t subjectRequestID,
                            std::size_t classroom)
         : Address(lessonAddress)
-        , SubjectRequest(subjectRequest)
         , SubjectRequestID(subjectRequestID)
         , Classroom(classroom)
 {}
 
+
+ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
+    : items_(std::move(items))
+{
+    std::sort(items_.begin(), items_.end(), ScheduleItemLess());
+}
 
 bool ScheduleResult::empty() const { return items_.empty(); }
 
@@ -70,7 +74,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
         const auto lessonsRange = result.at(l);
         for(auto&& item : lessonsRange)
         {
-            const auto& request = data.SubjectRequests().at(item.SubjectRequest);
+            const auto& request = data.SubjectRequestAtID(item.SubjectRequestID);
             professorsAndSubjects[request.Professor()].emplace_back(item.SubjectRequestID);
         }
 
@@ -110,8 +114,8 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
                 if(subjectGroupsIntersections.count({s->SubjectRequestID, f->SubjectRequestID}) > 0)
                     continue;
 
-                const auto& firstGroups = data.SubjectRequests().at(f->SubjectRequest).Groups();
-                const auto& secondGroups = data.SubjectRequests().at(s->SubjectRequest).Groups();
+                const auto& firstGroups = data.SubjectRequestAtID(f->SubjectRequestID).Groups();
+                const auto& secondGroups = data.SubjectRequestAtID(s->SubjectRequestID).Groups();
 
                 std::vector<std::size_t> intersectedGroups;
                 std::set_intersection(firstGroups.begin(), firstGroups.end(),
@@ -145,8 +149,7 @@ std::vector<ViolatedWeekdayRequest> FindViolatedWeekdayRequests(const ScheduleDa
         for(auto&& item : result.at(l))
         {
             const std::size_t day = LessonToScheduleDay(item.Address);
-            const auto& request = data.SubjectRequests().at(item.SubjectRequest);
-            if(!WeekDayRequestedForSubject(data, item.SubjectRequest, day))
+            if(!WeekDayRequestedForSubject(data, item.SubjectRequestID, day))
             {
                 ViolatedWeekdayRequest violatedRequest;
                 violatedRequest.Address = l;

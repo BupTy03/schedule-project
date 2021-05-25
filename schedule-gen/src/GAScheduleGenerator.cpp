@@ -50,7 +50,6 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
             const std::size_t r = std::distance(lessons.begin(), it);
             const auto& request = subjectRequests.at(r);
             resultSchedule.insert(ScheduleItem(l,
-                                               r,
                                                request.ID(),
                                                classrooms.at(r).Classroom));
 

@@ -94,6 +94,14 @@ bool ScheduleData::LessonIsOccupied(const LessonAddress& lessonAddress) const
     return it != occupiedLessons_.end() && it->Address == lessonAddress;
 }
 
+const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectRequestID) const
+{
+    auto it = std::lower_bound(subjectRequests_.begin(), subjectRequests_.end(), subjectRequestID, SubjectRequestIDLess());
+    if(it == subjectRequests_.end() || it->ID() != subjectRequestID)
+        throw std::out_of_range("Subject request with ID=" + std::to_string(subjectRequestID) + " is not found!");
+
+    return *it;
+}
 
 ScheduleDataValidationResult Validate(const ScheduleData& data)
 {
@@ -117,7 +125,7 @@ ScheduleDataValidationResult Validate(const ScheduleData& data)
 
 bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay)
 {
-    return data.SubjectRequests().at(subject).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
+    return data.SubjectRequestAtID(subject).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
 }
 
 bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, const ClassroomAddress& classroomAddress)

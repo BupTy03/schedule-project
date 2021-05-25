@@ -301,16 +301,15 @@ TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
                                     subjectRequests,
                                     {});
 //    std::size_t Address;
-//    std::size_t SubjectRequest;
 //    std::size_t SubjectRequestID;
 //    std::size_t Classroom;
 
     ScheduleResult scheduleResult;
-    scheduleResult.insert(ScheduleItem(0, 0, 0, 0));
-    scheduleResult.insert(ScheduleItem(0, 1, 1, 0));
-    scheduleResult.insert(ScheduleItem(0, 2, 2, 1));
-    scheduleResult.insert(ScheduleItem(0, 3, 3, 2));
-    scheduleResult.insert(ScheduleItem(0, 4, 4, 1));
+    scheduleResult.insert(ScheduleItem(0, 0, 0));
+    scheduleResult.insert(ScheduleItem(0, 1, 0));
+    scheduleResult.insert(ScheduleItem(0, 2, 1));
+    scheduleResult.insert(ScheduleItem(0, 3, 2));
+    scheduleResult.insert(ScheduleItem(0, 4, 1));
 
     const auto result = FindOverlappedClassrooms(scheduleData, scheduleResult);
     REQUIRE(result.size() == 2);

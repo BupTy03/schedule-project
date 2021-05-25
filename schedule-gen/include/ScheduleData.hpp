@@ -136,6 +136,7 @@ public:
     [[nodiscard]] const std::vector<ClassroomAddress>& Classrooms() const;
     [[nodiscard]] std::size_t CountSubjects() const;
     [[nodiscard]] const std::vector<SubjectRequest>& SubjectRequests() const;
+    [[nodiscard]] const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
     [[nodiscard]] bool LessonIsOccupied(const LessonAddress& lessonAddress) const;
 
 private:
