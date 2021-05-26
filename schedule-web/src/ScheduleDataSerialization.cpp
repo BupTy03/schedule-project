@@ -86,28 +86,10 @@ void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classroom
 
 void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
 {
-    auto subjectRequests = j.at("subject_requests");
-    if(!subjectRequests.is_array())
-        throw std::invalid_argument("Json array expected");
-
-    if(subjectRequests.empty())
-        throw std::invalid_argument("'subject_requests' array is empty");
-
-    std::vector<std::size_t> groups;
-    std::vector<std::size_t> professors;
-    std::vector<ClassroomAddress> classrooms;
-
     std::vector<SubjectRequest> requests;
-    requests.reserve(subjectRequests.size());
-    for(auto&& subjectRequest : subjectRequests)
-    {
-        requests.emplace_back(subjectRequest);
-
-        const SubjectRequest& request = requests.back();
-        groups = Merge(groups, request.Groups());
-        InsertUniqueOrdered(professors, request.Professor());
-        classrooms = Merge(classrooms, request.Classrooms());
-    }
+    j.at("subject_requests").get_to(requests);
+    if(requests.empty())
+        throw std::invalid_argument("'subject_requests' array is empty");
 
     // 'locked_lessons' field is optional
     std::vector<SubjectWithAddress> locked;
@@ -115,11 +97,7 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
     if(lockedLessonsIt != j.end())
         lockedLessonsIt->get_to(locked);
 
-    scheduleData = ScheduleData(std::move(groups),
-                        std::move(professors),
-                        std::move(classrooms),
-                        std::move(requests),
-                        std::move(locked));
+    scheduleData = ScheduleData(std::move(requests), std::move(locked));
 }
 
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem)

@@ -18,15 +18,15 @@ public:
                             std::vector<std::size_t> groups,
                             std::vector<ClassroomAddress> classrooms);
 
-    [[nodiscard]] bool RequestedClassroom(const ClassroomAddress& classroomAddress) const;
-    [[nodiscard]] bool RequestedGroup(std::size_t g) const;
-    [[nodiscard]] bool Requested(WeekDay d) const;
-    [[nodiscard]] std::size_t Complexity() const;
-    [[nodiscard]] std::size_t Professor() const;
-    [[nodiscard]] std::size_t ID() const;
-    [[nodiscard]] const std::vector<std::size_t>& Groups() const;
-    [[nodiscard]] const std::vector<ClassroomAddress>& Classrooms() const;
-    [[nodiscard]] bool RequestedWeekDay(std::size_t day) const;
+    bool RequestedClassroom(const ClassroomAddress& classroomAddress) const;
+    bool RequestedGroup(std::size_t g) const;
+    bool Requested(WeekDay d) const;
+    std::size_t Complexity() const;
+    std::size_t Professor() const;
+    std::size_t ID() const;
+    const std::vector<std::size_t>& Groups() const;
+    const std::vector<ClassroomAddress>& Classrooms() const;
+    bool RequestedWeekDay(std::size_t day) const;
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
     {
@@ -75,7 +75,6 @@ struct SubjectRequestIDEqual
     }
 };
 
-
 struct SubjectWithAddress
 {
     SubjectWithAddress() = default;
@@ -120,41 +119,18 @@ class ScheduleData
 {
 public:
     ScheduleData() = default;
-    explicit ScheduleData(std::vector<std::size_t> groups,
-                          std::vector<std::size_t> professors,
-                          std::vector<ClassroomAddress> classrooms,
-                          std::vector<SubjectRequest> subjectRequests,
+    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests,
                           std::vector<SubjectWithAddress> lockedLessons);
 
-    const std::vector<std::size_t>& Groups() const;
-    const std::vector<std::size_t>& Professors() const;
-    const std::vector<ClassroomAddress>& Classrooms() const;
-    std::size_t CountSubjects() const;
     const std::vector<SubjectRequest>& SubjectRequests() const;
     const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
+
     const std::vector<SubjectWithAddress>& LockedLessons() const;
     bool LessonIsOccupied(std::size_t lessonAddress) const;
 
 private:
-    std::vector<std::size_t> groups_;
-    std::vector<std::size_t> professors_;
-    std::vector<ClassroomAddress> classrooms_;
     std::vector<SubjectRequest> subjectRequests_;
     std::vector<SubjectWithAddress> lockedLessons_;
 };
 
-
-enum class ScheduleDataValidationResult
-{
-    Ok,
-    ToMuchLessonsPerDayRequested,
-    NoGroups,
-    NoSubjects,
-    NoProfessors,
-    NoClassrooms
-};
-
-[[nodiscard]] ScheduleDataValidationResult Validate(const ScheduleData& data);
-[[nodiscard]] std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject);
-[[nodiscard]] bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay);
-[[nodiscard]] bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, const ClassroomAddress& classroomAddress);
+bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subjectRequestID, std::size_t scheduleDay);

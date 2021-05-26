@@ -51,40 +51,17 @@ const std::vector<ClassroomAddress>& SubjectRequest::Classrooms() const { return
 bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.contains(static_cast<WeekDay>(day % 6)); }
 
 
-ScheduleData::ScheduleData(std::vector<std::size_t> groups,
-                           std::vector<std::size_t> professors,
-                           std::vector<ClassroomAddress> classrooms,
-                           std::vector<SubjectRequest> subjectRequests,
+ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
                            std::vector<SubjectWithAddress> lockedLessons)
-        : groups_(std::move(groups))
-        , professors_(std::move(professors))
-        , classrooms_(std::move(classrooms))
-        , subjectRequests_(std::move(subjectRequests))
+        : subjectRequests_(std::move(subjectRequests))
         , lockedLessons_(std::move(lockedLessons))
 {
-    std::sort(groups_.begin(), groups_.end());
-    groups_.erase(std::unique(groups_.begin(), groups_.end()), groups_.end());
-
-    std::sort(professors_.begin(), professors_.end());
-    professors_.erase(std::unique(professors_.begin(), professors_.end()), professors_.end());
-
-    std::sort(classrooms_.begin(), classrooms_.end());
-    classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
-
     std::sort(lockedLessons_.begin(), lockedLessons_.end(), SubjectWithAddressLess());
     lockedLessons_.erase(std::unique(lockedLessons_.begin(), lockedLessons_.end()), lockedLessons_.end());
 
     std::sort(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDLess());
     subjectRequests_.erase(std::unique(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDEqual()), subjectRequests_.end());
 }
-
-const std::vector<std::size_t>& ScheduleData::Groups() const { return groups_; }
-
-const std::vector<std::size_t>& ScheduleData::Professors() const { return professors_; }
-
-const std::vector<ClassroomAddress>& ScheduleData::Classrooms() const { return classrooms_; }
-
-std::size_t ScheduleData::CountSubjects() const { return subjectRequests_.size(); }
 
 const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const { return subjectRequests_; }
 
@@ -108,44 +85,7 @@ const std::vector<SubjectWithAddress>& ScheduleData::LockedLessons() const
     return lockedLessons_;
 }
 
-ScheduleDataValidationResult Validate(const ScheduleData& data)
+bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subjectRequestID, std::size_t scheduleDay)
 {
-    if (std::empty(data.Groups()))
-        return ScheduleDataValidationResult::NoGroups;
-
-    if (std::empty(data.Professors()))
-        return ScheduleDataValidationResult::NoProfessors;
-
-    if (std::empty(data.Classrooms()))
-        return ScheduleDataValidationResult::NoClassrooms;
-
-    if (data.CountSubjects() <= 0)
-        return ScheduleDataValidationResult::NoSubjects;
-
-    if(data.CountSubjects() > MAX_LESSONS_COUNT)
-        return ScheduleDataValidationResult::ToMuchLessonsPerDayRequested;
-
-    return ScheduleDataValidationResult::Ok;
-}
-
-bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subject, std::size_t scheduleDay)
-{
-    return data.SubjectRequestAtID(subject).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
-}
-
-bool ClassroomRequestedForSubject(const ScheduleData& data, std::size_t subject, const ClassroomAddress& classroomAddress)
-{
-    return data.SubjectRequests().at(subject).RequestedClassroom(classroomAddress);
-}
-
-std::size_t CalculateHours(const ScheduleData& data, std::size_t professor, std::size_t group, std::size_t subject)
-{
-    const auto& subj = data.SubjectRequests().at(subject);
-    if(subj.Professor() != professor)
-        return 0;
-
-    if(!subj.RequestedGroup(group))
-        return 0;
-
-    return 1;
+    return data.SubjectRequestAtID(subjectRequestID).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
 }

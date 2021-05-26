@@ -160,7 +160,7 @@ bool RequestHasLockedLesson(const std::vector<SubjectWithAddress>& lockedLessons
                             const SubjectRequest& request)
 {
     auto it = std::find_if(lockedLessons.begin(), lockedLessons.end(), [&](const SubjectWithAddress& subject){
-           return subject.SubjectRequestID == request.ID();
+        return subject.SubjectRequestID == request.ID();
     });
 
     return it != lockedLessons.end();

@@ -69,22 +69,7 @@ WeekDays::iterator WeekDays::begin() const { return WeekDaysIterator(days_, Week
 WeekDays::iterator WeekDays::end() const { return WeekDaysIterator(days_, WeekDaysIterator::END_MASK); }
 
 std::size_t WeekDays::size() const { return 6; }
-bool WeekDays::empty() const { return days_ == 0; }
 
 void WeekDays::insert(WeekDay d) { days_ |= (1 << static_cast<std::uint8_t>(d)); }
 void WeekDays::erase(WeekDay d) { days_ &= ~(1 << static_cast<std::uint8_t>(d)); }
 bool WeekDays::contains(WeekDay d) const { return (days_ & (1 << static_cast<std::uint8_t>(d))); }
-
-
-LessonsMatrixItemAddress::LessonsMatrixItemAddress(std::size_t group,
-                                                   std::size_t professor,
-                                                   std::size_t lesson,
-                                                   std::size_t classroom,
-                                                   std::size_t subject)
-        : Group(group)
-        , Professor(professor)
-        , Lesson(lesson)
-        , Classroom(classroom)
-        , Subject(subject)
-{
-}

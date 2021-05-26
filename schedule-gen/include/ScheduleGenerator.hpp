@@ -43,5 +43,5 @@ public:
 
         std::cout.flush();
     }
-    [[nodiscard]] virtual ScheduleResult Generate(const ScheduleData&) = 0;
+    virtual ScheduleResult Generate(const ScheduleData&) = 0;
 };
