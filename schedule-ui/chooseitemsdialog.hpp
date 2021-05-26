@@ -1,5 +1,5 @@
 #pragma once
-#include "ScheduleCommon.hpp"
+#include "ScheduleUtils.hpp"
 #include <QString>
 #include <QDialog>
 #include <QStringListModel>
@@ -14,7 +14,7 @@ public:
     explicit ChooseItemsDialog(const QAbstractItemModel* model,
                                const QString& groupTitle,
                                QWidget* parent = nullptr);
-    [[nodiscard]] SortedSet<QString> items() const;
+    SortedSet<QString> items() const;
 
 private:
     ChooseItemsSetWidget* chooseWidget_;

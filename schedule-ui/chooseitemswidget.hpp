@@ -1,6 +1,5 @@
 #pragma once
-#include "ScheduleCommon.hpp"
-
+#include "ScheduleUtils.hpp"
 #include <QWidget>
 
 
@@ -20,7 +19,7 @@ public:
                                const QString& groupTitle,
                                QWidget* parent = nullptr);
     void setItems(const SortedSet<QString>& items);
-    [[nodiscard]] SortedSet<QString> items() const;
+    SortedSet<QString> items() const;
 
 private slots:
     void onChooseButtonClicked();

@@ -136,7 +136,7 @@ void MainWindow::generateSchedule()
     const auto disciplines = disciplinesModel_->disciplines();
 
     std::vector<SubjectRequest> subjectRequests;
-    std::size_t subjectRequestID = 1;
+    std::size_t subjectRequestID = 0;
     for (auto&& discipline : disciplines)
     {
         auto professor = professors.indexOf(discipline.Professor);
@@ -152,9 +152,8 @@ void MainWindow::generateSchedule()
                                              lesson.WeekDaysRequested,
                                              ToGroupsSet(groups, lesson.Groups),
                                              ToClassroomsSet(classrooms, lesson.Classrooms));
-
-                ++subjectRequestID;
             }
+            ++subjectRequestID;
         }
     }
 
@@ -219,13 +218,13 @@ void MainWindow::onScheduleDone()
                 auto lessonsRange = resultSchedule->at(d * MAX_LESSONS_PER_DAY + l);
                 for(auto&& lesson : lessonsRange)
                 {
-                    const auto& request = scheduleData->SubjectRequests().at(lesson.SubjectRequest);
+                    const auto& request = scheduleData->SubjectRequestAtID(lesson.SubjectRequestID);
                     if(request.RequestedGroup(g))
                     {
                         ScheduleModelItem item;
                         item.ClassRoom = classrooms.at(lesson.Classroom);
                         item.Professor = professors.at(request.Professor());
-                        item.Subject = subjects.at(lesson.SubjectRequest);
+                        item.Subject = subjects.at(lesson.SubjectRequestID);
                         daySchedule.at(l) = item;
                     }
                 }
@@ -244,13 +243,13 @@ void MainWindow::onScheduleDone()
                 auto lessonsRange = resultSchedule->at(d * MAX_LESSONS_PER_DAY + l);
                 for(auto&& lesson : lessonsRange)
                 {
-                    const auto& request = scheduleData->SubjectRequests().at(lesson.SubjectRequest);
+                    const auto& request = scheduleData->SubjectRequestAtID(lesson.SubjectRequestID);
                     if(request.RequestedGroup(g))
                     {
                         ScheduleModelItem item;
                         item.ClassRoom = classrooms.at(lesson.Classroom);
                         item.Professor = professors.at(request.Professor());
-                        item.Subject = subjects.at(lesson.SubjectRequest);
+                        item.Subject = subjects.at(lesson.SubjectRequestID);
                         daySchedule.at(l) = item;
                     }
                 }

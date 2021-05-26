@@ -1,4 +1,5 @@
 #pragma once
+#include "ScheduleUtils.hpp"
 #include "ScheduleCommon.hpp"
 #include <QString>
 #include <QMetaType>

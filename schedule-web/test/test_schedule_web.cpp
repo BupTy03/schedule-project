@@ -168,65 +168,6 @@ TEST_CASE("Parsing schedule data", "[parsing]")
     }
 }
 
-TEST_CASE("We can merge two ranges", "[algorithms]")
-{
-    SECTION("Merging to ranges")
-    {
-        const std::vector<std::size_t> first = {0, 2, 6, 8};
-        const std::vector<std::size_t> second = {1, 3, 4, 5, 7};
-        REQUIRE(Merge(first, second) == std::vector<std::size_t>({0, 1, 2, 3, 4, 5, 6, 7, 8}));
-    }
-    SECTION("If first range is empty - returns second range")
-    {
-        const std::vector<std::size_t> first;
-        const std::vector<std::size_t> second = {1, 3, 4, 5, 7};
-        REQUIRE(Merge(first, second) == second);
-    }
-    SECTION("If second range is empty - returns first range")
-    {
-        const std::vector<std::size_t> first = {0, 2, 6, 8};
-        const std::vector<std::size_t> second;
-        REQUIRE(Merge(first, second) == first);
-    }
-}
-
-TEST_CASE("We can insert ordered and unique values", "[algorithms]")
-{
-    SECTION("Inserting elements in empty range")
-    {
-        std::vector<std::size_t> elems;
-
-        InsertUniqueOrdered(elems, 2);
-        REQUIRE(elems == std::vector<std::size_t>({2}));
-
-        InsertUniqueOrdered(elems, 1);
-        REQUIRE(elems == std::vector<std::size_t>({1, 2}));
-
-        InsertUniqueOrdered(elems, 5);
-        REQUIRE(elems == std::vector<std::size_t>({1, 2, 5}));
-
-        InsertUniqueOrdered(elems, 0);
-        REQUIRE(elems == std::vector<std::size_t>({0, 1, 2, 5}));
-
-        InsertUniqueOrdered(elems, 3);
-        REQUIRE(elems == std::vector<std::size_t>({0, 1, 2, 3, 5}));
-    }
-    SECTION("Inserting element that already exists - has no effect")
-    {
-        const std::vector<std::size_t> initial = {1, 2, 3, 4, 5};
-        std::vector<std::size_t> vec = initial;
-
-        InsertUniqueOrdered(vec, 3);
-        REQUIRE(vec == initial);
-
-        InsertUniqueOrdered(vec, 5);
-        REQUIRE(vec == initial);
-
-        InsertUniqueOrdered(vec, 2);
-        REQUIRE(vec == initial);
-    }
-}
-
 TEST_CASE("Schedule item serialized successfully", "[serializing]")
 {
     ScheduleItem scheduleItem = nlohmann::json::object({{"address", 7},

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <cassert>
+#include <iterator>
 #include <algorithm>
 
 
@@ -119,12 +120,12 @@ std::vector<T> Merge(const std::vector<T>& lhs,
     return tmp;
 }
 
-template<typename T>
-void InsertUniqueOrdered(std::vector<T>& vec, const T& value)
+template<typename T, typename V>
+void InsertUniqueOrdered(std::vector<T>& vec, V&& value)
 {
     auto it = std::lower_bound(vec.begin(), vec.end(), value);
     if(it == vec.end() || *it != value)
-        vec.emplace(it, value);
+        vec.emplace(it, std::forward<V>(value));
 }
 
 std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment);
