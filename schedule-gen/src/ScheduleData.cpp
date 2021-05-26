@@ -56,7 +56,7 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
         : subjectRequests_(std::move(subjectRequests))
         , lockedLessons_(std::move(lockedLessons))
 {
-    std::sort(lockedLessons_.begin(), lockedLessons_.end(), SubjectWithAddressLess());
+    std::sort(lockedLessons_.begin(), lockedLessons_.end(), SubjectWithAddressLessByAddress());
     lockedLessons_.erase(std::unique(lockedLessons_.begin(), lockedLessons_.end()), lockedLessons_.end());
 
     std::sort(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDLess());
@@ -65,9 +65,9 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
 
 const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const { return subjectRequests_; }
 
-bool ScheduleData::LessonIsOccupied(std::size_t lessonAddress) const
+bool ScheduleData::LessonIsLocked(std::size_t lessonAddress) const
 {
-    auto it = std::lower_bound(lockedLessons_.begin(), lockedLessons_.end(), lessonAddress, SubjectWithAddressLess());
+    auto it = std::lower_bound(lockedLessons_.begin(), lockedLessons_.end(), lessonAddress, SubjectWithAddressLessByAddress());
     return it != lockedLessons_.end() && it->Address == lessonAddress;
 }
 
@@ -83,6 +83,15 @@ const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectReques
 const std::vector<SubjectWithAddress>& ScheduleData::LockedLessons() const
 {
     return lockedLessons_;
+}
+
+bool ScheduleData::RequestHasLockedLesson(const SubjectRequest& request) const
+{
+    auto it = std::find_if(lockedLessons_.begin(), lockedLessons_.end(), [&](const SubjectWithAddress& subject){
+           return subject.SubjectRequestID == request.ID();
+    });
+
+    return it != lockedLessons_.end();
 }
 
 bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subjectRequestID, std::size_t scheduleDay)

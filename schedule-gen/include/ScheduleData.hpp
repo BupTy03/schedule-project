@@ -97,7 +97,7 @@ struct SubjectWithAddress
     std::size_t Address = 0;
 };
 
-struct SubjectWithAddressLess
+struct SubjectWithAddressLessByAddress
 {
     bool operator()(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs) const
     {
@@ -126,7 +126,8 @@ public:
     const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
 
     const std::vector<SubjectWithAddress>& LockedLessons() const;
-    bool LessonIsOccupied(std::size_t lessonAddress) const;
+    bool LessonIsLocked(std::size_t lessonAddress) const;
+    bool RequestHasLockedLesson(const SubjectRequest& request) const;
 
 private:
     std::vector<SubjectRequest> subjectRequests_;

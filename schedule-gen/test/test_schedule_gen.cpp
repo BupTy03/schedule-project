@@ -54,7 +54,7 @@ TEST_CASE("Test.WeekDays.contains", "[WeekDays]")
 TEST_CASE("Test.WeekDays.erase", "[WeekDays]")
 {
     auto checkRemove = [](const WeekDays& weekDays, WeekDay removed){
-        for(int i = 0; i < 6; ++i)
+        for(int i = 0; i < weekDays.size(); ++i)
         {
             const auto wd = static_cast<WeekDay>(i);
             if(removed == wd)
@@ -80,7 +80,7 @@ TEST_CASE("Test.WeekDays.erase", "[WeekDays]")
     for(int i = 0; i < 6; ++i)
         days.erase(static_cast<WeekDay>(i));
 
-    REQUIRE(days.empty());
+    REQUIRE(days == WeekDays::emptyWeek());
 }
 
 TEST_CASE("Test.WeekDays.insert", "[WeekDays]")
@@ -248,19 +248,6 @@ TEST_CASE("Test.SortedMap.operator[]", "[SortedMap]")
     });
 }
 
-TEST_CASE("Test.set_intersects", "[Algorithms]")
-{
-    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({3, 4})));
-    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({1, 2, 3, 4, 5})));
-    REQUIRE(set_intersects(std::vector<int>(), std::vector<int>()));
-    REQUIRE(set_intersects(std::vector<int>({}), std::vector<int>({3, 4})));
-    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({})));
-    REQUIRE(set_intersects(std::vector<int>({1, 2, 3, 6, 7, 8, 9, 10}), std::vector<int>({1, 2, 4, 5, 6, 7, 9, 10})));
-
-    REQUIRE_FALSE(set_intersects(std::vector<int>({1, 2, 3, 4, 5}), std::vector<int>({6, 7, 8})));
-    REQUIRE_FALSE(set_intersects(std::vector<int>({1, 2, 5}), std::vector<int>({3, 4})));
-}
-
 TEST_CASE("Test.CalculatePadding", "[Utils]")
 {
     REQUIRE(CalculatePadding(3, 2) == 1);
@@ -273,15 +260,8 @@ TEST_CASE("Test.CalculatePadding", "[Utils]")
     REQUIRE(CalculatePadding(1, 0) == 0);
 }
 
-TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
+TEST_CASE("Test.FindOverlappedClassrooms", "[Validation]")
 {
-//    explicit SubjectRequest(std::size_t id,
-//        std::size_t professor,
-//        std::size_t complexity,
-//        WeekDays days,
-//        std::vector<std::size_t> groups,
-//        std::vector<ClassroomAddress> classrooms);
-
     const std::vector<SubjectRequest> subjectRequests = {
         SubjectRequest(0, 1, 1, {}, {0}, MakeClassroomsRange(3)),
         SubjectRequest(1, 1, 1, {}, {3}, MakeClassroomsRange(3)),
@@ -290,21 +270,7 @@ TEST_CASE("Test.FindOverlappedClassrooms", "[Validate]")
         SubjectRequest(4, 1, 4, {}, {1}, MakeClassroomsRange(3))
     };
 
-//    explicit ScheduleData(std::vector<std::size_t> groups,
-//        std::vector<std::size_t> professors,
-//        std::vector<ClassroomAddress> classrooms,
-//        std::vector<SubjectRequest> subjectRequests,
-//        std::vector<SubjectWithAddress> occupiedLessons);
-
-    const ScheduleData scheduleData(MakeIndexesRange(6),
-                                    MakeIndexesRange(5),
-                                    MakeClassroomsRange(3),
-                                    subjectRequests,
-                                    {});
-//    std::size_t Address;
-//    std::size_t SubjectRequestID;
-//    std::size_t Classroom;
-
+    const ScheduleData scheduleData(subjectRequests,{});
     ScheduleResult scheduleResult;
     scheduleResult.insert(ScheduleItem(0, 0, 0));
     scheduleResult.insert(ScheduleItem(0, 1, 0));
@@ -386,7 +352,7 @@ TEST_CASE("Test.FindViolatedSubjectRequests", "[Validate]")
 #endif
 
 
-TEST_CASE("We can insert ordered and unique values", "[algorithms]")
+TEST_CASE("We can insert ordered and unique values", "[algorithms.InsertUniqueOrdered]")
 {
     SECTION("Inserting elements in empty range")
     {
@@ -423,7 +389,7 @@ TEST_CASE("We can insert ordered and unique values", "[algorithms]")
     }
 }
 
-TEST_CASE("We can merge two ranges", "[algorithms]")
+TEST_CASE("We can merge two ranges", "[algorithms.Merge]")
 {
     SECTION("Merging to ranges")
     {
@@ -444,3 +410,33 @@ TEST_CASE("We can merge two ranges", "[algorithms]")
         REQUIRE(Merge(first, second) == first);
     }
 }
+
+TEST_CASE("We can check if two ordered sets intersects", "[algorithms.set_intersects]")
+{
+    SECTION("Two empty sets do not intersects")
+    {
+        REQUIRE_FALSE(set_intersects(std::vector<int>{}, std::vector<int>{}));
+    }
+    SECTION("If one of sets is empty - sets are not intersects")
+    {
+        std::vector<int> firstSet = {1, 2, 3};
+        std::vector<int> secondSet;
+        REQUIRE_FALSE(set_intersects(firstSet, secondSet));
+        REQUIRE_FALSE(set_intersects(secondSet, firstSet));
+    }
+    SECTION("set_intersects function works correctly")
+    {
+        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{1, 2, 3}));
+        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{2, 3}));
+        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{1, 2}));
+        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{1}));
+        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{2}));
+        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{3}));
+        REQUIRE(set_intersects(std::vector<int>{2, 4, 5, 6, 7, 9}, std::vector<int>{8, 9}));
+
+        REQUIRE_FALSE(set_intersects(std::vector<int>{1, 3, 5}, std::vector<int>{2, 4, 6}));
+        REQUIRE_FALSE(set_intersects(std::vector<int>{1, 3, 5}, std::vector<int>{0}));
+        REQUIRE_FALSE(set_intersects(std::vector<int>{1, 3, 5}, std::vector<int>{9, 10}));
+    }
+}
+

@@ -152,7 +152,7 @@ bool LessonIsLocked(const std::vector<SubjectWithAddress>& lockedLessons,
                     std::size_t lesson)
 {
     assert(std::is_sorted(lockedLessons.begin(), lockedLessons.end(), SubjectWithAddressLess()));
-    auto it = std::lower_bound(lockedLessons.begin(), lockedLessons.end(), lesson, SubjectWithAddressLess());
+    auto it = std::lower_bound(lockedLessons.begin(), lockedLessons.end(), lesson, SubjectWithAddressLessByAddress());
     return it != lockedLessons.end() && it->Address == lesson;
 }
 
