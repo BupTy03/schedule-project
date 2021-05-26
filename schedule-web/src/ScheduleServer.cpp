@@ -20,32 +20,27 @@ ScheduleServer::ScheduleServer()
         return;
     }
 
-    optionsFile.seekg(0, std::ios::end);
-    const auto fileSize = optionsFile.tellg();
-    optionsFile.seekg(0, std::ios::beg);
-
-    std::vector<char> fileBytes(fileSize);
-    optionsFile.read(fileBytes.data(), fileBytes.size());
-
-    nlohmann::json jsonFile;
+    nlohmann::json jsonOptions;
     try
     {
-        jsonFile = nlohmann::json::parse(fileBytes);
+        optionsFile >> jsonOptions;
     }
     catch(std::exception& e)
     {
         std::cout << "Error while parsing '" << OPTIONS_FILENAME << "' file: " << e.what() << std::endl;
     }
 
-    if(!jsonFile.is_object())
+    if(!jsonOptions.is_object())
         return;
 
-    for(auto&&[key, value] : jsonFile.items())
+    for(auto&&[key, value] : jsonOptions.items())
     {
         if(value.is_number())
             options_[key] = value.get<int>();
         else if(value.is_boolean())
             options_[key] = value.get<bool>();
+        else
+            std::cout << "Unknown option type in '" << OPTIONS_FILENAME << "' file" << std::endl;
     }
 }
 
