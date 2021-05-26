@@ -79,28 +79,23 @@ struct SubjectRequestIDEqual
 struct SubjectWithAddress
 {
     SubjectWithAddress() = default;
-    explicit SubjectWithAddress(std::size_t Subject, LessonAddress Address)
+    explicit SubjectWithAddress(std::size_t Subject, std::size_t Address)
             : Subject(Subject)
             , Address(Address)
     {}
 
-    [[nodiscard]] friend bool operator<(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
     {
-        return lhs.Subject < rhs.Subject;
+        return lhs.Subject == rhs.Subject && lhs.Address == rhs.Address;
     }
 
-    [[nodiscard]] friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
+    friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
     {
-        return lhs.Subject == rhs.Subject;
-    }
-
-    [[nodiscard]] friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
-    {
-        return lhs.Subject != rhs.Subject;
+        return !(lhs == rhs);
     }
 
     std::size_t Subject = 0;
-    LessonAddress Address;
+    std::size_t Address = 0;
 };
 
 struct SubjectWithAddressLess
@@ -110,12 +105,12 @@ struct SubjectWithAddressLess
         return lhs.Address < rhs.Address;
     }
 
-    bool operator()(const SubjectWithAddress& lhs, const LessonAddress& rhsAddress) const
+    bool operator()(const SubjectWithAddress& lhs, std::size_t rhsAddress) const
     {
         return lhs.Address < rhsAddress;
     }
 
-    bool operator()(const LessonAddress& lhsAddress, const SubjectWithAddress& rhs) const
+    bool operator()(std::size_t lhsAddress, const SubjectWithAddress& rhs) const
     {
         return lhsAddress < rhs.Address;
     }
@@ -131,13 +126,13 @@ public:
                           std::vector<SubjectRequest> subjectRequests,
                           std::vector<SubjectWithAddress> occupiedLessons);
 
-    [[nodiscard]] const std::vector<std::size_t>& Groups() const;
-    [[nodiscard]] const std::vector<std::size_t>& Professors() const;
-    [[nodiscard]] const std::vector<ClassroomAddress>& Classrooms() const;
-    [[nodiscard]] std::size_t CountSubjects() const;
-    [[nodiscard]] const std::vector<SubjectRequest>& SubjectRequests() const;
-    [[nodiscard]] const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
-    [[nodiscard]] bool LessonIsOccupied(const LessonAddress& lessonAddress) const;
+    const std::vector<std::size_t>& Groups() const;
+    const std::vector<std::size_t>& Professors() const;
+    const std::vector<ClassroomAddress>& Classrooms() const;
+    std::size_t CountSubjects() const;
+    const std::vector<SubjectRequest>& SubjectRequests() const;
+    const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
+    bool LessonIsOccupied(std::size_t lessonAddress) const;
 
 private:
     std::vector<std::size_t> groups_;

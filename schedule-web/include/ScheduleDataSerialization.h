@@ -9,7 +9,6 @@
 std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr);
 
 void from_json(const nlohmann::json& j, WeekDays& weekDays);
-void from_json(const nlohmann::json& j, LessonAddress& lessonAddress);
 void from_json(const nlohmann::json& j, SubjectWithAddress& subjectWithAddress);
 void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest);
 void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classrooms);

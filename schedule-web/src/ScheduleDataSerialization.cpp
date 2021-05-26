@@ -24,11 +24,6 @@ std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
     return result;
 }
 
-void from_json(const nlohmann::json& j, LessonAddress& lessonAddress)
-{
-    j.at("group").get_to(lessonAddress.Group);
-    j.at("lesson").get_to(lessonAddress.Lesson);
-}
 
 void from_json(const nlohmann::json& j, SubjectWithAddress& subjectWithAddress)
 {
@@ -117,7 +112,7 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
     // 'locked_lessons' field is optional
     std::vector<SubjectWithAddress> locked;
     auto lockedLessonsIt = j.find("locked_lessons");
-    if(lockedLessonsIt != j.end() && lockedLessonsIt->is_array())
+    if(lockedLessonsIt != j.end())
         lockedLessonsIt->get_to(locked);
 
     scheduleData = ScheduleData(std::move(groups),

@@ -71,7 +71,7 @@ ScheduleData::ScheduleData(std::vector<std::size_t> groups,
     std::sort(classrooms_.begin(), classrooms_.end());
     classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
 
-    std::sort(occupiedLessons_.begin(), occupiedLessons_.end());
+    std::sort(occupiedLessons_.begin(), occupiedLessons_.end(), SubjectWithAddressLess());
     occupiedLessons_.erase(std::unique(occupiedLessons_.begin(), occupiedLessons_.end()), occupiedLessons_.end());
 
     std::sort(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDLess());
@@ -88,7 +88,7 @@ std::size_t ScheduleData::CountSubjects() const { return subjectRequests_.size()
 
 const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const { return subjectRequests_; }
 
-bool ScheduleData::LessonIsOccupied(const LessonAddress& lessonAddress) const
+bool ScheduleData::LessonIsOccupied(std::size_t lessonAddress) const
 {
     auto it = std::lower_bound(occupiedLessons_.begin(), occupiedLessons_.end(), lessonAddress, SubjectWithAddressLess());
     return it != occupiedLessons_.end() && it->Address == lessonAddress;

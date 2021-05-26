@@ -235,30 +235,6 @@ private:
     std::uint8_t days_;
 };
 
-struct LessonAddress
-{
-    LessonAddress() = default;
-    explicit LessonAddress(std::size_t Group, std::size_t Lesson)
-            : Group(Group)
-            , Lesson(Lesson)
-    { }
-
-    [[nodiscard]] friend bool operator<(const LessonAddress& lhs, const LessonAddress& rhs)
-    {
-        return (lhs.Group < rhs.Group) || (lhs.Group == rhs.Group && lhs.Lesson < rhs.Lesson);
-    }
-
-    [[nodiscard]] friend bool operator==(const LessonAddress& lhs, const LessonAddress& rhs)
-    {
-        return lhs.Group == rhs.Group && lhs.Lesson == rhs.Lesson;
-    }
-
-    [[nodiscard]] friend bool operator!=(const LessonAddress& lhs, const LessonAddress& rhs) { return !(lhs == rhs); }
-
-    std::size_t Group = 0;
-    std::size_t Lesson = 0;
-};
-
 struct LessonsMatrixItemAddress
 {
     explicit LessonsMatrixItemAddress(std::size_t group,
