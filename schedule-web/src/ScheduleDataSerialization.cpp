@@ -1,4 +1,5 @@
 #include "ScheduleDataSerialization.h"
+#include "ScheduleUtils.hpp"
 
 
 std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
@@ -22,14 +23,6 @@ std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
     result.shrink_to_fit();
     return result;
 }
-
-void InsertUniqueOrdered(std::vector<std::size_t>& vec, std::size_t value)
-{
-    auto it = std::lower_bound(vec.begin(), vec.end(), value);
-    if(it == vec.end() || *it != value)
-        vec.emplace(it, value);
-}
-
 
 void from_json(const nlohmann::json& j, LessonAddress& lessonAddress)
 {

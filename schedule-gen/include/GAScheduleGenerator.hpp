@@ -1,4 +1,5 @@
 #pragma once
+#include "ScheduleUtils.hpp"
 #include "ScheduleGenerator.hpp"
 
 #include <vector>
@@ -109,7 +110,7 @@ struct ScheduleIndividualMutator
 };
 
 
-void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs);
+void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs) noexcept;
 
 bool ReadyToCrossover(const ScheduleIndividual& first,
                       const ScheduleIndividual& second,
@@ -126,11 +127,11 @@ struct ScheduleGAStatistics
 
 struct ScheduleGAParams
 {
-    std::size_t IndividualsCount = 0;
-    std::size_t IterationsCount = 0;
-    std::size_t SelectionCount = 0;
-    std::size_t CrossoverCount = 0;
-    std::size_t MutationChance = 0;
+    int IndividualsCount = 0;
+    int IterationsCount = 0;
+    int SelectionCount = 0;
+    int CrossoverCount = 0;
+    int MutationChance = 0;
 };
 
 std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params);

@@ -71,11 +71,11 @@ void GAScheduleGenerator::SetOptions(const std::map<std::string, ScheduleGenOpti
 
     try
     {
-        params_.IndividualsCount = RequireOption<std::uint32_t>(options, "individuals_count");
-        params_.IterationsCount = RequireOption<std::uint32_t>(options, "iterations_count");
-        params_.SelectionCount = RequireOption<std::uint32_t>(options, "selection_count");
-        params_.CrossoverCount = RequireOption<std::uint32_t>(options, "crossover_count");
-        params_.MutationChance = RequireOption<std::uint32_t>(options, "mutation_chance");
+        params_.IndividualsCount = RequireOption<int>(options, "individuals_count");
+        params_.IterationsCount = RequireOption<int>(options, "iterations_count");
+        params_.SelectionCount = RequireOption<int>(options, "selection_count");
+        params_.CrossoverCount = RequireOption<int>(options, "crossover_count");
+        params_.MutationChance = RequireOption<int>(options, "mutation_chance");
     }
     catch(std::exception& e)
     {
@@ -567,7 +567,7 @@ void ScheduleIndividual::ChangeLesson(std::size_t requestIndex)
 }
 
 
-void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs) { lhs.swap(rhs); }
+void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs) noexcept { lhs.swap(rhs); }
 
 void Print(const ScheduleIndividual& individ)
 {
@@ -609,22 +609,27 @@ void Print(const ScheduleIndividual& individ)
     std::cout.flush();
 }
 
-ScheduleGA::ScheduleGA()
-    : params_(ScheduleGA::DefaultParams())
-    , individuals_()
+ScheduleGA::ScheduleGA() : ScheduleGA(ScheduleGA::DefaultParams())
 {
 }
 
 ScheduleGA::ScheduleGA(const ScheduleGAParams& params)
     : params_(params)
+    , individuals_()
 {
-    if(params_.IndividualsCount == 0)
+    if(params_.IndividualsCount <= 0)
         throw std::invalid_argument("Invalid IndividualsCount option: must be greater than zero");
 
-    if(params_.SelectionCount >= params_.IndividualsCount)
-        throw std::invalid_argument("Invalid SelectionCount option: must be less than IndividualsCount");
+    if(params_.IterationsCount < 0)
+        throw std::invalid_argument("Invalid IterationsCount option: must be greater or equal to zero");
 
-    if(params_.MutationChance > 100)
+    if(params_.SelectionCount < 0 || params_.SelectionCount >= params_.IndividualsCount)
+        throw std::invalid_argument("Invalid SelectionCount option: must be greater or equal to zero and less than IndividualsCount");
+
+    if(params_.CrossoverCount < 0)
+        throw std::invalid_argument("Invalid CrossoverCount option: must be greater or equal to zero");
+
+    if(params_.MutationChance < 0 || params_.MutationChance > 100)
         throw std::invalid_argument("Invalid MutationChance option: must be in range [0, 100]");
 }
 

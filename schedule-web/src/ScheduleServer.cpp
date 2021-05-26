@@ -42,8 +42,8 @@ ScheduleServer::ScheduleServer()
 
     for(auto&&[key, value] : jsonFile.items())
     {
-        if(value.is_number_unsigned())
-            options_[key] = value.get<std::uint32_t>();
+        if(value.is_number())
+            options_[key] = value.get<int>();
         else if(value.is_boolean())
             options_[key] = value.get<bool>();
     }

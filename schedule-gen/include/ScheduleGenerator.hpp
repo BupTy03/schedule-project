@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 
-using ScheduleGenOption = std::variant<std::uint32_t, bool>;
+using ScheduleGenOption = std::variant<int, bool>;
 
 template<typename T>
 T RequireOption(const std::map<std::string, ScheduleGenOption>& options, const std::string& name)

@@ -1,4 +1,5 @@
 #pragma once
+#include "ScheduleUtils.hpp"
 #include "ScheduleCommon.hpp"
 
 #include <map>
@@ -24,39 +25,19 @@ struct ScheduleItem
 
 struct ScheduleItemLess
 {
-    [[nodiscard]] bool operator()(const ScheduleItem& lhs, const ScheduleItem& rhs) const
+    bool operator()(const ScheduleItem& lhs, const ScheduleItem& rhs) const
     {
         return lhs.Address < rhs.Address;
     }
-    [[nodiscard]] bool operator()(const ScheduleItem& lhs, std::size_t rhsLessonAddress) const
+    bool operator()(const ScheduleItem& lhs, std::size_t rhsLessonAddress) const
     {
         return lhs.Address < rhsLessonAddress;
     }
-    [[nodiscard]] bool operator()(std::size_t lhsLessonAddress, const ScheduleItem& rhs) const
+    bool operator()(std::size_t lhsLessonAddress, const ScheduleItem& rhs) const
     {
         return lhsLessonAddress < rhs.Address;
     }
 };
-
-template<typename Iter>
-struct Range
-{
-    explicit Range(Iter first, Iter last)
-        : first_(first)
-        , last_(last)
-    {}
-
-    auto begin() const { return first_; }
-    auto end() const { return last_; }
-
-private:
-    Iter first_;
-    Iter last_;
-};
-
-template<typename Iter>
-Range<Iter> make_range(Iter first, Iter last) { return Range<Iter>(first, last); }
-
 
 class ScheduleResult
 {
@@ -64,11 +45,11 @@ public:
     ScheduleResult() = default;
     explicit ScheduleResult(std::vector<ScheduleItem> items);
 
-    [[nodiscard]] bool empty() const;
-    [[nodiscard]] const std::vector<ScheduleItem>& items() const;
+    bool empty() const;
+    const std::vector<ScheduleItem>& items() const;
 
     std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
-    [[nodiscard]] Range<std::vector<ScheduleItem>::const_iterator> at(std::size_t lessonAddress) const;
+    Range<std::vector<ScheduleItem>::const_iterator> at(std::size_t lessonAddress) const;
 
 private:
     std::vector<ScheduleItem> items_;
@@ -112,17 +93,17 @@ struct CheckScheduleResult
 };
 
 
-[[nodiscard]] std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
-                                                                        const ScheduleResult& result);
+std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
+                                                          const ScheduleResult& result);
 
-[[nodiscard]] std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data,
-                                                                        const ScheduleResult& result);
+std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data,
+                                                          const ScheduleResult& result);
 
-[[nodiscard]] std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
-                                                                 const ScheduleResult& result);
+std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
+                                                   const ScheduleResult& result);
 
-[[nodiscard]] std::vector<ViolatedWeekdayRequest> FindViolatedWeekdayRequests(const ScheduleData& data,
-                                                                              const ScheduleResult& result);
+std::vector<ViolatedWeekdayRequest> FindViolatedWeekdayRequests(const ScheduleData& data,
+                                                                const ScheduleResult& result);
 
 CheckScheduleResult CheckSchedule(const ScheduleData& data,
                                   const ScheduleResult& result);
