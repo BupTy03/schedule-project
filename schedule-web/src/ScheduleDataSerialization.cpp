@@ -27,7 +27,7 @@ std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
 
 void from_json(const nlohmann::json& j, SubjectWithAddress& subjectWithAddress)
 {
-    j.at("subject_request").get_to(subjectWithAddress.Subject);
+    j.at("subject_request_id").get_to(subjectWithAddress.SubjectRequestID);
     j.at("address").get_to(subjectWithAddress.Address);
 }
 

@@ -79,14 +79,14 @@ struct SubjectRequestIDEqual
 struct SubjectWithAddress
 {
     SubjectWithAddress() = default;
-    explicit SubjectWithAddress(std::size_t Subject, std::size_t Address)
-            : Subject(Subject)
+    explicit SubjectWithAddress(std::size_t SubjectRequestID, std::size_t Address)
+            : SubjectRequestID(SubjectRequestID)
             , Address(Address)
     {}
 
     friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
     {
-        return lhs.Subject == rhs.Subject && lhs.Address == rhs.Address;
+        return lhs.SubjectRequestID == rhs.SubjectRequestID && lhs.Address == rhs.Address;
     }
 
     friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
@@ -94,7 +94,7 @@ struct SubjectWithAddress
         return !(lhs == rhs);
     }
 
-    std::size_t Subject = 0;
+    std::size_t SubjectRequestID = 0;
     std::size_t Address = 0;
 };
 
@@ -124,7 +124,7 @@ public:
                           std::vector<std::size_t> professors,
                           std::vector<ClassroomAddress> classrooms,
                           std::vector<SubjectRequest> subjectRequests,
-                          std::vector<SubjectWithAddress> occupiedLessons);
+                          std::vector<SubjectWithAddress> lockedLessons);
 
     const std::vector<std::size_t>& Groups() const;
     const std::vector<std::size_t>& Professors() const;
@@ -132,6 +132,7 @@ public:
     std::size_t CountSubjects() const;
     const std::vector<SubjectRequest>& SubjectRequests() const;
     const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
+    const std::vector<SubjectWithAddress>& LockedLessons() const;
     bool LessonIsOccupied(std::size_t lessonAddress) const;
 
 private:
@@ -139,7 +140,7 @@ private:
     std::vector<std::size_t> professors_;
     std::vector<ClassroomAddress> classrooms_;
     std::vector<SubjectRequest> subjectRequests_;
-    std::vector<SubjectWithAddress> occupiedLessons_;
+    std::vector<SubjectWithAddress> lockedLessons_;
 };
 
 
