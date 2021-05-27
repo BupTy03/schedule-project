@@ -5,53 +5,64 @@
 #include <vector>
 #include <random>
 #include <chrono>
-#include <tuple>
 
 
-bool GroupsOrProfessorsOrClassroomsIntersects(const std::vector<SubjectRequest>& requests,
-                                              const std::vector<std::size_t>& lessons,
-                                              const std::vector<ClassroomAddress>& classrooms,
-                                              std::size_t currentRequest,
-                                              std::size_t currentLesson);
+class ScheduleChromosomes
+{
+public:
+    // for testing
+    explicit ScheduleChromosomes(std::vector<std::size_t> lessons,
+                                 std::vector<ClassroomAddress> classrooms);
 
-bool GroupsOrProfessorsIntersects(const std::vector<SubjectRequest>& requests,
-                                  const std::vector<std::size_t>& lessons,
-                                  std::size_t currentRequest,
-                                  std::size_t currentLesson);
+    explicit ScheduleChromosomes(const ScheduleData& data);
 
-bool ClassroomsIntersects(const std::vector<std::size_t>& lessons,
-                          const std::vector<ClassroomAddress>& classrooms,
-                          std::size_t currentLesson,
-                          const ClassroomAddress& currentClassroom);
+    const std::vector<std::size_t>& Lessons() const { return lessons_; }
+    const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
 
-bool LessonIsLocked(const std::vector<SubjectWithAddress>& lockedLessons,
-                    std::size_t lesson);
+    std::size_t Lesson(std::size_t r) const { return lessons_.at(r); }
+    std::size_t& Lesson(std::size_t r) { return lessons_.at(r); }
 
-bool RequestHasLockedLesson(const std::vector<SubjectWithAddress>& lockedLessons,
-                            const SubjectRequest& request);
+    ClassroomAddress Classroom(std::size_t r) const { return classrooms_.at(r); }
+    ClassroomAddress& Classroom(std::size_t r) { return classrooms_.at(r); }
 
-void InitChromosomes(std::vector<std::size_t>& lessons,
-                     std::vector<ClassroomAddress>& classrooms,
-                     const std::vector<SubjectRequest>& requests,
-                     const std::vector<SubjectWithAddress>& lockedLessons,
-                     std::size_t requestIndex);
+    bool GroupsOrProfessorsOrClassroomsIntersects(const ScheduleData& data,
+                                                  std::size_t currentRequest,
+                                                  std::size_t currentLesson) const;
 
-std::tuple<std::vector<std::size_t>, std::vector<ClassroomAddress>> InitChromosomes(const std::vector<SubjectRequest>& requests,
-                                                                                    const std::vector<SubjectWithAddress>& lockedLessons);
+    bool GroupsOrProfessorsIntersects(const ScheduleData& data,
+                                      std::size_t currentRequest,
+                                      std::size_t currentLesson) const;
+
+    bool ClassroomsIntersects(std::size_t currentLesson,
+                              const ClassroomAddress& currentClassroom) const;
+
+private:
+    void InitFromRequest(const ScheduleData& data, std::size_t requestIndex);
+
+private:
+    std::vector<std::size_t> lessons_;
+    std::vector<ClassroomAddress> classrooms_;
+};
+
+bool ReadyToCrossover(const ScheduleChromosomes& first,
+                      const ScheduleChromosomes& second,
+                      const ScheduleData& data,
+                      std::size_t r);
+
+void Crossover(ScheduleChromosomes& first,
+               ScheduleChromosomes& second,
+               std::size_t r);
 
 std::size_t EvaluateSchedule(LinearAllocatorBufferSpan& bufferSpan,
-                             const std::vector<SubjectRequest>& requests,
-                             const std::vector<std::size_t>& lessons,
-                             const std::vector<ClassroomAddress>& classrooms);
+                             const ScheduleData& scheduleData,
+                             const ScheduleChromosomes& scheduleChromosomes);
 
 
 class ScheduleIndividual
 {
-    static constexpr std::size_t DEFAULT_BUFFER_SIZE = 1024;
 public:
     explicit ScheduleIndividual(std::random_device& randomDevice,
-                                const std::vector<SubjectRequest>* pRequests,
-                                const std::vector<SubjectWithAddress>* pLocked);
+                                const ScheduleData* pData);
     void swap(ScheduleIndividual& other) noexcept;
 
     ScheduleIndividual(const ScheduleIndividual& other);
@@ -60,9 +71,8 @@ public:
     ScheduleIndividual(ScheduleIndividual&& other) noexcept;
     ScheduleIndividual& operator=(ScheduleIndividual&& other) noexcept;
 
-    const std::vector<SubjectRequest>& Requests() const;
-    const std::vector<ClassroomAddress>& Classrooms() const;
-    const std::vector<std::size_t>& Lessons() const;
+    const ScheduleData& Data() const { return *pData_; }
+    const ScheduleChromosomes& Chromosomes() const { return chromosomes_; }
 
     std::size_t MutationProbability() const;
     void Mutate();
@@ -74,16 +84,15 @@ private:
     void ChangeLesson(std::size_t requestIndex);
 
 private:
-    const std::vector<SubjectRequest>* pRequests_;
-    const std::vector<SubjectWithAddress>* pLocked_;
+    const ScheduleData* pData_;
     mutable std::size_t evaluatedValue_;
-
-    std::vector<ClassroomAddress> classrooms_;
-    std::vector<std::size_t> lessons_;
-
+    ScheduleChromosomes chromosomes_;
     mutable std::vector<std::uint8_t> buffer_;
     mutable std::mt19937 randomGenerator_;
 };
+
+void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs);
+
 
 struct ScheduleIndividualLess
 {
@@ -120,14 +129,8 @@ struct ScheduleIndividualMutator
 };
 
 
-void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs) noexcept;
-
-bool ReadyToCrossover(const ScheduleIndividual& first,
-                      const ScheduleIndividual& second,
-                      std::size_t requestIndex);
-
-void Print(const ScheduleIndividual& individ);
-
+void Print(const ScheduleIndividual& individ,
+           const ScheduleData& data);
 
 struct ScheduleGAStatistics
 {
@@ -144,9 +147,6 @@ struct ScheduleGAParams
     int MutationChance = 0;
 };
 
-std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params);
-
-
 class ScheduleGA
 {
 public:
@@ -154,10 +154,9 @@ public:
     explicit ScheduleGA(const ScheduleGAParams& params);
 
     static ScheduleGAParams DefaultParams();
-    const ScheduleGAParams& Params() const;
+    const ScheduleGAParams& Params() const { return params_; }
 
-    ScheduleGAStatistics Start(const std::vector<SubjectRequest>& requests,
-                               const std::vector<SubjectWithAddress>& lockedLessons);
+    ScheduleGAStatistics Start(const ScheduleData& scheduleData);
     const std::vector<ScheduleIndividual>& Individuals() const;
 
 private:

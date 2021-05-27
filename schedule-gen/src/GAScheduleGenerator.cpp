@@ -9,9 +9,10 @@
 #undef min
 #undef max
 
-constexpr std::size_t NO_LESSON = std::numeric_limits<std::size_t>::max();
-constexpr std::size_t NO_BUILDING = std::numeric_limits<std::size_t>::max();
-constexpr std::size_t NOT_EVALUATED = std::numeric_limits<std::size_t>::max();
+static constexpr std::size_t NO_LESSON = std::numeric_limits<std::size_t>::max();
+static constexpr std::size_t NO_BUILDING = std::numeric_limits<std::size_t>::max();
+static constexpr std::size_t NOT_EVALUATED = std::numeric_limits<std::size_t>::max();
+static constexpr std::size_t DEFAULT_BUFFER_SIZE = 1024;
 
 
 std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
@@ -22,44 +23,6 @@ std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
     os << "CrossoverCount: " << params.CrossoverCount << '\n';
     os << "MutationChance: " << params.MutationChance << '\n';
     return os;
-}
-
-
-ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
-{
-    const auto& subjectRequests = data.SubjectRequests();
-
-    ScheduleGA algo(params_);
-    const auto stat = algo.Start(subjectRequests, data.LockedLessons());
-
-    const auto& bestIndividual = algo.Individuals().front();
-    Print(bestIndividual);
-    std::cout << "Best: " << bestIndividual.Evaluate() << '\n';
-    std::cout << "Time: " << std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s.\n";
-    std::cout.flush();
-
-    const auto& lessons = bestIndividual.Lessons();
-    const auto& classrooms = bestIndividual.Classrooms();
-
-    ScheduleResult resultSchedule;
-    for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
-    {
-        auto it = std::find(lessons.begin(), lessons.end(), l);
-        while(it != lessons.end())
-        {
-            const std::size_t r = std::distance(lessons.begin(), it);
-            const auto& request = subjectRequests.at(r);
-            resultSchedule.insert(ScheduleItem(l,
-                                               request.ID(),
-                                               classrooms.at(r).Classroom));
-
-            it = std::find(std::next(it), lessons.end(), l);
-        }
-    }
-
-    const auto overlappedGroups = FindOverlappedGroups(data, resultSchedule);
-    std::cout << "Overlapped groups: " << overlappedGroups.size() << std::endl;
-    return resultSchedule;
 }
 
 void GAScheduleGenerator::SetOptions(const std::map<std::string, ScheduleGenOption>& options)
@@ -85,98 +48,68 @@ void GAScheduleGenerator::SetOptions(const std::map<std::string, ScheduleGenOpti
     }
 }
 
-
-bool GroupsOrProfessorsOrClassroomsIntersects(const std::vector<SubjectRequest>& requests,
-                                              const std::vector<std::size_t>& lessons,
-                                              const std::vector<ClassroomAddress>& classrooms,
-                                              std::size_t currentRequest,
-                                              std::size_t currentLesson)
+ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
-    const auto& thisRequest = requests.at(currentRequest);
-    auto it = std::find(lessons.begin(), lessons.end(), currentLesson);
-    while(it != lessons.end())
-    {
-        const std::size_t requestIndex = std::distance(lessons.begin(), it);
-        const auto& otherRequest = requests.at(requestIndex);
-        if(thisRequest.Professor() == otherRequest.Professor() ||
-           classrooms.at(currentRequest) == classrooms.at(requestIndex) ||
-           set_intersects(thisRequest.Groups(), otherRequest.Groups()))
-            return true;
+    const auto& subjectRequests = data.SubjectRequests();
 
-        it = std::find(std::next(it), lessons.end(), currentLesson);
+    ScheduleGA algo(params_);
+    const auto stat = algo.Start(data);
+
+    const auto& bestIndividual = algo.Individuals().front();
+    Print(bestIndividual, data);
+    std::cout << "Best: " << bestIndividual.Evaluate() << '\n';
+    std::cout << "Time: " << std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s.\n";
+    std::cout.flush();
+
+    const auto& lessons = bestIndividual.Chromosomes().Lessons();
+    const auto& classrooms = bestIndividual.Chromosomes().Classrooms();
+
+    ScheduleResult resultSchedule;
+    for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
+    {
+        auto it = std::find(lessons.begin(), lessons.end(), l);
+        while(it != lessons.end())
+        {
+            const std::size_t r = std::distance(lessons.begin(), it);
+            const auto& request = subjectRequests.at(r);
+            resultSchedule.insert(ScheduleItem(l,
+                                               request.ID(),
+                                               classrooms.at(r).Classroom));
+
+            it = std::find(std::next(it), lessons.end(), l);
+        }
     }
 
-    return false;
+    const auto overlappedGroups = FindOverlappedGroups(data, resultSchedule);
+    std::cout << "Overlapped groups: " << overlappedGroups.size() << std::endl;
+    return resultSchedule;
 }
 
-bool GroupsOrProfessorsIntersects(const std::vector<SubjectRequest>& requests,
-                                  const std::vector<std::size_t>& lessons,
-                                  std::size_t currentRequest,
-                                  std::size_t currentLesson)
+
+ScheduleChromosomes::ScheduleChromosomes(std::vector<std::size_t> lessons,
+                                         std::vector<ClassroomAddress> classrooms)
+    : lessons_(std::move(lessons))
+    , classrooms_(std::move(classrooms))
 {
-    const auto& thisRequest = requests.at(currentRequest);
-    auto it = std::find(lessons.begin(), lessons.end(), currentLesson);
-    while(it != lessons.end())
-    {
-        const std::size_t requestIndex = std::distance(lessons.begin(), it);
-        const auto& otherRequest = requests.at(requestIndex);
-        if(thisRequest.Professor() == otherRequest.Professor() || set_intersects(thisRequest.Groups(), otherRequest.Groups()))
-            return true;
-
-        it = std::find(std::next(it), lessons.end(), currentLesson);
-    }
-
-    return false;
+    assert(lessons_.size() == classrooms_.size());
 }
 
-bool ClassroomsIntersects(const std::vector<std::size_t>& lessons,
-                          const std::vector<ClassroomAddress>& classrooms,
-                          std::size_t currentLesson,
-                          const ClassroomAddress& currentClassroom)
+ScheduleChromosomes::ScheduleChromosomes(const ScheduleData& data)
+    : lessons_(data.SubjectRequests().size(), NO_LESSON)
+    , classrooms_(data.SubjectRequests().size(), ClassroomAddress::NoClassroom())
 {
-    auto it = std::find(classrooms.begin(), classrooms.end(), currentClassroom);
-    while(it != classrooms.end())
-    {
-        const std::size_t requestIndex = std::distance(classrooms.begin(), it);
-        const std::size_t otherLesson = lessons.at(requestIndex);
-        if(currentLesson == otherLesson)
-            return true;
-
-        it = std::find(std::next(it), classrooms.end(), currentClassroom);
-    }
-
-    return false;
+    assert(!data.SubjectRequests().empty());
+    for(std::size_t r = 0; r < data.SubjectRequests().size(); ++r)
+        InitFromRequest(data, r);
 }
 
-bool LessonIsLocked(const std::vector<SubjectWithAddress>& lockedLessons,
-                    std::size_t lesson)
+void ScheduleChromosomes::InitFromRequest(const ScheduleData& data,
+                                          std::size_t requestIndex)
 {
-    assert(std::is_sorted(lockedLessons.begin(), lockedLessons.end(), SubjectWithAddressLess()));
-    auto it = std::lower_bound(lockedLessons.begin(), lockedLessons.end(), lesson, SubjectWithAddressLessByAddress());
-    return it != lockedLessons.end() && it->Address == lesson;
-}
-
-bool RequestHasLockedLesson(const std::vector<SubjectWithAddress>& lockedLessons,
-                            const SubjectRequest& request)
-{
-    auto it = std::find_if(lockedLessons.begin(), lockedLessons.end(), [&](const SubjectWithAddress& subject){
-        return subject.SubjectRequestID == request.ID();
-    });
-
-    return it != lockedLessons.end();
-}
-
-void InitChromosomes(std::vector<std::size_t>& lessons,
-                     std::vector<ClassroomAddress>& classrooms,
-                     const std::vector<SubjectRequest>& requests,
-                     const std::vector<SubjectWithAddress>& lockedLessons,
-                     std::size_t requestIndex)
-{
-    assert(requests.size() == classrooms.size());
-    assert(requests.size() == lessons.size());
-
+    const auto& requests = data.SubjectRequests();
     const auto& request = requests.at(requestIndex);
     const auto& requestClassrooms = request.Classrooms();
+    const auto& lockedLessons = data.LockedLessons();
 
     auto it = std::find_if(lockedLessons.begin(), lockedLessons.end(), [&](const SubjectWithAddress& subject){
            return subject.SubjectRequestID == request.ID();
@@ -184,12 +117,12 @@ void InitChromosomes(std::vector<std::size_t>& lessons,
 
     if(it != lockedLessons.end())
     {
-        lessons.at(requestIndex) = it->Address;
+        lessons_.at(requestIndex) = it->Address;
         for(auto&& classroom : requestClassrooms)
         {
-            if(!ClassroomsIntersects(lessons, classrooms, it->Address, classroom))
+            if(!ClassroomsIntersects(it->Address, classroom))
             {
-                classrooms.at(requestIndex) = classroom;
+                classrooms_.at(requestIndex) = classroom;
                 break;
             }
         }
@@ -205,24 +138,27 @@ void InitChromosomes(std::vector<std::size_t>& lessons,
                 continue;
 
             const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
-            if(LessonIsLocked(lockedLessons, scheduleLesson))
+            if(IsLateScheduleLessonInSaturday(scheduleLesson))
                 continue;
 
-            if(GroupsOrProfessorsIntersects(requests, lessons, requestIndex, scheduleLesson))
+            if(data.LessonIsLocked(scheduleLesson))
                 continue;
 
-            lessons.at(requestIndex) = scheduleLesson;
+            if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
+                continue;
+
+            lessons_.at(requestIndex) = scheduleLesson;
             if(requestClassrooms.empty())
             {
-                classrooms.at(requestIndex) = ClassroomAddress::Any();
+                classrooms_.at(requestIndex) = ClassroomAddress::Any();
                 return;
             }
 
             for(auto&& classroom : requestClassrooms)
             {
-                if(!ClassroomsIntersects(lessons, classrooms, scheduleLesson, classroom))
+                if(!ClassroomsIntersects(scheduleLesson, classroom))
                 {
-                    classrooms.at(requestIndex) = classroom;
+                    classrooms_.at(requestIndex) = classroom;
                     return;
                 }
             }
@@ -230,62 +166,102 @@ void InitChromosomes(std::vector<std::size_t>& lessons,
     }
 }
 
-std::tuple<std::vector<std::size_t>, std::vector<ClassroomAddress>> InitChromosomes(const std::vector<SubjectRequest>& requests,
-                                                                                    const std::vector<SubjectWithAddress>& lockedLessons)
+bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const ScheduleData& data,
+                                                                   std::size_t currentRequest,
+                                                                   std::size_t currentLesson) const
 {
-    std::tuple<std::vector<std::size_t>, std::vector<ClassroomAddress>> chromosomes;
-    auto& lessons = std::get<0>(chromosomes);
-    auto& classrooms = std::get<1>(chromosomes);
+    const auto& requests = data.SubjectRequests();
+    const auto& thisRequest = requests.at(currentRequest);
+    auto it = std::find(lessons_.begin(), lessons_.end(), currentLesson);
+    while(it != lessons_.end())
+    {
+        const std::size_t requestIndex = std::distance(lessons_.begin(), it);
+        const auto& otherRequest = requests.at(requestIndex);
+        if(thisRequest.Professor() == otherRequest.Professor() ||
+           classrooms_.at(currentRequest) == classrooms_.at(requestIndex) ||
+           set_intersects(thisRequest.Groups(), otherRequest.Groups()))
+        {
+            return true;
+        }
 
-    lessons.resize(requests.size(), NO_LESSON);
-    classrooms.resize(requests.size(), ClassroomAddress::NoClassroom());
+        it = std::find(std::next(it), lessons_.end(), currentLesson);
+    }
 
-    for(std::size_t i = 0; i < requests.size(); ++i)
-        InitChromosomes(std::get<0>(chromosomes), std::get<1>(chromosomes), requests, lockedLessons, i);
-
-    return chromosomes;
+    return false;
 }
 
-bool ReadyToCrossover(const ScheduleIndividual& first,
-                      const ScheduleIndividual& second,
-                      std::size_t requestIndex)
+bool ScheduleChromosomes::GroupsOrProfessorsIntersects(const ScheduleData& data,
+                                                       std::size_t currentRequest,
+                                                       std::size_t currentLesson) const
 {
+    const auto& requests = data.SubjectRequests();
+    const auto& thisRequest = requests.at(currentRequest);
+    auto it = std::find(lessons_.begin(), lessons_.end(), currentLesson);
+    while(it != lessons_.end())
+    {
+        const std::size_t requestIndex = std::distance(lessons_.begin(), it);
+        const auto& otherRequest = requests.at(requestIndex);
+        if(thisRequest.Professor() == otherRequest.Professor() || set_intersects(thisRequest.Groups(), otherRequest.Groups()))
+            return true;
 
-    assert(first.Requests() == second.Requests());
+        it = std::find(std::next(it), lessons_.end(), currentLesson);
+    }
 
-    const auto& requests = first.Requests();
-    assert(!requests.empty());
-    assert(requests.size() == first.Lessons().size());
-    assert(requests.size() == second.Lessons().size());
-    assert(requests.size() == first.Classrooms().size());
-    assert(requests.size() == second.Classrooms().size());
+    return false;
+}
 
-    const auto& thisLessons = first.Lessons();
-    const auto& thisClassrooms = first.Classrooms();
-    const auto thisLesson = thisLessons.at(requestIndex);
-    const auto thisClassroom = thisClassrooms.at(requestIndex);
+bool ScheduleChromosomes::ClassroomsIntersects(std::size_t currentLesson,
+                                               const ClassroomAddress& currentClassroom) const
+{
+    auto it = std::find(classrooms_.begin(), classrooms_.end(), currentClassroom);
+    while(it != classrooms_.end())
+    {
+        const std::size_t requestIndex = std::distance(classrooms_.begin(), it);
+        const std::size_t otherLesson = lessons_.at(requestIndex);
+        if(currentLesson == otherLesson)
+            return true;
 
-    const auto& otherLessons = second.Lessons();
-    const auto& otherClassrooms = second.Classrooms();
-    const auto otherLesson = otherLessons.at(requestIndex);
-    const auto otherClassroom = otherClassrooms.at(requestIndex);
+        it = std::find(std::next(it), classrooms_.end(), currentClassroom);
+    }
 
-    if(ClassroomsIntersects(thisLessons, thisClassrooms, otherLesson, otherClassroom) ||
-       ClassroomsIntersects(otherLessons, otherClassrooms, thisLesson, thisClassroom))
+    return false;
+}
+
+bool ReadyToCrossover(const ScheduleChromosomes& first,
+                      const ScheduleChromosomes& second,
+                      const ScheduleData& data,
+                      std::size_t r)
+{
+    const auto firstLesson = first.Lesson(r);
+    const auto firstClassroom = first.Classroom(r);
+
+    const auto secondLesson = second.Lesson(r);
+    const auto secondClassroom = second.Classroom(r);
+
+    if(first.ClassroomsIntersects(secondLesson, secondClassroom) ||
+       second.ClassroomsIntersects(firstLesson, firstClassroom))
         return false;
 
-    if(GroupsOrProfessorsOrClassroomsIntersects(requests, thisLessons, thisClassrooms, requestIndex, otherLesson) ||
-       GroupsOrProfessorsOrClassroomsIntersects(requests, otherLessons, otherClassrooms, requestIndex, thisLesson))
+    if(first.GroupsOrProfessorsOrClassroomsIntersects(data, r, secondLesson) ||
+       second.GroupsOrProfessorsOrClassroomsIntersects(data, r, firstLesson))
         return false;
 
     return true;
 }
 
+void Crossover(ScheduleChromosomes& first,
+               ScheduleChromosomes& second,
+               std::size_t r)
+{
+    using std::swap;
+    swap(first.Lesson(r), second.Lesson(r));
+    swap(first.Classroom(r), second.Classroom(r));
+}
+
 
 std::size_t EvaluateSchedule(LinearAllocatorBufferSpan& bufferSpan,
-                             const std::vector<SubjectRequest>& requests,
-                             const std::vector<std::size_t>& lessons,
-                             const std::vector<ClassroomAddress>& classrooms)
+                             const ScheduleData& scheduleData,
+                             const ScheduleChromosomes& scheduleChromosomes)
 {
     std::size_t evaluatedValue = 0;
 
@@ -357,10 +333,11 @@ std::size_t EvaluateSchedule(LinearAllocatorBufferSpan& bufferSpan,
         BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan))
     };
 
-    for(std::size_t r = 0; r < lessons.size(); ++r)
+    const auto requests = scheduleData.SubjectRequests();
+    for(std::size_t r = 0; r < requests.size(); ++r)
     {
         const auto& request = requests.at(r);
-        const std::size_t lesson = lessons.at(r);
+        const std::size_t lesson = scheduleChromosomes.Lesson(r);
         if(lesson == NO_LESSON)
         {
             evaluatedValue += 100;
@@ -385,13 +362,13 @@ std::size_t EvaluateSchedule(LinearAllocatorBufferSpan& bufferSpan,
                 it = buildingsDay.emplace_hint(it, group, emptyBuildings);
             }
 
-            if(classrooms.at(r) == ClassroomAddress::NoClassroom())
+            if(scheduleChromosomes.Classroom(r) == ClassroomAddress::NoClassroom())
             {
                 evaluatedValue += 100;
                 continue;
             }
 
-            it->second[lessonInDay] = classrooms.at(r).Building;
+            it->second[lessonInDay] = scheduleChromosomes.Classroom(r).Building;
         }
     }
 
@@ -457,36 +434,26 @@ std::size_t EvaluateSchedule(LinearAllocatorBufferSpan& bufferSpan,
 
 
 ScheduleIndividual::ScheduleIndividual(std::random_device& randomDevice,
-                                       const std::vector<SubjectRequest>* pRequests,
-                                       const std::vector<SubjectWithAddress>* pLocked)
-    : pRequests_(pRequests)
-    , pLocked_(pLocked)
+                                       const ScheduleData* pData)
+    : pData_(pData)
     , evaluatedValue_(NOT_EVALUATED)
-    , classrooms_()
-    , lessons_()
+    , chromosomes_(*pData)
     , buffer_(DEFAULT_BUFFER_SIZE)
     , randomGenerator_(randomDevice())
 {
-    assert(pRequests_ != nullptr);
-    assert(pLocked_ != nullptr);
-    assert(std::is_sorted(pLocked_->begin(), pLocked_->end(), SubjectWithAddressLess()));
-
-    std::tie(lessons_, classrooms_) = InitChromosomes(Requests(), *pLocked_);
+    assert(pData != nullptr);
 }
 
 void ScheduleIndividual::swap(ScheduleIndividual& other) noexcept
 {
     std::swap(evaluatedValue_, other.evaluatedValue_);
-    std::swap(classrooms_, other.classrooms_);
-    std::swap(lessons_, other.lessons_);
+    std::swap(chromosomes_, other.chromosomes_);
 }
 
 ScheduleIndividual::ScheduleIndividual(const ScheduleIndividual& other)
-    : pRequests_(other.pRequests_)
-    , pLocked_(other.pLocked_)
+    : pData_(other.pData_)
     , evaluatedValue_(other.evaluatedValue_)
-    , classrooms_(other.classrooms_)
-    , lessons_(other.lessons_)
+    , chromosomes_(other.chromosomes_)
     , buffer_(other.buffer_.size())
     , randomGenerator_(other.randomGenerator_)
 {
@@ -500,11 +467,9 @@ ScheduleIndividual& ScheduleIndividual::operator=(const ScheduleIndividual& othe
 }
 
 ScheduleIndividual::ScheduleIndividual(ScheduleIndividual&& other) noexcept
-    : pRequests_(other.pRequests_)
-    , pLocked_(other.pLocked_)
+    : pData_(other.pData_)
     , evaluatedValue_(other.evaluatedValue_)
-    , classrooms_(std::move(other.classrooms_))
-    , lessons_(std::move(other.lessons_))
+    , chromosomes_(std::move(other.chromosomes_))
     , buffer_(other.buffer_.size())
     , randomGenerator_(other.randomGenerator_)
 {
@@ -516,10 +481,6 @@ ScheduleIndividual& ScheduleIndividual::operator=(ScheduleIndividual&& other) no
     return *this;
 }
 
-const std::vector<SubjectRequest>& ScheduleIndividual::Requests() const { return *pRequests_; }
-const std::vector<ClassroomAddress>& ScheduleIndividual::Classrooms() const { return classrooms_; }
-const std::vector<std::size_t>& ScheduleIndividual::Lessons() const { return lessons_; }
-
 std::size_t ScheduleIndividual::MutationProbability() const
 {
     std::uniform_int_distribution<std::size_t> mutateDistrib(0, 100);
@@ -528,10 +489,7 @@ std::size_t ScheduleIndividual::MutationProbability() const
 
 void ScheduleIndividual::Mutate()
 {
-    assert(pRequests_->size() == classrooms_.size());
-    assert(pRequests_->size() == lessons_.size());
-
-    std::uniform_int_distribution<std::size_t> requestsDistrib(0, pRequests_->size() - 1);
+    std::uniform_int_distribution<std::size_t> requestsDistrib(0, pData_->SubjectRequests().size() - 1);
     const std::size_t requestIndex = requestsDistrib(randomGenerator_);
 
     std::uniform_int_distribution<std::size_t> headsOrTails(0, 1);
@@ -547,39 +505,35 @@ std::size_t ScheduleIndividual::Evaluate() const
         return evaluatedValue_;
 
     LinearAllocatorBufferSpan bufferSpan(buffer_.data(), buffer_.size());
-
-    evaluatedValue_ = EvaluateSchedule(bufferSpan, *pRequests_, lessons_, classrooms_);
-
+    evaluatedValue_ = EvaluateSchedule(bufferSpan, *pData_, chromosomes_);
     buffer_.resize(std::max(bufferSpan.peak, buffer_.size()));
     return evaluatedValue_;
 }
 
 void ScheduleIndividual::Crossover(ScheduleIndividual& other)
 {
-    std::uniform_int_distribution<std::size_t> requestsDist(0, pRequests_->size() - 1);
+    std::uniform_int_distribution<std::size_t> requestsDist(0, pData_->SubjectRequests().size() - 1);
     const auto requestIndex = requestsDist(randomGenerator_);
-    if(ReadyToCrossover(*this, other, requestIndex))
+    if(ReadyToCrossover(chromosomes_, other.chromosomes_, *pData_, requestIndex))
     {
         evaluatedValue_ = NOT_EVALUATED;
         other.evaluatedValue_ = NOT_EVALUATED;
-
-        // crossovering
-        std::swap(classrooms_.at(requestIndex), other.classrooms_.at(requestIndex));
-        std::swap(lessons_.at(requestIndex), other.lessons_.at(requestIndex));
+        ::Crossover(chromosomes_, other.chromosomes_, requestIndex);
     }
 }
 
 
 void ScheduleIndividual::ChangeClassroom(std::size_t requestIndex)
 {
-    const auto& request = pRequests_->at(requestIndex);
+    const auto& request = pData_->SubjectRequests().at(requestIndex);
     const auto& classrooms = request.Classrooms();
 
     std::uniform_int_distribution<std::size_t> classroomDistrib(0, classrooms.size() - 1);
     auto scheduleClassroom = classrooms.at(classroomDistrib(randomGenerator_));
 
     std::size_t chooseClassroomTry = 0;
-    while(chooseClassroomTry < classrooms.size() && ClassroomsIntersects(lessons_, classrooms_, lessons_.at(requestIndex), scheduleClassroom))
+    while(chooseClassroomTry < classrooms.size() &&
+          chromosomes_.ClassroomsIntersects(chromosomes_.Lesson(requestIndex), scheduleClassroom))
     {
         scheduleClassroom = classrooms.at(classroomDistrib(randomGenerator_));
         ++chooseClassroomTry;
@@ -587,15 +541,15 @@ void ScheduleIndividual::ChangeClassroom(std::size_t requestIndex)
 
     if(chooseClassroomTry < classrooms.size())
     {
-        classrooms_.at(requestIndex) = scheduleClassroom;
+        chromosomes_.Classroom(requestIndex) = scheduleClassroom;
         evaluatedValue_ = NOT_EVALUATED;
     }
 }
 
 void ScheduleIndividual::ChangeLesson(std::size_t requestIndex)
 {
-    const auto& request = pRequests_->at(requestIndex);
-    if(RequestHasLockedLesson(*pLocked_, request))
+    const auto& request = pData_->SubjectRequests().at(requestIndex);
+    if(pData_->RequestHasLockedLesson(request))
         return;
 
     std::uniform_int_distribution<std::size_t> lessonsDistrib(0, MAX_LESSONS_COUNT - 1);
@@ -604,7 +558,8 @@ void ScheduleIndividual::ChangeLesson(std::size_t requestIndex)
     std::size_t chooseLessonTry = 0;
     while(chooseLessonTry < MAX_LESSONS_COUNT &&
           (!request.RequestedWeekDay(scheduleLesson / MAX_LESSONS_PER_DAY) ||
-           GroupsOrProfessorsOrClassroomsIntersects(*pRequests_, lessons_, classrooms_, requestIndex, scheduleLesson)))
+           IsLateScheduleLessonInSaturday(scheduleLesson) ||
+           chromosomes_.GroupsOrProfessorsOrClassroomsIntersects(*pData_, requestIndex, scheduleLesson)))
     {
         scheduleLesson = lessonsDistrib(randomGenerator_);
         ++chooseLessonTry;
@@ -612,19 +567,20 @@ void ScheduleIndividual::ChangeLesson(std::size_t requestIndex)
 
     if(chooseLessonTry < MAX_LESSONS_COUNT)
     {
-        lessons_.at(requestIndex) = scheduleLesson;
+        chromosomes_.Lesson(requestIndex) = scheduleLesson;
         evaluatedValue_ = NOT_EVALUATED;
     }
 }
 
 
-void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs) noexcept { lhs.swap(rhs); }
+void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs) { lhs.swap(rhs); }
 
-void Print(const ScheduleIndividual& individ)
+void Print(const ScheduleIndividual& individ,
+           const ScheduleData& data)
 {
-    const auto& requests = individ.Requests();
-    const auto& lessons = individ.Lessons();
-    const auto& classrooms = individ.Classrooms();
+    const auto& requests = data.SubjectRequests();
+    const auto& lessons = individ.Chromosomes().Lessons();
+    const auto& classrooms = individ.Chromosomes().Classrooms();
 
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
@@ -659,6 +615,7 @@ void Print(const ScheduleIndividual& individ)
 
     std::cout.flush();
 }
+
 
 ScheduleGA::ScheduleGA() : ScheduleGA(ScheduleGA::DefaultParams())
 {
@@ -695,16 +652,10 @@ ScheduleGAParams ScheduleGA::DefaultParams()
     return result;
 }
 
-const ScheduleGAParams& ScheduleGA::Params() const
-{
-    return params_;
-}
-
-ScheduleGAStatistics ScheduleGA::Start(const std::vector<SubjectRequest>& requests,
-                                       const std::vector<SubjectWithAddress>& lockedLessons)
+ScheduleGAStatistics ScheduleGA::Start(const ScheduleData& scheduleData)
 {
     std::random_device randomDevice;
-    const ScheduleIndividual firstIndividual(randomDevice, &requests, &lockedLessons);
+    const ScheduleIndividual firstIndividual(randomDevice, &scheduleData);
     firstIndividual.Evaluate();
 
     individuals_.clear();
