@@ -170,6 +170,9 @@ bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const Schedul
                                                                    std::size_t currentRequest,
                                                                    std::size_t currentLesson) const
 {
+    if(classrooms_.at(currentRequest) == ClassroomAddress::Any())
+        return GroupsOrProfessorsIntersects(data, currentRequest, currentLesson);
+
     const auto& requests = data.SubjectRequests();
     const auto& thisRequest = requests.at(currentRequest);
     auto it = std::find(lessons_.begin(), lessons_.end(), currentLesson);
@@ -178,7 +181,7 @@ bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const Schedul
         const std::size_t requestIndex = std::distance(lessons_.begin(), it);
         const auto& otherRequest = requests.at(requestIndex);
         if(thisRequest.Professor() == otherRequest.Professor() ||
-           classrooms_.at(currentRequest) == classrooms_.at(requestIndex) ||
+            classrooms_.at(currentRequest) == classrooms_.at(requestIndex) ||
            set_intersects(thisRequest.Groups(), otherRequest.Groups()))
         {
             return true;
@@ -218,7 +221,7 @@ bool ScheduleChromosomes::ClassroomsIntersects(std::size_t currentLesson,
     {
         const std::size_t requestIndex = std::distance(classrooms_.begin(), it);
         const std::size_t otherLesson = lessons_.at(requestIndex);
-        if(currentLesson == otherLesson)
+        if(currentLesson == otherLesson && currentClassroom != ClassroomAddress::Any())
             return true;
 
         it = std::find(std::next(it), classrooms_.end(), currentClassroom);
@@ -527,6 +530,9 @@ void ScheduleIndividual::ChangeClassroom(std::size_t requestIndex)
 {
     const auto& request = pData_->SubjectRequests().at(requestIndex);
     const auto& classrooms = request.Classrooms();
+
+    if(classrooms.empty())
+        return;
 
     std::uniform_int_distribution<std::size_t> classroomDistrib(0, classrooms.size() - 1);
     auto scheduleClassroom = classrooms.at(classroomDistrib(randomGenerator_));
