@@ -43,7 +43,12 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
         std::map<std::size_t, std::vector<std::size_t>> classroomsAndSubjects;
         const auto lessonsRange = result.at(l);
         for(auto&& item : lessonsRange)
+        {
+            if(item.Classroom == ClassroomAddress::Any().Classroom)
+                continue;
+
             classroomsAndSubjects[item.Classroom].emplace_back(item.SubjectRequestID);
+        }
 
         for(auto&[classroom, subjects] : classroomsAndSubjects)
         {

@@ -71,10 +71,13 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
         while(it != lessons.end())
         {
             const std::size_t r = std::distance(lessons.begin(), it);
-            const auto& request = subjectRequests.at(r);
-            resultSchedule.insert(ScheduleItem(l,
-                                               request.ID(),
-                                               classrooms.at(r).Classroom));
+            if(classrooms.at(r) != ClassroomAddress::NoClassroom())
+            {
+                const auto& request = subjectRequests.at(r);
+                resultSchedule.insert(ScheduleItem(l,
+                                                   request.ID(),
+                                                   classrooms.at(r).Classroom));
+            }
 
             it = std::find(std::next(it), lessons.end(), l);
         }
@@ -222,12 +225,15 @@ bool ScheduleChromosomes::GroupsOrProfessorsIntersects(const ScheduleData& data,
 bool ScheduleChromosomes::ClassroomsIntersects(std::size_t currentLesson,
                                                const ClassroomAddress& currentClassroom) const
 {
+    if(currentClassroom == ClassroomAddress::Any())
+        return false;
+
     auto it = std::find(classrooms_.begin(), classrooms_.end(), currentClassroom);
     while(it != classrooms_.end())
     {
         const std::size_t requestIndex = std::distance(classrooms_.begin(), it);
         const std::size_t otherLesson = lessons_.at(requestIndex);
-        if(currentLesson == otherLesson && currentClassroom != ClassroomAddress::Any())
+        if(currentLesson == otherLesson)
             return true;
 
         it = std::find(std::next(it), classrooms_.end(), currentClassroom);
