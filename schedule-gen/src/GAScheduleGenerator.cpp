@@ -118,6 +118,12 @@ void ScheduleChromosomes::InitFromRequest(const ScheduleData& data,
     if(it != lockedLessons.end())
     {
         lessons_.at(requestIndex) = it->Address;
+        if(requestClassrooms.empty())
+        {
+            classrooms_.at(requestIndex) = ClassroomAddress::Any();
+            return;
+        }
+
         for(auto&& classroom : requestClassrooms)
         {
             if(!ClassroomsIntersects(it->Address, classroom))
