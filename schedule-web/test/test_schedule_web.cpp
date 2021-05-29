@@ -2,38 +2,19 @@
 #include <catch2/catch.hpp>
 
 
-TEST_CASE("Parsing lesson address", "[parsing]")
-{
-    SECTION("Normal lesson address json parsed successfully")
-    {
-        LessonAddress lessonAddress = nlohmann::json::parse(R"({"group": 1, "lesson": 5})");
-        REQUIRE(lessonAddress == LessonAddress(1, 5));
-    }
-    SECTION("Lesson address includes fields 'group' and 'lesson'")
-    {
-        LessonAddress lessonAddress;
-        REQUIRE_THROWS(lessonAddress = nlohmann::json::object());
-        REQUIRE_THROWS(lessonAddress = nlohmann::json::object({{"group", 1}}));
-        REQUIRE_THROWS(lessonAddress = nlohmann::json::object({{"lesson", 5}}));
-    }
-}
-
 TEST_CASE("Parsing locked lessons", "[parsing]")
 {
     SECTION("Normal locked lesson json parsed successfully")
     {
-        auto address = nlohmann::json::object({{"group", 5}, {"lesson", 3}});
-        SubjectWithAddress lockedLesson = nlohmann::json::object({{"address", address}, {"subject_request", 3}});
-        REQUIRE(lockedLesson == SubjectWithAddress(3, LessonAddress(5, 3)));
+        SubjectWithAddress lockedLesson = nlohmann::json::object({{"address", 5}, {"subject_request_id", 3}});
+        REQUIRE(lockedLesson == SubjectWithAddress(3, 5));
     }
     SECTION("Locked lesson includes fields 'address' and 'lesson'")
     {
-        auto address = nlohmann::json::object({{"group", 5}, {"lesson", 3}});
-
         SubjectWithAddress lockedLesson;
         REQUIRE_THROWS(lockedLesson = nlohmann::json::object());
-        REQUIRE_THROWS(lockedLesson = nlohmann::json::object({{"address", address}}));
-        REQUIRE_THROWS(lockedLesson = nlohmann::json::object({{"subject_request", 5}}));
+        REQUIRE_THROWS(lockedLesson = nlohmann::json::object({{"address", 5}}));
+        REQUIRE_THROWS(lockedLesson = nlohmann::json::object({{"subject_request_id", 3}}));
     }
 }
 
