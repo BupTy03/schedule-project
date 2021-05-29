@@ -1,7 +1,7 @@
 #include "ScheduleGenerator.hpp"
 
 
-std::ostream& operator<<(std::ostream& os, const std::map<std::string, ScheduleGenOption>& options)
+std::ostream& operator<<(std::ostream& os, const ScheduleGenOptions& options)
 {
     for(auto&&[key, option] : options)
     {
@@ -11,4 +11,10 @@ std::ostream& operator<<(std::ostream& os, const std::map<std::string, ScheduleG
     }
 
     return os;
+}
+
+
+ScheduleGenOptions ScheduleGenerator::DefaultOptions() const
+{
+    return {};
 }

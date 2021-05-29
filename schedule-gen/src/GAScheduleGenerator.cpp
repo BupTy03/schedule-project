@@ -25,27 +25,6 @@ std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
     return os;
 }
 
-void GAScheduleGenerator::SetOptions(const std::map<std::string, ScheduleGenOption>& options)
-{
-    if(options.empty())
-        return;
-
-    try
-    {
-        params_.IndividualsCount = RequireOption<int>(options, "individuals_count");
-        params_.IterationsCount = RequireOption<int>(options, "iterations_count");
-        params_.SelectionCount = RequireOption<int>(options, "selection_count");
-        params_.CrossoverCount = RequireOption<int>(options, "crossover_count");
-        params_.MutationChance = RequireOption<int>(options, "mutation_chance");
-    }
-    catch(std::exception& e)
-    {
-        std::cout << "Warning: " << e.what() << '\n';
-        params_ = ScheduleGA::DefaultParams();
-        std::cout << "Reset GA options to defaults:\n" << params_ << std::endl;
-    }
-}
-
 ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
     const auto& subjectRequests = data.SubjectRequests();
@@ -84,6 +63,36 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
     const auto overlappedGroups = FindOverlappedGroups(data, resultSchedule);
     std::cout << "Overlapped groups: " << overlappedGroups.size() << std::endl;
     return resultSchedule;
+}
+
+void GAScheduleGenerator::SetOptions(const std::map<std::string, ScheduleGenOption>& options)
+{
+    ScheduleGAParams newParams;
+    newParams.IndividualsCount = RequireOption<int>(options, "individuals_count");
+    newParams.IterationsCount = RequireOption<int>(options, "iterations_count");
+    newParams.SelectionCount = RequireOption<int>(options, "selection_count");
+    newParams.CrossoverCount = RequireOption<int>(options, "crossover_count");
+    newParams.MutationChance = RequireOption<int>(options, "mutation_chance");
+    params_ = newParams;
+}
+
+ScheduleGenOptions GAScheduleGenerator::DefaultOptions() const
+{
+    const auto defaultParams = ScheduleGA::DefaultParams();
+    ScheduleGenOptions result;
+    result.emplace("individuals_count", defaultParams.IndividualsCount);
+    result.emplace("iterations_count", defaultParams.IterationsCount);
+    result.emplace("selection_count", defaultParams.SelectionCount);
+    result.emplace("crossover_count", defaultParams.CrossoverCount);
+    result.emplace("mutation_chance", defaultParams.MutationChance);
+    return result;
+}
+
+std::unique_ptr<ScheduleGenerator> GAScheduleGenerator::Clone() const
+{
+    auto result = std::make_unique<GAScheduleGenerator>();
+    result->params_ = params_;
+    return result;
 }
 
 

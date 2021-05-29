@@ -30,9 +30,9 @@ public:
 class ScheduleRequestHandlerFactory : public Poco::Net::HTTPRequestHandlerFactory
 {
 public:
-    explicit ScheduleRequestHandlerFactory(const std::map<std::string, ScheduleGenOption>* pOptions);
+    explicit ScheduleRequestHandlerFactory(std::unique_ptr<ScheduleGenerator> generator);
     Poco::Net::HTTPRequestHandler* createRequestHandler(const Poco::Net::HTTPServerRequest&) override;
 
 private:
-    const std::map<std::string, ScheduleGenOption>* pOptions_;
+    std::unique_ptr<ScheduleGenerator> generator_;
 };

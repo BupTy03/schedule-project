@@ -168,8 +168,12 @@ private:
 class GAScheduleGenerator : public ScheduleGenerator
 {
 public:
-    void SetOptions(const std::map<std::string, ScheduleGenOption>& options) override;
     ScheduleResult Generate(const ScheduleData& data) override;
+
+    void SetOptions(const ScheduleGenOptions& options) override;
+    ScheduleGenOptions DefaultOptions() const override;
+
+    std::unique_ptr<ScheduleGenerator> Clone() const override;
 
 public:
     ScheduleGAParams params_ = ScheduleGA::DefaultParams();

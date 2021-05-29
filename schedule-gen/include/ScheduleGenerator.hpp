@@ -3,6 +3,7 @@
 #include "ScheduleResult.hpp"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <variant>
 #include <iostream>
@@ -10,6 +11,7 @@
 
 
 using ScheduleGenOption = std::variant<int, bool>;
+using ScheduleGenOptions = std::map<std::string, ScheduleGenOption>;
 
 
 /**
@@ -19,15 +21,18 @@ class ScheduleGenerator
 {
 public:
     virtual ~ScheduleGenerator() = default;
-    virtual void SetOptions(const std::map<std::string, ScheduleGenOption>&) = 0;
     virtual ScheduleResult Generate(const ScheduleData&) = 0;
+
+    virtual void SetOptions(const ScheduleGenOptions&) = 0;
+    virtual ScheduleGenOptions DefaultOptions() const;
+    virtual std::unique_ptr<ScheduleGenerator> Clone() const = 0;
 };
 
 
-std::ostream& operator<<(std::ostream& os, const std::map<std::string, ScheduleGenOption>& options);
+std::ostream& operator<<(std::ostream& os, const ScheduleGenOptions& options);
 
 template<typename T>
-T RequireOption(const std::map<std::string, ScheduleGenOption>& options, const std::string& name)
+T RequireOption(const ScheduleGenOptions& options, const std::string& name)
 {
     auto it = options.find(name);
     if(it == options.end())

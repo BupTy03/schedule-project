@@ -1,4 +1,5 @@
 #include "ScheduleServer.h"
+#include "GAScheduleGenerator.hpp"
 #include "ScheduleRequestHandler.h"
 
 #include "nlohmann/json.hpp"
@@ -11,36 +12,17 @@
 
 static const std::string OPTIONS_FILENAME = "options.json";
 
+
 ScheduleServer::ScheduleServer()
+    : generator_(std::make_unique<GAScheduleGenerator>())
 {
-    std::ifstream optionsFile(OPTIONS_FILENAME, std::ios::in);
-    if(!optionsFile)
-    {
-        std::cout << "Warning: Unable to find '" << OPTIONS_FILENAME << "' file!" << std::endl;
-        return;
+    auto options = generator_->DefaultOptions();
+    try {
+        options = LoadOptions(OPTIONS_FILENAME, options);
+        generator_->SetOptions(options);
     }
-
-    nlohmann::json jsonOptions;
-    try
-    {
-        optionsFile >> jsonOptions;
-    }
-    catch(std::exception& e)
-    {
-        std::cout << "Error while parsing '" << OPTIONS_FILENAME << "' file: " << e.what() << std::endl;
-    }
-
-    if(!jsonOptions.is_object())
-        return;
-
-    for(auto&&[key, value] : jsonOptions.items())
-    {
-        if(value.is_number())
-            options_[key] = value.get<int>();
-        else if(value.is_boolean())
-            options_[key] = value.get<bool>();
-        else
-            std::cout << "Unknown option type in '" << OPTIONS_FILENAME << "' file" << std::endl;
+    catch(std::exception& e) {
+        std::cout << "Error while loading options: " << e.what() << std::endl;
     }
 }
 
@@ -48,7 +30,7 @@ int ScheduleServer::main(const std::vector<std::string>&)
 {
     using namespace Poco::Net;
 
-    HTTPServer s(new ScheduleRequestHandlerFactory(&options_), ServerSocket(9304), new HTTPServerParams);
+    HTTPServer s(new ScheduleRequestHandlerFactory(generator_->Clone()), ServerSocket(9304), new HTTPServerParams);
     s.start();
 
     int ch = 0;
@@ -56,4 +38,61 @@ int ScheduleServer::main(const std::vector<std::string>&)
 
     s.stop();
     return Application::EXIT_OK;
+}
+
+
+nlohmann::json OptionsToJson(const ScheduleGenOptions& options)
+{
+    nlohmann::json result;
+    for(auto&&[key, value] : options)
+    {
+        if(std::holds_alternative<int>(value))
+            result.emplace(key, std::get<int>(value));
+        else if(std::holds_alternative<bool>(value))
+            result.emplace(key, std::get<bool>(value));
+    }
+
+    return result;
+}
+
+
+void CreateDefaultOptionsFile(const std::string& filename,
+                              const ScheduleGenOptions& defaultOptions)
+{
+    std::cout << "Creating '" << filename << "' file with default options" << std::endl;
+    std::ofstream optionsFile(OPTIONS_FILENAME, std::ios::out);
+    if(!optionsFile)
+        throw std::runtime_error("Unable to create '" + filename + "' file");
+
+    optionsFile << OptionsToJson(defaultOptions).dump(4);
+}
+
+ScheduleGenOptions LoadOptions(const std::string& filename,
+                               const ScheduleGenOptions& defaultOptions)
+{
+    std::fstream optionsFile(filename, std::ios::in);
+    if(!optionsFile)
+    {
+        std::cout << "Warning: '" << filename << "' file is not found!" << std::endl;
+        CreateDefaultOptionsFile(filename, defaultOptions);
+        return defaultOptions;
+    }
+
+    nlohmann::json jsonOptions;
+    optionsFile >> jsonOptions;
+    if(!jsonOptions.is_object())
+        throw std::invalid_argument("Json object expected");
+
+    ScheduleGenOptions options;
+    for(auto&&[key, value] : jsonOptions.items())
+    {
+        if(value.is_number())
+            options[key] = value.get<int>();
+        else if(value.is_boolean())
+            options[key] = value.get<bool>();
+        else
+            throw std::invalid_argument("Unexpected type of '" + key + "' option");
+    }
+
+    return options;
 }

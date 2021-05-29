@@ -75,10 +75,10 @@ void CheckScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& re
 }
 
 
-ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(const std::map<std::string, ScheduleGenOption>* pOptions)
-    : pOptions_(pOptions)
+ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(std::unique_ptr<ScheduleGenerator> generator)
+    : generator_(std::move(generator))
 {
-    assert(pOptions_ != nullptr);
+    assert(generator_ != nullptr);
 }
 
 Poco::Net::HTTPRequestHandler* ScheduleRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
@@ -89,9 +89,7 @@ Poco::Net::HTTPRequestHandler* ScheduleRequestHandlerFactory::createRequestHandl
     URI uri(request.getURI());
     if(uri.getPath() == "/makeSchedule")
     {
-        auto generator = std::make_unique<GAScheduleGenerator>();
-        generator->SetOptions(*pOptions_);
-        return new MakeScheduleRequestHandler(std::move(generator));
+        return new MakeScheduleRequestHandler(generator_->Clone());
     }
     else if(uri.getPath() == "/checkSchedule")
     {
