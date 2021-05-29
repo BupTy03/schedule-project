@@ -2,10 +2,8 @@
 #include "ScheduleServer.h"
 #include "GAScheduleGenerator.hpp"
 #include "ScheduleDataSerialization.h"
-
-#include <Poco/URI.h>
-#include <Poco/StringTokenizer.h>
-
+#include "Poco/URI.h"
+#include "spdlog/spdlog.h"
 #include <cassert>
 
 
@@ -29,10 +27,12 @@ void MakeScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& req
     nlohmann::json jsonResponse;
     try {
         const auto jsonRequest = nlohmann::json::parse(requestBody);
-        jsonResponse = generator_->Generate(jsonRequest);
 
-        std::cout << "Subject requests count: " << jsonRequest["subject_requests"].size() << std::endl;
-        std::cout << "Subject responses count: " << jsonResponse.size() << std::endl;
+        auto logger = spdlog::get("server");
+        logger->info("Start generate schedule...");
+        jsonResponse = generator_->Generate(jsonRequest);
+        logger->info("Schedule done: requests: {}, responses: {}", jsonRequest["subject_requests"].size(), jsonResponse.size());
+
         response.setStatus(HTTPResponse::HTTP_OK);
     }
     catch(std::exception& e)

@@ -3,6 +3,7 @@
 #include "ScheduleRequestHandler.h"
 
 #include "nlohmann/json.hpp"
+#include "spdlog/spdlog.h"
 
 #include <Poco/Net/HTTPServer.h>
 
@@ -22,7 +23,7 @@ ScheduleServer::ScheduleServer()
         generator_->SetOptions(options);
     }
     catch(std::exception& e) {
-        std::cout << "Error while loading options: " << e.what() << std::endl;
+        spdlog::get("server")->error("Error while loading options: {}", e.what());
     }
 }
 
@@ -59,7 +60,7 @@ nlohmann::json OptionsToJson(const ScheduleGenOptions& options)
 void CreateDefaultOptionsFile(const std::string& filename,
                               const ScheduleGenOptions& defaultOptions)
 {
-    std::cout << "Creating '" << filename << "' file with default options" << std::endl;
+    spdlog::get("server")->info("Creating '{}' file with default options", filename);
     std::ofstream optionsFile(OPTIONS_FILENAME, std::ios::out);
     if(!optionsFile)
         throw std::runtime_error("Unable to create '" + filename + "' file");
@@ -73,7 +74,7 @@ ScheduleGenOptions LoadOptions(const std::string& filename,
     std::fstream optionsFile(filename, std::ios::in);
     if(!optionsFile)
     {
-        std::cout << "Warning: '" << filename << "' file is not found!" << std::endl;
+        spdlog::get("server")->warn("'{}' file is not found!", filename);
         CreateDefaultOptionsFile(filename, defaultOptions);
         return defaultOptions;
     }
