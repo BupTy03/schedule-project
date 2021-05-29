@@ -134,7 +134,10 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
             OverlappedGroups overlappedGroups;
             overlappedGroups.Address = l;
             overlappedGroups.Groups = std::move(groups);
-            overlappedGroups.SubjectRequestsIDs = {subjPair.first, subjPair.second};
+
+            // sorted
+            overlappedGroups.SubjectRequestsIDs = { std::min(subjPair.first, subjPair.second),
+                                                    std::max(subjPair.first, subjPair.second) };
             overlapped.emplace_back(std::move(overlappedGroups));
         }
     }

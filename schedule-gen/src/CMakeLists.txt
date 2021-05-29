@@ -7,4 +7,4 @@ add_library(schedule-gen STATIC
         ScheduleUtils.cpp ScheduleGenerator.cpp)
 
 target_include_directories(schedule-gen PUBLIC ../include)
-target_compile_features(schedule-gen PUBLIC cxx_std_17)
+target_compile_features(schedule-gen PUBLIC cxx_std_20)

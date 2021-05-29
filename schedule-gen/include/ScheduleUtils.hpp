@@ -95,26 +95,6 @@ bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
     return set_intersects(std::begin(r1), std::end(r1), std::begin(r2), std::end(r2));
 }
 
-template<typename T>
-std::vector<T> Merge(const std::vector<T>& lhs,
-                     const std::vector<T>& rhs)
-{
-    assert(std::is_sorted(lhs.begin(), lhs.end()));
-    assert(std::is_sorted(rhs.begin(), rhs.end()));
-
-    std::vector<T> tmp;
-    std::merge(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::back_inserter(tmp));
-    return tmp;
-}
-
-template<typename T, typename V>
-void InsertUniqueOrdered(std::vector<T>& vec, V&& value)
-{
-    auto it = std::lower_bound(vec.begin(), vec.end(), value);
-    if(it == vec.end() || *it != value)
-        vec.emplace(it, std::forward<V>(value));
-}
-
 std::size_t CalculatePadding(std::size_t baseAddress, std::size_t alignment);
 
 

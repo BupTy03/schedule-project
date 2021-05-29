@@ -31,7 +31,7 @@ enum class WeekDay : std::uint8_t
 struct ClassroomAddress
 {
     ClassroomAddress() = default;
-    explicit ClassroomAddress(std::size_t building, std::size_t classroom)
+    ClassroomAddress(std::size_t building, std::size_t classroom)
         : Building(building)
         , Classroom(classroom)
     {}
