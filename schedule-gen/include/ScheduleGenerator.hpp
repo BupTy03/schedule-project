@@ -11,6 +11,21 @@
 
 using ScheduleGenOption = std::variant<int, bool>;
 
+
+/**
+ * Generates result schedule from schedule data.
+ */
+class ScheduleGenerator
+{
+public:
+    virtual ~ScheduleGenerator() = default;
+    virtual void SetOptions(const std::map<std::string, ScheduleGenOption>&) = 0;
+    virtual ScheduleResult Generate(const ScheduleData&) = 0;
+};
+
+
+std::ostream& operator<<(std::ostream& os, const std::map<std::string, ScheduleGenOption>& options);
+
 template<typename T>
 T RequireOption(const std::map<std::string, ScheduleGenOption>& options, const std::string& name)
 {
@@ -23,25 +38,3 @@ T RequireOption(const std::map<std::string, ScheduleGenOption>& options, const s
 
     return std::get<T>(it->second);
 }
-
-
-/**
- * Generates result schedule from schedule data.
- */
-class ScheduleGenerator
-{
-public:
-    virtual ~ScheduleGenerator() = default;
-    virtual void SetOptions(const std::map<std::string, ScheduleGenOption>& options)
-    {
-        for(auto&&[key, option] : options)
-        {
-            std::cout << '[' << key << "] = ";
-            std::visit([](auto&& value){ std::cout << value; }, option);
-            std::cout << '\n';
-        }
-
-        std::cout.flush();
-    }
-    virtual ScheduleResult Generate(const ScheduleData&) = 0;
-};

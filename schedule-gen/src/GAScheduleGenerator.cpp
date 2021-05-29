@@ -27,8 +27,6 @@ std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
 
 void GAScheduleGenerator::SetOptions(const std::map<std::string, ScheduleGenOption>& options)
 {
-    ScheduleGenerator::SetOptions(options);
-
     if(options.empty())
         return;
 

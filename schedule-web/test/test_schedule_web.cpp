@@ -52,7 +52,7 @@ TEST_CASE("Parsing IDs set", "[parsing]")
     SECTION("If array is empty - IDs set is empty too")
     {
         const std::vector<std::size_t> ids = ParseIDsSet(nlohmann::json::array());
-        REQUIRE(ids == std::vector<std::size_t>());
+        REQUIRE(ids.empty());
     }
     SECTION("If duplications found - they are ignored")
     {

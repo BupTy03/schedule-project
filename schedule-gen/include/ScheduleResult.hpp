@@ -45,7 +45,7 @@ public:
     ScheduleResult() = default;
     explicit ScheduleResult(std::vector<ScheduleItem> items);
 
-    const std::vector<ScheduleItem>& items() const;
+    const std::vector<ScheduleItem>& items() const { return items_; }
     std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
     Range<std::vector<ScheduleItem>::const_iterator> at(std::size_t lessonAddress) const;
 

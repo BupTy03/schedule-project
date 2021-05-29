@@ -36,8 +36,10 @@ struct ClassroomAddress
         , Classroom(classroom)
     {}
 
-    static ClassroomAddress NoClassroom();
-    static ClassroomAddress Any();
+    static ClassroomAddress NoClassroom() { return ClassroomAddress(std::numeric_limits<std::size_t>::max(),
+                                                                    std::numeric_limits<std::size_t>::max()); }
+
+    static ClassroomAddress Any() { return ClassroomAddress(0, 0); }
 
     friend bool operator==(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
     {
@@ -103,12 +105,12 @@ public:
 
     WeekDays();
     WeekDays(std::initializer_list<WeekDay> lst);
-    static WeekDays fullWeek();
-    static WeekDays emptyWeek();
+    static WeekDays fullWeek() { return WeekDays(FULL_WEEK); }
+    static WeekDays emptyWeek() { return WeekDays(0); }
 
-    iterator begin() const;
-    iterator end() const;
-    std::size_t size() const;
+    auto begin() const { return WeekDaysIterator(days_, WeekDaysIterator::BEGIN_MASK); }
+    auto end() const { return WeekDaysIterator(days_, WeekDaysIterator::END_MASK); }
+    std::size_t size() const { return 6; }
 
     void insert(WeekDay d);
     void erase(WeekDay d);
@@ -124,10 +126,9 @@ private:
     std::uint8_t days_;
 };
 
-std::vector<ClassroomAddress> GenerateClassrooms(std::size_t n);
 std::size_t LessonToScheduleDay(std::size_t lesson);
-WeekDay ScheduleDayNumberToWeekDay(std::size_t dayNum);
-std::vector<std::size_t> MakeIndexesRange(std::size_t n);
+
+
 constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
 {
     static_assert(MAX_LESSONS_COUNT == 84, "re-fill lateSaturdayLessonsTable");

@@ -18,14 +18,11 @@ public:
                             std::vector<std::size_t> groups,
                             std::vector<ClassroomAddress> classrooms);
 
-    bool RequestedClassroom(const ClassroomAddress& classroomAddress) const;
-    bool RequestedGroup(std::size_t g) const;
-    bool Requested(WeekDay d) const;
-    std::size_t Complexity() const;
-    std::size_t Professor() const;
-    std::size_t ID() const;
-    const std::vector<std::size_t>& Groups() const;
-    const std::vector<ClassroomAddress>& Classrooms() const;
+    std::size_t ID() const { return id_; }
+    std::size_t Professor() const { return professor_; }
+    std::size_t Complexity() const { return complexity_; }
+    const std::vector<std::size_t>& Groups() const { return groups_; }
+    const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
     bool RequestedWeekDay(std::size_t day) const;
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
@@ -122,10 +119,10 @@ public:
     explicit ScheduleData(std::vector<SubjectRequest> subjectRequests,
                           std::vector<SubjectWithAddress> lockedLessons);
 
-    const std::vector<SubjectRequest>& SubjectRequests() const;
+    const std::vector<SubjectRequest>& SubjectRequests() const { return subjectRequests_; }
     const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
 
-    const std::vector<SubjectWithAddress>& LockedLessons() const;
+    const std::vector<SubjectWithAddress>& LockedLessons() const { return lockedLessons_; }
     bool LessonIsLocked(std::size_t lessonAddress) const;
     bool RequestHasLockedLesson(const SubjectRequest& request) const;
 

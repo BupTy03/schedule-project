@@ -21,7 +21,6 @@ ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
     std::sort(items_.begin(), items_.end(), ScheduleItemLess());
 }
 
-const std::vector<ScheduleItem>& ScheduleResult::items() const { return items_; }
 
 Range<std::vector<ScheduleItem>::const_iterator> ScheduleResult::at(std::size_t lessonAddress) const
 {

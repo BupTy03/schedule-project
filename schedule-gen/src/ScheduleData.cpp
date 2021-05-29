@@ -26,29 +26,10 @@ SubjectRequest::SubjectRequest(std::size_t id,
     classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
 }
 
-bool SubjectRequest::RequestedClassroom(const ClassroomAddress& classroomAddress) const
+bool SubjectRequest::RequestedWeekDay(std::size_t day) const
 {
-    return std::binary_search(classrooms_.begin(), classrooms_.end(), classroomAddress);
+    return days_.contains(static_cast<WeekDay>(day % DAYS_IN_SCHEDULE_WEEK));
 }
-
-bool SubjectRequest::RequestedGroup(std::size_t g) const
-{
-    return std::binary_search(groups_.begin(), groups_.end(), g);
-}
-
-bool SubjectRequest::Requested(WeekDay d) const { return days_.contains(d); }
-
-std::size_t SubjectRequest::Professor() const { return professor_; }
-
-std::size_t SubjectRequest::Complexity() const { return complexity_; }
-
-std::size_t SubjectRequest::ID() const { return id_; }
-
-const std::vector<std::size_t>& SubjectRequest::Groups() const { return groups_; }
-
-const std::vector<ClassroomAddress>& SubjectRequest::Classrooms() const { return classrooms_; }
-
-bool SubjectRequest::RequestedWeekDay(std::size_t day) const { return days_.contains(static_cast<WeekDay>(day % 6)); }
 
 
 ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
@@ -62,8 +43,6 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
     std::sort(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDLess());
     subjectRequests_.erase(std::unique(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDEqual()), subjectRequests_.end());
 }
-
-const std::vector<SubjectRequest>& ScheduleData::SubjectRequests() const { return subjectRequests_; }
 
 bool ScheduleData::LessonIsLocked(std::size_t lessonAddress) const
 {
@@ -80,15 +59,10 @@ const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectReques
     return *it;
 }
 
-const std::vector<SubjectWithAddress>& ScheduleData::LockedLessons() const
-{
-    return lockedLessons_;
-}
-
 bool ScheduleData::RequestHasLockedLesson(const SubjectRequest& request) const
 {
     auto it = std::find_if(lockedLessons_.begin(), lockedLessons_.end(), [&](const SubjectWithAddress& subject){
-           return subject.SubjectRequestID == request.ID();
+        return subject.SubjectRequestID == request.ID();
     });
 
     return it != lockedLessons_.end();
@@ -96,5 +70,5 @@ bool ScheduleData::RequestHasLockedLesson(const SubjectRequest& request) const
 
 bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subjectRequestID, std::size_t scheduleDay)
 {
-    return data.SubjectRequestAtID(subjectRequestID).Requested(ScheduleDayNumberToWeekDay(scheduleDay));
+    return data.SubjectRequestAtID(subjectRequestID).RequestedWeekDay(scheduleDay);
 }

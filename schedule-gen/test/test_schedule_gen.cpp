@@ -18,28 +18,6 @@ static std::vector<ClassroomAddress> MakeClassroomsRange(std::size_t n)
     return result;
 }
 
-TEST_CASE("TestScheduleDayNumberToWeekDay", "[utils]")
-{
-    const std::array<WeekDay, 12> scheduleDays = {
-            WeekDay::Monday,
-            WeekDay::Tuesday,
-            WeekDay::Wednesday,
-            WeekDay::Thursday,
-            WeekDay::Friday,
-            WeekDay::Saturday,
-            WeekDay::Monday,
-            WeekDay::Tuesday,
-            WeekDay::Wednesday,
-            WeekDay::Thursday,
-            WeekDay::Friday,
-            WeekDay::Saturday
-    };
-
-    for(std::size_t d = 0; d < scheduleDays.size(); ++d)
-        REQUIRE(ScheduleDayNumberToWeekDay(d) == scheduleDays.at(d));
-}
-
-
 TEST_CASE("Test.WeekDays.contains", "[WeekDays]")
 {
     WeekDays days;
@@ -279,8 +257,7 @@ TEST_CASE("Test.FindOverlappedClassrooms", "[Validation]")
     scheduleResult.insert(ScheduleItem(0, 4, 1));
 
     const auto result = FindOverlappedClassrooms(scheduleData, scheduleResult);
-    REQUIRE(result.size() == 2);
-    REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 0; }) != result.end());
+    REQUIRE(result.size() == 1);
     REQUIRE(std::find_if(result.begin(), result.end(), [](auto&& oc){ return oc.Classroom == 1; }) != result.end());
 }
 
