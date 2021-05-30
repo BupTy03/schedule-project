@@ -19,10 +19,10 @@ SubjectRequest::SubjectRequest(std::size_t id,
     if(days_ == WeekDays::emptyWeek())
         days_ = WeekDays::fullWeek();
 
-    std::sort(groups_.begin(), groups_.end());
+    std::ranges::sort(groups_);
     groups_.erase(std::unique(groups_.begin(), groups_.end()), groups_.end());
 
-    std::sort(classrooms_.begin(), classrooms_.end());
+    std::ranges::sort(classrooms_);
     classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
 }
 
@@ -37,16 +37,17 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
         : subjectRequests_(std::move(subjectRequests))
         , lockedLessons_(std::move(lockedLessons))
 {
-    std::sort(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDLess());
-    subjectRequests_.erase(std::unique(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDEqual()), subjectRequests_.end());
+    std::ranges::sort(subjectRequests_, {}, &SubjectRequest::ID);
+    subjectRequests_.erase(std::unique(subjectRequests_.begin(), subjectRequests_.end(),
+                                       SubjectRequestIDEqual()), subjectRequests_.end());
 
-    std::sort(lockedLessons_.begin(), lockedLessons_.end(), SubjectWithAddressLessBySubjectRequestID());
+    std::ranges::sort(lockedLessons_, {}, &SubjectWithAddress::SubjectRequestID);
     lockedLessons_.erase(std::unique(lockedLessons_.begin(), lockedLessons_.end()), lockedLessons_.end());
 }
 
 const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectRequestID) const
 {
-    auto it = std::lower_bound(subjectRequests_.begin(), subjectRequests_.end(), subjectRequestID, SubjectRequestIDLess());
+    auto it = std::ranges::lower_bound(subjectRequests_, subjectRequestID, {}, &SubjectRequest::ID);
     if(it == subjectRequests_.end() || it->ID() != subjectRequestID)
         throw std::out_of_range("Subject request with ID=" + std::to_string(subjectRequestID) + " is not found!");
 
@@ -55,7 +56,7 @@ const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectReques
 
 std::size_t ScheduleData::IndexOfSubjectRequestWithID(std::size_t subjectRequestID) const
 {
-    auto it = std::lower_bound(subjectRequests_.begin(), subjectRequests_.end(), subjectRequestID, SubjectRequestIDLess());
+    auto it = std::ranges::lower_bound(subjectRequests_, subjectRequestID, {}, &SubjectRequest::ID);
     if(it == subjectRequests_.end() || it->ID() != subjectRequestID)
         throw std::out_of_range("Subject request with ID=" + std::to_string(subjectRequestID) + " is not found!");
 
@@ -64,7 +65,7 @@ std::size_t ScheduleData::IndexOfSubjectRequestWithID(std::size_t subjectRequest
 
 bool ScheduleData::SubjectRequestHasLockedLesson(const SubjectRequest& request) const
 {
-    return std::binary_search(lockedLessons_.begin(), lockedLessons_.end(),  request.ID(), SubjectWithAddressLessBySubjectRequestID());
+    return std::ranges::binary_search(lockedLessons_, request.ID(), {}, &SubjectWithAddress::SubjectRequestID);
 }
 
 bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subjectRequestID, std::size_t scheduleDay)

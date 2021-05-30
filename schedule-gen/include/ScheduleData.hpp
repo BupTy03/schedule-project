@@ -95,24 +95,6 @@ struct SubjectWithAddress
     std::size_t Address = 0;
 };
 
-struct SubjectWithAddressLessBySubjectRequestID
-{
-    bool operator()(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs) const
-    {
-        return lhs.SubjectRequestID < rhs.SubjectRequestID;
-    }
-
-    bool operator()(const SubjectWithAddress& lhs, std::size_t rhsSubjectRequestID) const
-    {
-        return lhs.SubjectRequestID < rhsSubjectRequestID;
-    }
-
-    bool operator()(std::size_t lhsSubjectRequestID, const SubjectWithAddress& rhs) const
-    {
-        return lhsSubjectRequestID < rhs.SubjectRequestID;
-    }
-};
-
 class ScheduleData
 {
 public:

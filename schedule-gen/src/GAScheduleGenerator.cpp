@@ -278,72 +278,72 @@ std::size_t EvaluateSchedule(LinearAllocatorBufferSpan& bufferSpan,
 {
     std::size_t evaluatedValue = 0;
 
-    using IntPair = std::pair<std::size_t, std::size_t>;
-    using MapPair = std::pair<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>>;
-    using BuilingPair = std::pair<std::size_t, std::array<std::size_t, MAX_LESSONS_PER_DAY>>;
+    using IDsPair = std::pair<std::size_t, std::size_t>;
+    using IDLessonsPair = std::pair<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>>;
+    using IDBuilingPair = std::pair<std::size_t, std::array<std::size_t, MAX_LESSONS_PER_DAY>>;
 
-    using ComplexityMap = SortedMap<std::size_t, std::size_t, LinearAllocator<IntPair>>;
-    using WindowsMap = SortedMap<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>, LinearAllocator<MapPair>>;
-    using BuildingsMap = SortedMap<std::size_t, std::array<std::size_t, MAX_LESSONS_PER_DAY>, LinearAllocator<BuilingPair>>;
+    using ComplexityMap = SortedMap<std::size_t, std::size_t, LinearAllocator<IDsPair>>;
+    using WindowsMap = SortedMap<std::size_t, std::array<bool, MAX_LESSONS_PER_DAY>, LinearAllocator<IDLessonsPair>>;
+    using BuildingsMap = SortedMap<std::size_t, std::array<std::size_t, MAX_LESSONS_PER_DAY>, LinearAllocator<IDBuilingPair>>;
 
     std::array<ComplexityMap, DAYS_IN_SCHEDULE> dayComplexity{
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan)),
-        ComplexityMap(LinearAllocator<IntPair>(&bufferSpan))
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan)),
+        ComplexityMap(LinearAllocator<IDsPair>(&bufferSpan))
     };
 
     std::array<WindowsMap, DAYS_IN_SCHEDULE> dayWindows{
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan))
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan))
     };
 
     std::array<WindowsMap, DAYS_IN_SCHEDULE> professorsDayWindows{
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan)),
-        WindowsMap(LinearAllocator<MapPair>(&bufferSpan))
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan)),
+        WindowsMap(LinearAllocator<IDLessonsPair>(&bufferSpan))
     };
 
     std::array<BuildingsMap, DAYS_IN_SCHEDULE> buildingsInDay{
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan)),
-        BuildingsMap(LinearAllocator<BuilingPair>(&bufferSpan))
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan)),
+        BuildingsMap(LinearAllocator<IDBuilingPair>(&bufferSpan))
     };
 
     const auto requests = scheduleData.SubjectRequests();
@@ -657,13 +657,13 @@ ScheduleGA::ScheduleGA(const ScheduleGAParams& params)
 
 ScheduleGAParams ScheduleGA::DefaultParams()
 {
-    ScheduleGAParams result;
-    result.IndividualsCount = 1000;
-    result.IterationsCount = 1100;
-    result.SelectionCount = 360;
-    result.CrossoverCount = 220;
-    result.MutationChance = 49;
-    return result;
+    return ScheduleGAParams{
+        .IndividualsCount = 1000,
+        .IterationsCount = 1100,
+        .SelectionCount = 360,
+        .CrossoverCount = 220,
+        .MutationChance = 49
+    };
 }
 
 ScheduleGAStatistics ScheduleGA::Start(const ScheduleData& scheduleData)
@@ -686,36 +686,39 @@ ScheduleGAStatistics ScheduleGA::Start(const ScheduleData& scheduleData)
     for(std::size_t iteration = 0; iteration < params_.IterationsCount; ++iteration)
     {
         // mutate
-        std::for_each(std::execution::par_unseq, individuals_.begin(), individuals_.end(), ScheduleIndividualMutator(params_.MutationChance));
+        std::for_each(std::execution::par_unseq, individuals_.begin(), individuals_.end(),
+                      ScheduleIndividualMutator(params_.MutationChance));
 
         // select best
-        std::nth_element(individuals_.begin(), individuals_.begin() + params_.SelectionCount, individuals_.end(), ScheduleIndividualLess());
-
-        std::cout << "Iteration: " << iteration << "; Best: " << std::min_element(individuals_.begin(), individuals_.begin() + params_.SelectionCount, ScheduleIndividualLess())->Evaluate() << '\n';
+        std::ranges::nth_element(individuals_, individuals_.begin() + params_.SelectionCount, ScheduleIndividualLess());
+        std::cout << "Iteration: " << iteration << "; Best: " << std::min_element(individuals_.begin(),
+                                                                                  individuals_.begin() + params_.SelectionCount,
+                                                                                  ScheduleIndividualLess())->Evaluate() << '\n';
 
         // crossover
         for(std::size_t i = 0; i < params_.CrossoverCount; ++i)
         {
-            ScheduleIndividual& firstInd = individuals_.at(selectionBestDist(randGen));
-            ScheduleIndividual& secondInd = individuals_.at(individualsDist(randGen));
+            auto& firstInd = individuals_.at(selectionBestDist(randGen));
+            auto& secondInd = individuals_.at(individualsDist(randGen));
             firstInd.Crossover(secondInd);
         }
 
-        std::for_each(std::execution::par_unseq, individuals_.begin(), individuals_.end(), ScheduleIndividualEvaluator());
+        std::for_each(std::execution::par_unseq, individuals_.begin(), individuals_.end(),
+                      ScheduleIndividualEvaluator());
 
         // natural selection
-        std::nth_element(individuals_.begin(), individuals_.end() - params_.SelectionCount, individuals_.end(), ScheduleIndividualLess());
+        std::ranges::nth_element(individuals_, individuals_.end() - params_.SelectionCount, ScheduleIndividualLess());
         std::copy_n(individuals_.begin(), params_.SelectionCount, individuals_.end() - params_.SelectionCount);
     }
 
-    std::sort(individuals_.begin(), individuals_.end(), ScheduleIndividualLess());
+    std::ranges::sort(individuals_, ScheduleIndividualLess());
     result.Time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - beginTime);
     return result;
 }
 
 const std::vector<ScheduleIndividual>& ScheduleGA::Individuals() const
 {
-    assert(std::is_sorted(individuals_.begin(), individuals_.end(), ScheduleIndividualLess()));
+    assert(std::ranges::is_sorted(individuals_, ScheduleIndividualLess()));
     return individuals_;
 }
 

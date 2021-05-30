@@ -47,27 +47,6 @@ struct FirstEqual
     }
 };
 
-
-template<typename Iter>
-struct Range
-{
-    explicit Range(Iter first, Iter last)
-        : first_(first)
-        , last_(last)
-    {}
-
-    auto begin() const { return first_; }
-    auto end() const { return last_; }
-
-private:
-    Iter first_;
-    Iter last_;
-};
-
-template<typename Iter>
-Range<Iter> make_range(Iter first, Iter last) { return Range<Iter>(first, last); }
-
-
 template<class InputIt1, class InputIt2>
 bool set_intersects(InputIt1 first1, InputIt1 last1,
                     InputIt2 first2, InputIt2 last2)
@@ -112,7 +91,7 @@ public:
     explicit SortedSet(Iter first, Iter last)
         : elems_(first, last)
     {
-        std::sort(elems_.begin(), elems_.end());
+        std::ranges::sort(elems_);
         elems_.erase(std::unique(elems_.begin(), elems_.end()), elems_.end());
     }
 
@@ -147,10 +126,7 @@ public:
     auto begin() const { return elems_.begin(); }
     auto end() const { return elems_.end(); }
 
-    auto lower_bound(const T& value) const
-    {
-        return std::lower_bound(elems_.begin(), elems_.end(), value);
-    }
+    auto lower_bound(const T& value) const { return std::ranges::lower_bound(elems_, value); }
 
     friend bool operator==(const SortedSet& lhs, const SortedSet& rhs) { return lhs.elems_ == rhs.elems_; }
     friend bool operator!=(const SortedSet& lhs, const SortedSet& rhs) { return !(lhs == rhs); }
@@ -175,7 +151,7 @@ public:
     explicit SortedMap(Iter first, Iter last)
         : elems_(first, last)
     {
-        std::sort(elems_.begin(), elems_.end(), FirstLess());
+        std::ranges::sort(elems_, FirstLess());
         elems_.erase(std::unique(elems_.begin(), elems_.end(), FirstEqual()), elems_.end());
     }
 

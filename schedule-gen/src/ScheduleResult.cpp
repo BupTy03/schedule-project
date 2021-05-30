@@ -18,19 +18,18 @@ ScheduleItem::ScheduleItem(std::size_t lessonAddress,
 ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
     : items_(std::move(items))
 {
-    std::sort(items_.begin(), items_.end(), ScheduleItemLess());
+    std::ranges::sort(items_, {}, &ScheduleItem::Address);
 }
 
 
-Range<std::vector<ScheduleItem>::const_iterator> ScheduleResult::at(std::size_t lessonAddress) const
+std::ranges::subrange<std::vector<ScheduleItem>::const_iterator> ScheduleResult::at(std::size_t lessonAddress) const
 {
-    auto itPair = std::equal_range(items_.begin(), items_.end(), lessonAddress, ScheduleItemLess());
-    return make_range(itPair.first, itPair.second);
+    return std::ranges::equal_range(items_, lessonAddress, {}, &ScheduleItem::Address);
 }
 
 std::vector<ScheduleItem>::iterator ScheduleResult::insert(const ScheduleItem& item)
 {
-    auto it = std::lower_bound(items_.begin(), items_.end(), item.Address, ScheduleItemLess());
+    auto it = std::ranges::lower_bound(items_.begin(), items_.end(), item.Address, {}, &ScheduleItem::Address);
     return items_.insert(it, item);
 }
 

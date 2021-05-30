@@ -23,22 +23,6 @@ struct ScheduleItem
     std::size_t Classroom = 0;
 };
 
-struct ScheduleItemLess
-{
-    bool operator()(const ScheduleItem& lhs, const ScheduleItem& rhs) const
-    {
-        return lhs.Address < rhs.Address;
-    }
-    bool operator()(const ScheduleItem& lhs, std::size_t rhsLessonAddress) const
-    {
-        return lhs.Address < rhsLessonAddress;
-    }
-    bool operator()(std::size_t lhsLessonAddress, const ScheduleItem& rhs) const
-    {
-        return lhsLessonAddress < rhs.Address;
-    }
-};
-
 class ScheduleResult
 {
 public:
@@ -47,7 +31,7 @@ public:
 
     const std::vector<ScheduleItem>& items() const { return items_; }
     std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
-    Range<std::vector<ScheduleItem>::const_iterator> at(std::size_t lessonAddress) const;
+    std::ranges::subrange<std::vector<ScheduleItem>::const_iterator> at(std::size_t lessonAddress) const;
 
 private:
     std::vector<ScheduleItem> items_;
