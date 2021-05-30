@@ -6,9 +6,9 @@
 
 TEST_CASE("Test.SortedSet.construct", "[SortedSet]")
 {
-    std::array<int, 20> arr = {4, 6, 2, 9, 1, 3, 5, 7, 8, 0,
+    std::array arr = {4, 6, 2, 9, 1, 3, 5, 7, 8, 0,
                                4, 2, 6, 1, 3, 0, 7, 5, 2, 6};
-    std::array<int, 10> expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::array expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     SortedSet<int> sortedSet(arr.begin(), arr.end());
     REQUIRE(sortedSet.size() == expected.size());
@@ -21,7 +21,7 @@ TEST_CASE("Test.SortedSet.contains", "[SortedSet]")
     for(auto e : {1, 2, 3, 6})
         REQUIRE_FALSE(emptySet.contains(e));
 
-    std::array<int, 10> arr = {4, 6, 2, 9, 0, 6, 1, 0, 5, 1};
+    std::array arr = {4, 6, 2, 9, 0, 6, 1, 0, 5, 1};
     SortedSet<int> sortedSet(arr.begin(), arr.end());
     for(std::size_t i = 0; i < 100; ++i)
     {
@@ -131,6 +131,7 @@ TEST_CASE("Test.SortedMap.operator[]", "[SortedMap]")
     });
 }
 
+
 TEST_CASE("Check if two ordered sets intersects", "[algorithms]")
 {
     SECTION("Two empty sets do not intersects")
@@ -146,17 +147,17 @@ TEST_CASE("Check if two ordered sets intersects", "[algorithms]")
     }
     SECTION("set_intersects function works correctly")
     {
-        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{1, 2, 3}));
-        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{2, 3}));
-        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{1, 2}));
-        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{1}));
-        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{2}));
-        REQUIRE(set_intersects(std::vector<int>{1, 2, 3}, std::vector<int>{3}));
-        REQUIRE(set_intersects(std::vector<int>{2, 4, 5, 6, 7, 9}, std::vector<int>{8, 9}));
+        REQUIRE(set_intersects(std::vector{1, 2, 3}, std::vector{1, 2, 3}));
+        REQUIRE(set_intersects(std::vector{1, 2, 3}, std::vector{2, 3}));
+        REQUIRE(set_intersects(std::vector{1, 2, 3}, std::vector{1, 2}));
+        REQUIRE(set_intersects(std::vector{1, 2, 3}, std::vector{1}));
+        REQUIRE(set_intersects(std::vector{1, 2, 3}, std::vector{2}));
+        REQUIRE(set_intersects(std::vector{1, 2, 3}, std::vector{3}));
+        REQUIRE(set_intersects(std::vector{2, 4, 5, 6, 7, 9}, std::vector{8, 9}));
 
-        REQUIRE_FALSE(set_intersects(std::vector<int>{1, 3, 5}, std::vector<int>{2, 4, 6}));
-        REQUIRE_FALSE(set_intersects(std::vector<int>{1, 3, 5}, std::vector<int>{0}));
-        REQUIRE_FALSE(set_intersects(std::vector<int>{1, 3, 5}, std::vector<int>{9, 10}));
+        REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{2, 4, 6}));
+        REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{0}));
+        REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{9, 10}));
     }
 }
 

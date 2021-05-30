@@ -37,17 +37,11 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
         : subjectRequests_(std::move(subjectRequests))
         , lockedLessons_(std::move(lockedLessons))
 {
-    std::sort(lockedLessons_.begin(), lockedLessons_.end(), SubjectWithAddressLessByAddress());
-    lockedLessons_.erase(std::unique(lockedLessons_.begin(), lockedLessons_.end()), lockedLessons_.end());
-
     std::sort(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDLess());
     subjectRequests_.erase(std::unique(subjectRequests_.begin(), subjectRequests_.end(), SubjectRequestIDEqual()), subjectRequests_.end());
-}
 
-bool ScheduleData::LessonIsLocked(std::size_t lessonAddress) const
-{
-    auto it = std::lower_bound(lockedLessons_.begin(), lockedLessons_.end(), lessonAddress, SubjectWithAddressLessByAddress());
-    return it != lockedLessons_.end() && it->Address == lessonAddress;
+    std::sort(lockedLessons_.begin(), lockedLessons_.end(), SubjectWithAddressLessBySubjectRequestID());
+    lockedLessons_.erase(std::unique(lockedLessons_.begin(), lockedLessons_.end()), lockedLessons_.end());
 }
 
 const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectRequestID) const
@@ -59,13 +53,18 @@ const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectReques
     return *it;
 }
 
-bool ScheduleData::RequestHasLockedLesson(const SubjectRequest& request) const
+std::size_t ScheduleData::IndexOfSubjectRequestWithID(std::size_t subjectRequestID) const
 {
-    auto it = std::find_if(lockedLessons_.begin(), lockedLessons_.end(), [&](const SubjectWithAddress& subject){
-        return subject.SubjectRequestID == request.ID();
-    });
+    auto it = std::lower_bound(subjectRequests_.begin(), subjectRequests_.end(), subjectRequestID, SubjectRequestIDLess());
+    if(it == subjectRequests_.end() || it->ID() != subjectRequestID)
+        throw std::out_of_range("Subject request with ID=" + std::to_string(subjectRequestID) + " is not found!");
 
-    return it != lockedLessons_.end();
+    return std::distance(subjectRequests_.begin(), it);
+}
+
+bool ScheduleData::SubjectRequestHasLockedLesson(const SubjectRequest& request) const
+{
+    return std::binary_search(lockedLessons_.begin(), lockedLessons_.end(),  request.ID(), SubjectWithAddressLessBySubjectRequestID());
 }
 
 bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subjectRequestID, std::size_t scheduleDay)

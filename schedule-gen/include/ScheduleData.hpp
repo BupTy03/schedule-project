@@ -95,21 +95,21 @@ struct SubjectWithAddress
     std::size_t Address = 0;
 };
 
-struct SubjectWithAddressLessByAddress
+struct SubjectWithAddressLessBySubjectRequestID
 {
     bool operator()(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs) const
     {
-        return lhs.Address < rhs.Address;
+        return lhs.SubjectRequestID < rhs.SubjectRequestID;
     }
 
-    bool operator()(const SubjectWithAddress& lhs, std::size_t rhsAddress) const
+    bool operator()(const SubjectWithAddress& lhs, std::size_t rhsSubjectRequestID) const
     {
-        return lhs.Address < rhsAddress;
+        return lhs.SubjectRequestID < rhsSubjectRequestID;
     }
 
-    bool operator()(std::size_t lhsAddress, const SubjectWithAddress& rhs) const
+    bool operator()(std::size_t lhsSubjectRequestID, const SubjectWithAddress& rhs) const
     {
-        return lhsAddress < rhs.Address;
+        return lhsSubjectRequestID < rhs.SubjectRequestID;
     }
 };
 
@@ -122,10 +122,10 @@ public:
 
     const std::vector<SubjectRequest>& SubjectRequests() const { return subjectRequests_; }
     const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
+    std::size_t IndexOfSubjectRequestWithID(std::size_t subjectRequestID) const;
 
     const std::vector<SubjectWithAddress>& LockedLessons() const { return lockedLessons_; }
-    bool LessonIsLocked(std::size_t lessonAddress) const;
-    bool RequestHasLockedLesson(const SubjectRequest& request) const;
+    bool SubjectRequestHasLockedLesson(const SubjectRequest& request) const;
 
 private:
     std::vector<SubjectRequest> subjectRequests_;

@@ -109,6 +109,22 @@ ScheduleChromosomes::ScheduleChromosomes(const ScheduleData& data)
     , classrooms_(data.SubjectRequests().size(), ClassroomAddress::NoClassroom())
 {
     assert(!data.SubjectRequests().empty());
+    for(auto&& locked : data.LockedLessons())
+    {
+        const std::size_t r = data.IndexOfSubjectRequestWithID(locked.SubjectRequestID);
+        lessons_.at(r) = locked.Address;
+
+        auto&& request = data.SubjectRequests().at(r);
+        for(auto&& classroom : request.Classrooms())
+        {
+            if(!ClassroomsIntersects(locked.Address, classroom))
+            {
+                classrooms_.at(r) = classroom;
+                break;
+            }
+        }
+    }
+
     for(std::size_t r = 0; r < data.SubjectRequests().size(); ++r)
         InitFromRequest(data, r);
 }
@@ -121,30 +137,8 @@ void ScheduleChromosomes::InitFromRequest(const ScheduleData& data,
     const auto& requestClassrooms = request.Classrooms();
     const auto& lockedLessons = data.LockedLessons();
 
-    auto it = std::find_if(lockedLessons.begin(), lockedLessons.end(), [&](const SubjectWithAddress& subject){
-           return subject.SubjectRequestID == request.ID();
-    });
-
-    if(it != lockedLessons.end())
-    {
-        lessons_.at(requestIndex) = it->Address;
-        if(requestClassrooms.empty())
-        {
-            classrooms_.at(requestIndex) = ClassroomAddress::Any();
-            return;
-        }
-
-        for(auto&& classroom : requestClassrooms)
-        {
-            if(!ClassroomsIntersects(it->Address, classroom))
-            {
-                classrooms_.at(requestIndex) = classroom;
-                break;
-            }
-        }
-
+    if(data.SubjectRequestHasLockedLesson(request))
         return;
-    }
 
     for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
     {
@@ -155,9 +149,6 @@ void ScheduleChromosomes::InitFromRequest(const ScheduleData& data,
 
             const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
             if(IsLateScheduleLessonInSaturday(scheduleLesson))
-                continue;
-
-            if(data.LessonIsLocked(scheduleLesson))
                 continue;
 
             if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
@@ -574,7 +565,7 @@ void ScheduleIndividual::ChangeClassroom(std::size_t requestIndex)
 void ScheduleIndividual::ChangeLesson(std::size_t requestIndex)
 {
     const auto& request = pData_->SubjectRequests().at(requestIndex);
-    if(pData_->RequestHasLockedLesson(request))
+    if(pData_->SubjectRequestHasLockedLesson(request))
         return;
 
     std::uniform_int_distribution<std::size_t> lessonsDistrib(0, MAX_LESSONS_COUNT - 1);

@@ -95,31 +95,94 @@ TEST_CASE("SubjectRequest constructs correctly")
 {
     SECTION("Sorting and removing duplicates from WeekDays when constructing")
     {
-        const SubjectRequest sat{0, 1, 1,
+        const SubjectRequest sut{0, 1, 1,
                            {WeekDay::Saturday, WeekDay::Thursday, WeekDay::Wednesday,
                              WeekDay::Saturday, WeekDay::Thursday, WeekDay::Monday}, {0}, {}};
 
-        REQUIRE(sat.RequestedWeekDays() == WeekDays({WeekDay::Monday, WeekDay::Wednesday, WeekDay::Thursday, WeekDay::Saturday}));
+        REQUIRE(sut.RequestedWeekDays() == WeekDays({WeekDay::Monday, WeekDay::Wednesday, WeekDay::Thursday, WeekDay::Saturday}));
     }
     SECTION("Sorting and removing duplicates from groups list while constructing")
     {
-        const SubjectRequest sat{0, 1, 1, {}, {3, 1, 2, 2, 5, 0, 10, 5, 1, 3, 3}, {}};
-        REQUIRE(sat.Groups() == std::vector<std::size_t>{0, 1, 2, 3, 5, 10});
+        const SubjectRequest sut{0, 1, 1, {}, {3, 1, 2, 2, 5, 0, 10, 5, 1, 3, 3}, {}};
+        REQUIRE(sut.Groups() == std::vector<std::size_t>{0, 1, 2, 3, 5, 10});
     }
     SECTION("Sorting and removing duplicates from classrooms list while constructing")
     {
-        const SubjectRequest sat{0, 1, 1, {}, {3},
+        const SubjectRequest sut{0, 1, 1, {}, {3},
                                   {{0, 1}, {1, 2},
                                     {1, 0}, {1, 2},
                                     {4, 5}, {0, 1}}};
-        REQUIRE(sat.Classrooms() == std::vector<ClassroomAddress>({{0, 1}, {1, 0}, {1, 2}, {4, 5}}));
+        REQUIRE(sut.Classrooms() == std::vector<ClassroomAddress>({{0, 1}, {1, 0}, {1, 2}, {4, 5}}));
+    }
+}
+
+TEST_CASE("ScheduleData construct correctly")
+{
+    const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
+    SECTION("Sorting by id and removing duplicates while sorting from subject requests list while constructing")
+    {
+        const std::vector given{
+            SubjectRequest(3, 4, 3, {}, {3}, classrooms),
+            SubjectRequest(0, 1, 1, {}, {0}, classrooms),
+            SubjectRequest(1, 2, 1, {}, {1}, classrooms),
+            SubjectRequest(3, 4, 3, {}, {3}, classrooms),
+            SubjectRequest(2, 3, 2, {}, {2}, classrooms),
+            SubjectRequest(4, 5, 4, {}, {4}, classrooms),
+            SubjectRequest(1, 2, 1, {}, {1}, classrooms)
+        };
+
+        const std::vector expected{
+            SubjectRequest(0, 1, 1, {}, {0}, classrooms),
+            SubjectRequest(1, 2, 1, {}, {1}, classrooms),
+            SubjectRequest(2, 3, 2, {}, {2}, classrooms),
+            SubjectRequest(3, 4, 3, {}, {3}, classrooms),
+            SubjectRequest(4, 5, 4, {}, {4}, classrooms)
+        };
+
+        const ScheduleData sut{given, {}};
+        REQUIRE(sut.SubjectRequests() == expected);
+    }
+    SECTION("Sorting by id and removing duplicates while sorting from locked lesson list while constructing")
+    {
+        const std::vector requests{
+            SubjectRequest(0, 1, 1, {}, {0}, classrooms),
+            SubjectRequest(1, 2, 1, {}, {1}, classrooms),
+            SubjectRequest(2, 3, 2, {}, {2}, classrooms),
+            SubjectRequest(3, 4, 3, {}, {3}, classrooms),
+            SubjectRequest(4, 5, 4, {}, {4}, classrooms)
+        };
+
+        const std::vector given{
+            SubjectWithAddress(5, 0),
+            SubjectWithAddress(0, 0),
+            SubjectWithAddress(2, 1),
+            SubjectWithAddress(1, 0),
+            SubjectWithAddress(0, 0),
+            SubjectWithAddress(0, 0),
+            SubjectWithAddress(3, 2),
+            SubjectWithAddress(4, 1),
+            SubjectWithAddress(1, 0)
+
+        };
+
+        const std::vector expected{
+            SubjectWithAddress(0, 0),
+            SubjectWithAddress(1, 0),
+            SubjectWithAddress(2, 1),
+            SubjectWithAddress(3, 2),
+            SubjectWithAddress(4, 1),
+            SubjectWithAddress(5, 0)
+        };
+
+        const ScheduleData sut{requests, given};
+        REQUIRE(sut.LockedLessons() == expected);
     }
 }
 
 TEST_CASE("Check if classrooms overlaps", "[validation]")
 {
     const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-    const std::vector<SubjectRequest> subjectRequests{
+    const std::vector subjectRequests{
         SubjectRequest(0, 1, 1, {}, {0}, classrooms),
         SubjectRequest(1, 2, 1, {}, {1}, classrooms),
         SubjectRequest(2, 3, 2, {}, {2}, classrooms),
@@ -171,7 +234,7 @@ TEST_CASE("Check if classrooms overlaps", "[validation]")
 TEST_CASE("Check if professors overlaps", "[validation]")
 {
     const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-    const std::vector<SubjectRequest> subjectRequests{
+    const std::vector subjectRequests{
             SubjectRequest(0, 1, 1, {}, {1}, classrooms),
             SubjectRequest(1, 2, 1, {}, {2}, classrooms),
             SubjectRequest(2, 2, 2, {}, {3}, classrooms),
@@ -211,7 +274,7 @@ TEST_CASE("Check if professors overlaps", "[validation]")
 TEST_CASE("Check if groups overlaps", "[validation]")
 {
     const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-    const std::vector<SubjectRequest> subjectRequests{
+    const std::vector subjectRequests{
         SubjectRequest(0, 1, 1, {}, {1, 3, 5}, classrooms),
         SubjectRequest(1, 2, 1, {}, {21, 4}, classrooms),
         SubjectRequest(2, 3, 2, {}, {0, 3, 2, 5}, classrooms),
@@ -251,7 +314,7 @@ TEST_CASE("Check if groups overlaps", "[validation]")
 TEST_CASE("Check if weekday requests violated", "[validation]")
 {
     const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-    const std::vector<SubjectRequest> subjectRequests{
+    const std::vector subjectRequests{
         SubjectRequest(0, 1, 1, {WeekDay::Monday}, {1}, classrooms),
         SubjectRequest(1, 2, 1, {WeekDay::Tuesday}, {2}, classrooms),
         SubjectRequest(2, 3, 2, {WeekDay::Wednesday}, {3}, classrooms),
@@ -282,7 +345,8 @@ TEST_CASE("Check if weekday requests violated", "[validation]")
         scheduleResult.insert(ScheduleItem(2 * MAX_LESSONS_PER_DAY + 1, 4, 4));
 
         const auto result = FindViolatedWeekdayRequests(scheduleData, scheduleResult);
-        const ViolatedWeekdayRequest expected{.Address = 2 * MAX_LESSONS_PER_DAY + 1, .SubjectRequestID = 4};
+        const ViolatedWeekdayRequest expected{.Address = 2 * MAX_LESSONS_PER_DAY + 1,
+                                               .SubjectRequestID = 4};
         REQUIRE(result.size() == 1);
         REQUIRE(result.front() == expected);
     }

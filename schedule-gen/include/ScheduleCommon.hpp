@@ -131,10 +131,7 @@ std::size_t LessonToScheduleDay(std::size_t lesson);
 
 constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
 {
-    static_assert(MAX_LESSONS_COUNT == 84, "re-fill lateSaturdayLessonsTable");
-    assert(l < MAX_LESSONS_COUNT);
-
-    constexpr bool lateSaturdayLessonsTable[MAX_LESSONS_COUNT] = {
+    constexpr std::array lateSaturdayLessonsTable = {
         false,
         false,
         false,
@@ -232,5 +229,6 @@ constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
         true,
     };
 
+    static_assert(lateSaturdayLessonsTable.size() == MAX_LESSONS_COUNT, "re-fill lateSaturdayLessonsTable");
     return lateSaturdayLessonsTable[l];
 }
