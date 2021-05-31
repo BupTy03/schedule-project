@@ -34,8 +34,10 @@ bool SubjectRequest::RequestedWeekDay(std::size_t day) const
 
 ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
                            std::vector<SubjectWithAddress> lockedLessons)
-        : subjectRequests_(std::move(subjectRequests))
-        , lockedLessons_(std::move(lockedLessons))
+    : subjectRequests_(std::move(subjectRequests))
+    , lockedLessons_(std::move(lockedLessons))
+    , professorRequests_()
+    , groupRequests_()
 {
     std::ranges::sort(subjectRequests_, {}, &SubjectRequest::ID);
     subjectRequests_.erase(std::unique(subjectRequests_.begin(), subjectRequests_.end(),
@@ -43,6 +45,14 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
 
     std::ranges::sort(lockedLessons_, {}, &SubjectWithAddress::SubjectRequestID);
     lockedLessons_.erase(std::unique(lockedLessons_.begin(), lockedLessons_.end()), lockedLessons_.end());
+
+    for(std::size_t r = 0; r < subjectRequests_.size(); ++r)
+    {
+        const auto& request = subjectRequests_.at(r);
+        professorRequests_[request.Professor()].insert(r);
+        for(std::size_t g : request.Groups())
+            groupRequests_[g].insert(r);
+    }
 }
 
 const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectRequestID) const
