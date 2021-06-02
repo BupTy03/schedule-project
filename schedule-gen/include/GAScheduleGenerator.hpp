@@ -36,6 +36,9 @@ public:
     bool ClassroomsIntersects(std::size_t currentLesson,
                               const ClassroomAddress& currentClassroom) const;
 
+    std::size_t UnassignedLessonsCount() const;
+    std::size_t UnassignedClassroomsCount() const;
+
 private:
     void InitFromRequest(const ScheduleData& data, std::size_t requestIndex);
 
