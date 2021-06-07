@@ -6,7 +6,7 @@
 #undef max
 
 std::size_t LessonToScheduleDay(std::size_t lesson) { return lesson / MAX_LESSONS_PER_DAY; }
-
+WeekDay ToWeekDay(std::size_t d) { return static_cast<WeekDay>(d % DAYS_IN_SCHEDULE_WEEK); }
 
 WeekDays::WeekDays() : days_(FULL_WEEK) { }
 

@@ -166,6 +166,9 @@ private:
 };
 
 
+ScheduleResult ToScheduleResult(const ScheduleChromosomes& chromosomes,
+                                const ScheduleData& scheduleData);
+
 class GAScheduleGenerator : public ScheduleGenerator
 {
 public:

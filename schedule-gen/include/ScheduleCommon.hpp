@@ -28,6 +28,8 @@ enum class WeekDay : std::uint8_t
     Saturday
 };
 
+WeekDay ToWeekDay(std::size_t d);
+
 struct ClassroomAddress
 {
     ClassroomAddress() = default;

@@ -160,21 +160,3 @@ TEST_CASE("Check if two ordered sets intersects", "[algorithms]")
         REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{9, 10}));
     }
 }
-
-TEST_CASE("Test.CalculatePadding", "[utils]")
-{
-    SECTION("Padding calculates successfully")
-    {
-        REQUIRE(CalculatePadding(3, 2) == 1);
-        REQUIRE(CalculatePadding(3, 4) == 1);
-        REQUIRE(CalculatePadding(2, 4) == 2);
-        REQUIRE(CalculatePadding(1, 8) == 7);
-    }
-
-    SECTION("Return zero if padding not needed")
-    {
-        REQUIRE(CalculatePadding(0, 0) == 0);
-        REQUIRE(CalculatePadding(0, 8) == 0);
-        REQUIRE(CalculatePadding(1, 0) == 0);
-    }
-}

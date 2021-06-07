@@ -25,16 +25,11 @@ std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
     return os;
 }
 
-ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
+ScheduleResult ToScheduleResult(const ScheduleChromosomes& chromosomes,
+                                const ScheduleData& scheduleData)
 {
-    const auto& subjectRequests = data.SubjectRequests();
-
-    ScheduleGA algo(params_);
-    const auto stat = algo.Start(data);
-    const auto& bestIndividual = algo.Individuals().front();
-
-    const auto& lessons = bestIndividual.Chromosomes().Lessons();
-    const auto& classrooms = bestIndividual.Chromosomes().Classrooms();
+    const auto& lessons = chromosomes.Lessons();
+    const auto& classrooms = chromosomes.Classrooms();
 
     ScheduleResult resultSchedule;
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
@@ -45,7 +40,7 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
             const std::size_t r = std::distance(lessons.begin(), it);
             if(classrooms.at(r) != ClassroomAddress::NoClassroom())
             {
-                const auto& request = subjectRequests.at(r);
+                const auto& request = scheduleData.SubjectRequests().at(r);
                 resultSchedule.insert(ScheduleItem(l,
                                                    request.ID(),
                                                    classrooms.at(r).Classroom));
@@ -55,6 +50,18 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
         }
     }
 
+    return resultSchedule;
+}
+
+ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
+{
+    const auto& subjectRequests = data.SubjectRequests();
+
+    ScheduleGA algo(params_);
+    const auto stat = algo.Start(data);
+    const auto& bestIndividual = algo.Individuals().front();
+
+    auto resultSchedule = ToScheduleResult(bestIndividual.Chromosomes(), data);
     std::cout << '\n';
     Print(bestIndividual, data);
     std::cout << "\nSchedule done [";

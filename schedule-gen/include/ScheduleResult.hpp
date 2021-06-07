@@ -18,6 +18,17 @@ struct ScheduleItem
                           std::size_t subjectRequestID,
                           std::size_t classroom);
 
+    friend bool operator==(const ScheduleItem& lhs, const ScheduleItem& rhs)
+    {
+        return lhs.Address == rhs.Address &&
+            lhs.SubjectRequestID == rhs.SubjectRequestID &&
+            lhs.Classroom == rhs.Classroom;
+    }
+    friend bool operator!=(const ScheduleItem& lhs, const ScheduleItem& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
     std::size_t Address = 0;
     std::size_t SubjectRequestID = 0;
     std::size_t Classroom = 0;
