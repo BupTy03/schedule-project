@@ -179,3 +179,5 @@ TEST_CASE("ScheduleIndividual initialized correctly")
     REQUIRE(checkResult.OverlappedClassroomsList.empty());
     REQUIRE(checkResult.ViolatedWeekdayRequestsList.empty());
 }
+
+

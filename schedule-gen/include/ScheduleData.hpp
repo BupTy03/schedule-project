@@ -25,7 +25,6 @@ public:
     std::size_t Complexity() const { return complexity_; }
     const std::vector<std::size_t>& Groups() const { return groups_; }
     const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
-    const WeekDays& RequestedWeekDays() const { return days_; }
     bool RequestedWeekDay(std::size_t day) const;
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
