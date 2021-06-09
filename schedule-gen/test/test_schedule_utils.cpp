@@ -1,7 +1,8 @@
 #include "ScheduleUtils.hpp"
-#include <catch2/catch.hpp>
-
 #include <array>
+
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
+#include <catch2/catch.hpp>
 
 
 TEST_CASE("Test.SortedSet.construct", "[SortedSet]")
@@ -159,4 +160,53 @@ TEST_CASE("Check if two ordered sets intersects", "[algorithms]")
         REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{0}));
         REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{9, 10}));
     }
+}
+
+template<typename InputIter1, typename InputIter2>
+static bool simple_set_intersects(InputIter1 first1, InputIter1 last1,
+                                  InputIter2 first2, InputIter2 last2)
+{
+    for(auto i = first1; i != last1; ++i)
+    {
+        for(auto j = first2; j != last2; ++j)
+        {
+            if(*i == *j)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+template<class Range1, class Range2>
+bool simple_set_intersects(const Range1& r1, const Range2& r2)
+{
+    return simple_set_intersects(std::begin(r1), std::end(r1),
+                                 std::begin(r2), std::end(r2));
+}
+
+TEST_CASE("Benchmark: Determining intersection of two sets", "[benchmark]")
+{
+    const std::vector<int> lhs = {0, 2, 4, 6, 7, 8, 9, 10, 12, 14, 16, 18, 19, 20, 22};
+    const std::vector<int> rhs = {1, 3, 5, 7, 11, 13, 15, 17, 19, 21, 23};
+
+    BENCHMARK("Using simple brute force")
+    {
+        return simple_set_intersects(lhs, rhs);
+    };
+
+    BENCHMARK("Using sorted data advantages with std::set_intersection")
+    {
+        std::vector<int> intersected;
+        std::set_intersection(lhs.begin(), lhs.end(),
+                              rhs.begin(), rhs.end(),
+                              std::back_inserter(intersected));
+
+        return !intersected.empty();
+    };
+
+    BENCHMARK("Using sorted data advantages with set_intersects")
+    {
+        return set_intersects(lhs, rhs);
+    };
 }

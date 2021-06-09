@@ -51,6 +51,9 @@ template<class InputIt1, class InputIt2>
 bool set_intersects(InputIt1 first1, InputIt1 last1,
                     InputIt2 first2, InputIt2 last2)
 {
+    assert(std::is_sorted(first1, last1));
+    assert(std::is_sorted(first2, last2));
+
     while (first1 != last1 && first2 != last2)
     {
         if (*first1 < *first2)
