@@ -62,13 +62,13 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
     const auto& bestIndividual = algo.Individuals().front();
 
     auto resultSchedule = ToScheduleResult(bestIndividual.Chromosomes(), data);
-    std::cout << '\n';
-    Print(bestIndividual, data);
-    std::cout << "\nSchedule done [";
-    std::cout << "score: " << bestIndividual.Evaluate() << "; ";
-    std::cout << "time: " << std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s; ";
-    std::cout << "requests: " << subjectRequests.size() << "; ";
-    std::cout << "results: " << resultSchedule.items().size() << ']' << std::endl;
+//    std::cout << '\n';
+//    Print(bestIndividual, data);
+//    std::cout << "\nSchedule done [";
+//    std::cout << "score: " << bestIndividual.Evaluate() << "; ";
+//    std::cout << "time: " << std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s; ";
+//    std::cout << "requests: " << subjectRequests.size() << "; ";
+//    std::cout << "results: " << resultSchedule.items().size() << ']' << std::endl;
     return resultSchedule;
 }
 
@@ -631,9 +631,9 @@ ScheduleGAStatistics ScheduleGA::Start(const ScheduleData& scheduleData)
 
         // select best
         std::ranges::nth_element(individuals_, individuals_.begin() + params_.SelectionCount, ScheduleIndividualLess());
-        std::cout << "Iteration: " << iteration << "; Best: " << std::min_element(individuals_.begin(),
-                                                                                  individuals_.begin() + params_.SelectionCount,
-                                                                                  ScheduleIndividualLess())->Evaluate() << '\n';
+//        std::cout << "Iteration: " << iteration << "; Best: " << std::min_element(individuals_.begin(),
+//                                                                                  individuals_.begin() + params_.SelectionCount,
+//                                                                                  ScheduleIndividualLess())->Evaluate() << '\n';
 
         // crossover
         for(std::size_t i = 0; i < params_.CrossoverCount; ++i)
