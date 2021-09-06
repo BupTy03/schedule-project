@@ -1,4 +1,5 @@
 #include "ScheduleData.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -8,8 +9,10 @@ SubjectRequest::SubjectRequest(std::size_t id,
                                std::size_t complexity,
                                WeekDays days,
                                std::vector<std::size_t> groups,
-                               std::vector<ClassroomAddress> classrooms)
-        : id_(id)
+                               std::vector<ClassroomAddress> classrooms,
+                               bool isEveningClass)
+        : isEveningClass_(isEveningClass)
+        , id_(id)
         , professor_(professor)
         , complexity_(complexity)
         , days_(days)

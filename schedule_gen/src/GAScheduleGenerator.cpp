@@ -147,33 +147,103 @@ void ScheduleChromosomes::InitFromRequest(const ScheduleData& data,
     if(data.SubjectRequestHasLockedLesson(request))
         return;
 
-    for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
+    // размещение занятий для вечерников
+    if(request.IsEveningClass())
     {
-        for(std::size_t day = 0; day < DAYS_IN_SCHEDULE; ++day)
+        // пытаемся разместить 5-6 парами (отсчёт с 0) в будние дни
+        for(std::size_t dayLesson : std::array{5, 6})
         {
-            if(!request.RequestedWeekDay(day))
-                continue;
-
-            const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
-            if(IsLateScheduleLessonInSaturday(scheduleLesson))
-                continue;
-
-            if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
-                continue;
-
-            lessons_.at(requestIndex) = scheduleLesson;
-            if(requestClassrooms.empty())
+            for(std::size_t day : std::array{0, 1, 2, 3, 4, 6, 7, 8, 9, 10})
             {
-                classrooms_.at(requestIndex) = ClassroomAddress::Any();
-                return;
-            }
+                if(!request.RequestedWeekDay(day))
+                    continue;
 
-            for(auto&& classroom : requestClassrooms)
-            {
-                if(!ClassroomsIntersects(scheduleLesson, classroom))
+                if(ToWeekDay(day) == WeekDay::Saturday)
+                    continue;
+
+                const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
+                if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
+                    continue;
+
+                lessons_.at(requestIndex) = scheduleLesson;
+                if(requestClassrooms.empty())
                 {
-                    classrooms_.at(requestIndex) = classroom;
+                    classrooms_.at(requestIndex) = ClassroomAddress::Any();
                     return;
+                }
+
+                for(auto&& classroom : requestClassrooms)
+                {
+                    if(!ClassroomsIntersects(scheduleLesson, classroom))
+                    {
+                        classrooms_.at(requestIndex) = classroom;
+                        return;
+                    }
+                }
+            }
+        }
+
+        // не получилось разместить в будние дни - размещаем в субботу
+        for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
+        {
+            for(std::size_t day : std::array{5, 11})
+            {
+                if(!request.RequestedWeekDay(day))
+                    continue;
+
+                const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
+                if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
+                    continue;
+
+                lessons_.at(requestIndex) = scheduleLesson;
+                if(requestClassrooms.empty())
+                {
+                    classrooms_.at(requestIndex) = ClassroomAddress::Any();
+                    return;
+                }
+
+                for(auto&& classroom : requestClassrooms)
+                {
+                    if(!ClassroomsIntersects(scheduleLesson, classroom))
+                    {
+                        classrooms_.at(requestIndex) = classroom;
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        // размещение занятий для дневников
+        for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
+        {
+            for(std::size_t day = 0; day < DAYS_IN_SCHEDULE; ++day)
+            {
+                if(!request.RequestedWeekDay(day))
+                    continue;
+
+                const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
+                if(IsLateScheduleLessonInSaturday(scheduleLesson))
+                    continue;
+
+                if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
+                    continue;
+
+                lessons_.at(requestIndex) = scheduleLesson;
+                if(requestClassrooms.empty())
+                {
+                    classrooms_.at(requestIndex) = ClassroomAddress::Any();
+                    return;
+                }
+
+                for(auto&& classroom : requestClassrooms)
+                {
+                    if(!ClassroomsIntersects(scheduleLesson, classroom))
+                    {
+                        classrooms_.at(requestIndex) = classroom;
+                        return;
+                    }
                 }
             }
         }
@@ -513,13 +583,27 @@ void ScheduleIndividual::ChangeLesson(std::size_t requestIndex)
     std::size_t scheduleLesson = lessonsDistrib(randomGenerator_);
 
     std::size_t chooseLessonTry = 0;
-    while(chooseLessonTry < MAX_LESSONS_COUNT &&
+    if(request.IsEveningClass())
+    {
+        while(chooseLessonTry < MAX_LESSONS_COUNT &&
+          (!request.RequestedWeekDay(scheduleLesson / MAX_LESSONS_PER_DAY) ||
+           !SuitableForEveningClasses(scheduleLesson) ||
+           chromosomes_.GroupsOrProfessorsOrClassroomsIntersects(*pData_, requestIndex, scheduleLesson)))
+        {
+            scheduleLesson = lessonsDistrib(randomGenerator_);
+            ++chooseLessonTry;
+        }
+    }
+    else
+    {
+        while(chooseLessonTry < MAX_LESSONS_COUNT &&
           (!request.RequestedWeekDay(scheduleLesson / MAX_LESSONS_PER_DAY) ||
            IsLateScheduleLessonInSaturday(scheduleLesson) ||
            chromosomes_.GroupsOrProfessorsOrClassroomsIntersects(*pData_, requestIndex, scheduleLesson)))
-    {
-        scheduleLesson = lessonsDistrib(randomGenerator_);
-        ++chooseLessonTry;
+        {
+            scheduleLesson = lessonsDistrib(randomGenerator_);
+            ++chooseLessonTry;
+        }
     }
 
     if(chooseLessonTry < MAX_LESSONS_COUNT)

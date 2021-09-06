@@ -10,10 +10,10 @@ TEST_CASE("Initialization of chromosomes is valid", "[ScheduleChromosomes]")
     const WeekDays weekDays{WeekDay::Monday, WeekDay::Wednesday, WeekDay::Thursday};
     const std::vector requests {
         // [id, professor, complexity, weekDays, groups, classrooms]
-        SubjectRequest{0, 1, 1, fullWeek, {0, 1, 2}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{0, 1, 1, fullWeek, {0, 1, 2}, {{0, 1}, {0, 2}, {0, 3}}, true},
         SubjectRequest{1, 2, 1, weekDays, {1, 2, 3}, {{0, 1}, {0, 2}, {0, 3}}},
         SubjectRequest{2, 1, 1, fullWeek, {4, 5, 6}, {{0, 1}, {0, 2}, {0, 3}}},
-        SubjectRequest{3, 4, 1, fullWeek, {7, 8, 9}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{3, 4, 1, fullWeek, {7, 8, 9}, {{0, 1}, {0, 2}, {0, 3}}, true},
         SubjectRequest{4, 5, 1, fullWeek, {10},      {{0, 1}, {0, 2}, {0, 3}}}
     };
 
@@ -48,6 +48,20 @@ TEST_CASE("Initialization of chromosomes is valid", "[ScheduleChromosomes]")
         REQUIRE((weekDay == WeekDay::Monday ||
                  weekDay == WeekDay::Wednesday ||
                  weekDay == WeekDay::Thursday));
+    }
+    SECTION("Evening classes are in 5-6 places (except Saturday)")
+    {
+        for(std::size_t i = 0; i < requests.size(); ++i)
+        {
+            if(requests.at(i).IsEveningClass())
+            {
+                const auto day = LessonToScheduleDay(sut.Lesson(i));
+                const auto weekDay = ToWeekDay(day);
+
+                const auto dayLesson = sut.Lesson(i) % MAX_LESSONS_PER_DAY;
+                REQUIRE((weekDay == WeekDay::Saturday || dayLesson == 5 || dayLesson == 6));
+            }
+        }
     }
 }
 

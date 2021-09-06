@@ -1,5 +1,6 @@
 #pragma once
 #include "ScheduleCommon.h"
+
 #include <string>
 #include <cstdint>
 #include <map>
@@ -18,7 +19,8 @@ public:
                             std::size_t complexity,
                             WeekDays days,
                             std::vector<std::size_t> groups,
-                            std::vector<ClassroomAddress> classrooms);
+                            std::vector<ClassroomAddress> classrooms,
+                            bool isEveningClass = false);
 
     std::size_t ID() const { return id_; }
     std::size_t Professor() const { return professor_; }
@@ -26,10 +28,13 @@ public:
     const std::vector<std::size_t>& Groups() const { return groups_; }
     const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
     bool RequestedWeekDay(std::size_t day) const;
+    bool IsEveningClass() const { return isEveningClass_; }
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
     {
-        return lhs.professor_ == rhs.professor_ &&
+        return lhs.id_ == rhs.id_ &&
+            lhs.isEveningClass_ == rhs.isEveningClass_ &&
+            lhs.professor_ == rhs.professor_ &&
             lhs.complexity_ == rhs.complexity_ &&
             lhs.days_ == rhs.days_ &&
             lhs.groups_ == rhs.groups_ &&
@@ -42,6 +47,7 @@ public:
     }
 
 private:
+    bool isEveningClass_ = false;
     std::size_t id_ = 0;
     std::size_t professor_ = 0;
     std::size_t complexity_ = 0;
