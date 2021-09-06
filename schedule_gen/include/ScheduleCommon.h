@@ -17,6 +17,10 @@ constexpr std::size_t DAYS_IN_SCHEDULE_WEEK = 6;
 constexpr std::size_t DAYS_IN_SCHEDULE = DAYS_IN_SCHEDULE_WEEK * 2;
 constexpr std::size_t MAX_LESSONS_COUNT = MAX_LESSONS_PER_DAY * DAYS_IN_SCHEDULE_WEEK * 2;
 
+constexpr std::size_t NO_LESSON = std::numeric_limits<std::size_t>::max();
+constexpr std::size_t NO_BUILDING = std::numeric_limits<std::size_t>::max();
+constexpr std::size_t NOT_EVALUATED = std::numeric_limits<std::size_t>::max();
+
 
 enum class WeekDay : std::uint8_t
 {
