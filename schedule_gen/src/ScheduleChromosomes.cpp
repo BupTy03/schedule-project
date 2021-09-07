@@ -1,5 +1,5 @@
 #include "ScheduleChromosomes.h"
-
+#include "ScheduleData.h"
 #include <numeric>
 #include <algorithm>
 
@@ -359,4 +359,32 @@ std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
            maxBuildingsChangesForGroups * 64 +
            scheduleChromosomes.UnassignedLessonsCount() * 128 +
            scheduleChromosomes.UnassignedClassroomsCount() * 128;
+}
+
+ScheduleResult ToScheduleResult(const ScheduleChromosomes& chromosomes,
+                                const ScheduleData& scheduleData)
+{
+    const auto& lessons = chromosomes.Lessons();
+    const auto& classrooms = chromosomes.Classrooms();
+
+    ScheduleResult resultSchedule;
+    for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
+    {
+        auto it = std::find(lessons.begin(), lessons.end(), l);
+        while(it != lessons.end())
+        {
+            const std::size_t r = std::distance(lessons.begin(), it);
+            if(classrooms.at(r) != ClassroomAddress::NoClassroom())
+            {
+                const auto& request = scheduleData.SubjectRequests().at(r);
+                resultSchedule.insert(ScheduleItem(l,
+                                                   request.ID(),
+                                                   classrooms.at(r).Classroom));
+            }
+
+            it = std::find(std::next(it), lessons.end(), l);
+        }
+    }
+
+    return resultSchedule;
 }

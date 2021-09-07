@@ -1,10 +1,9 @@
 #pragma once
 #include "ScheduleUtils.h"
 #include "ScheduleCommon.h"
-
 #include <map>
-#include <cstdint>
 #include <vector>
+#include <cstdint>
 #include <optional>
 #include <stdexcept>
 

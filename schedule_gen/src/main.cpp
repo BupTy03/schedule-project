@@ -19,7 +19,7 @@ private:
 int main()
 {
     IndexesGenerator gen;
-    std::uniform_int_distribution<std::size_t> distr(0, 5);
+    std::uniform_int_distribution<std::size_t> distr{0, 5};
     for(std::size_t i = 0; i < 100; ++i)
         std::cout << distr(gen) << ' ';
 

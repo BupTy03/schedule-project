@@ -1,9 +1,8 @@
 #include "ScheduleResult.h"
 #include "ScheduleData.h"
-
 #include <iostream>
-#include <functional>
 #include <algorithm>
+#include <functional>
 
 
 ScheduleItem::ScheduleItem(std::size_t lessonAddress,

@@ -2,10 +2,8 @@
 #include "ScheduleServer.h"
 #include "GAScheduleGenerator.h"
 #include "ScheduleDataSerialization.h"
-
-#include "Poco/URI.h"
-#include "spdlog/spdlog.h"
-
+#include <spdlog/spdlog.h>
+#include <Poco/URI.h>
 #include <cassert>
 
 

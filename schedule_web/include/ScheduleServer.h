@@ -1,9 +1,7 @@
 #pragma once
 #include "ScheduleGenerator.h"
-
 #include <Poco/Util/ServerApplication.h>
 #include <nlohmann/json.hpp>
-
 #include <iostream>
 #include <string>
 #include <vector>

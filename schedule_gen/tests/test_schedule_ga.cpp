@@ -1,6 +1,7 @@
 #include "GAScheduleGenerator.h"
 #include "ScheduleData.h"
-
+#include "ScheduleIndividual.h"
+#include "ScheduleChromosomes.h"
 #include <catch2/catch.hpp>
 
 

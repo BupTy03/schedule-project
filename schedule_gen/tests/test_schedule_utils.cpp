@@ -1,8 +1,6 @@
 #include "ScheduleUtils.h"
-#include <array>
-
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include <catch2/catch.hpp>
+#include <array>
 
 
 TEST_CASE("Test.SortedSet.construct", "[SortedSet]")

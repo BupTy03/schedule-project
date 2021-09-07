@@ -2,7 +2,6 @@
 #include "ScheduleData.h"
 #include "ScheduleResult.h"
 #include "ScheduleGenerator.h"
-
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
 #include <Poco/Net/HTTPRequestHandler.h>

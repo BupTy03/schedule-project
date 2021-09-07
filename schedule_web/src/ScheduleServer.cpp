@@ -1,13 +1,9 @@
 #include "ScheduleServer.h"
 #include "GAScheduleGenerator.h"
 #include "ScheduleRequestHandler.h"
-
-#include "nlohmann/json.hpp"
-#include "spdlog/spdlog.h"
-
 #include <Poco/Net/HTTPServer.h>
-
-#include <string>
+#include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 #include <fstream>
 
 

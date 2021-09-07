@@ -1,9 +1,9 @@
 #pragma once
-#include "ScheduleUtils.h"
-#include "ScheduleGenerator.h"
-
+#include "ScheduleResult.h"
 #include <vector>
 
+
+class ScheduleData;
 
 class ScheduleChromosomes
 {
@@ -57,3 +57,6 @@ void Crossover(ScheduleChromosomes& first,
 
 std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
                      const ScheduleData& scheduleData);
+
+ScheduleResult ToScheduleResult(const ScheduleChromosomes& chromosomes,
+                                const ScheduleData& scheduleData);

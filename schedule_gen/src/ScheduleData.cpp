@@ -1,7 +1,6 @@
 #include "ScheduleData.h"
-
+#include <string>
 #include <algorithm>
-#include <iostream>
 
 
 SubjectRequest::SubjectRequest(std::size_t id,

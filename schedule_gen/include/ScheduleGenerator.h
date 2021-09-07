@@ -1,7 +1,6 @@
 #pragma once
 #include "ScheduleData.h"
 #include "ScheduleResult.h"
-
 #include <map>
 #include <memory>
 #include <string>

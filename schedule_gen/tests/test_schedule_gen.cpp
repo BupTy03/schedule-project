@@ -2,9 +2,7 @@
 #include "ScheduleCommon.h"
 #include "ScheduleData.h"
 #include "ScheduleResult.h"
-
 #include <catch2/catch.hpp>
-
 #include <array>
 
 
