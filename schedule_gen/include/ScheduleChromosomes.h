@@ -43,19 +43,15 @@ private:
 
 void InsertMorningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
 void InsertEveningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
-ScheduleChromosomes InitChromosomes(const ScheduleData& data);
+ScheduleChromosomes InitializeChromosomes(const ScheduleData& data);
 
 bool ReadyToCrossover(const ScheduleChromosomes& first,
                       const ScheduleChromosomes& second,
                       const ScheduleData& data,
                       std::size_t r);
 
-void Crossover(ScheduleChromosomes& first,
-               ScheduleChromosomes& second,
-               std::size_t r);
+void Crossover(ScheduleChromosomes& first, ScheduleChromosomes& second, std::size_t r);
 
-std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
-                     const ScheduleData& scheduleData);
+std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes, const ScheduleData& scheduleData);
 
-ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
-                                const ScheduleData& scheduleData);
+ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes, const ScheduleData& scheduleData);

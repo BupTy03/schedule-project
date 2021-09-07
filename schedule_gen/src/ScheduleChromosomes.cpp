@@ -191,7 +191,7 @@ void InsertEveningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& 
     }
 }
 
-ScheduleChromosomes InitChromosomes(const ScheduleData& data)
+ScheduleChromosomes InitializeChromosomes(const ScheduleData& data)
 {
     const auto& requests = data.SubjectRequests();
     assert(!requests.empty());

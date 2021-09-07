@@ -15,7 +15,7 @@ public:
                             WeekDays days,
                             std::vector<std::size_t> groups,
                             std::vector<ClassroomAddress> classrooms,
-                            bool isEveningClass = false);
+                            ClassesType classesType = ClassesType::Morning);
 
     std::size_t ID() const { return id_; }
     std::size_t Professor() const { return professor_; }

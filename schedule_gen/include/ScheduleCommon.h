@@ -34,6 +34,12 @@ enum class WeekDay : std::uint8_t
 
 WeekDay ToWeekDay(std::size_t d);
 
+enum class ClassesType
+{
+    Morning,
+    Evening
+};
+
 struct ClassroomAddress
 {
     ClassroomAddress() = default;

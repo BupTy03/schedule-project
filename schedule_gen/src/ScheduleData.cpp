@@ -9,8 +9,8 @@ SubjectRequest::SubjectRequest(std::size_t id,
                                WeekDays days,
                                std::vector<std::size_t> groups,
                                std::vector<ClassroomAddress> classrooms,
-                               bool isEveningClass)
-        : isEveningClass_(isEveningClass)
+                               ClassesType classesType)
+        : isEveningClass_(classesType == ClassesType::Evening)
         , id_(id)
         , professor_(professor)
         , complexity_(complexity)

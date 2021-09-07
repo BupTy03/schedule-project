@@ -6,7 +6,7 @@ ScheduleIndividual::ScheduleIndividual(std::random_device& randomDevice,
                                        const ScheduleData* pData)
     : pData_(pData)
     , evaluatedValue_(NOT_EVALUATED)
-    , chromosomes_(InitChromosomes(*pData))
+    , chromosomes_(InitializeChromosomes(*pData))
     , randomGenerator_(randomDevice())
 {
     assert(pData != nullptr);
