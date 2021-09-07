@@ -1,8 +1,39 @@
 #include "ScheduleChromosomes.h"
 #include "ScheduleData.h"
+#include <array>
+#include <utility>
 #include <numeric>
 #include <algorithm>
+#include <experimental/generator>
 
+
+static std::experimental::generator<std::pair<std::size_t, std::size_t>> EveningClassesDaysLessons()
+{
+    // пытаемся разместить 5-6 парами (отсчёт с 0) в будние дни
+    for(std::size_t dayLesson : std::array{5, 6})
+        for(std::size_t day : std::array{0, 1, 2, 3, 4, 6, 7, 8, 9, 10})
+            co_yield std::pair<std::size_t, std::size_t>{day, dayLesson};
+
+    // не получилось разместить в будние дни - размещаем в субботу
+    for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
+        for(std::size_t day : std::array{5, 11})
+            co_yield std::pair<std::size_t, std::size_t>{day, dayLesson};
+}
+
+static std::experimental::generator<std::pair<std::size_t, std::size_t>> MorningClassesDaysLessons()
+{
+    // размещение занятий для дневников
+    for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
+        for(std::size_t day = 0; day < DAYS_IN_SCHEDULE; ++day)
+            co_yield std::pair<std::size_t, std::size_t>{day, dayLesson};
+}
+
+
+ScheduleChromosomes::ScheduleChromosomes(std::size_t count)
+    : lessons_(count, NO_LESSON)
+    , classrooms_(count, ClassroomAddress::NoClassroom())
+{
+}
 
 ScheduleChromosomes::ScheduleChromosomes(std::vector<std::size_t> lessons,
                                          std::vector<ClassroomAddress> classrooms)
@@ -10,145 +41,6 @@ ScheduleChromosomes::ScheduleChromosomes(std::vector<std::size_t> lessons,
     , classrooms_(std::move(classrooms))
 {
     assert(lessons_.size() == classrooms_.size());
-}
-
-ScheduleChromosomes::ScheduleChromosomes(const ScheduleData& data)
-    : lessons_(data.SubjectRequests().size(), NO_LESSON)
-    , classrooms_(data.SubjectRequests().size(), ClassroomAddress::NoClassroom())
-{
-    assert(!data.SubjectRequests().empty());
-    for(auto&& locked : data.LockedLessons())
-    {
-        const std::size_t r = data.IndexOfSubjectRequestWithID(locked.SubjectRequestID);
-        lessons_.at(r) = locked.Address;
-
-        auto&& request = data.SubjectRequests().at(r);
-        for(auto&& classroom : request.Classrooms())
-        {
-            if(!ClassroomsIntersects(locked.Address, classroom))
-            {
-                classrooms_.at(r) = classroom;
-                break;
-            }
-        }
-    }
-
-    for(std::size_t r = 0; r < data.SubjectRequests().size(); ++r)
-        InitFromRequest(data, r);
-}
-
-void ScheduleChromosomes::InitFromRequest(const ScheduleData& data,
-                                          std::size_t requestIndex)
-{
-    const auto& requests = data.SubjectRequests();
-    const auto& request = requests.at(requestIndex);
-    const auto& requestClassrooms = request.Classrooms();
-    const auto& lockedLessons = data.LockedLessons();
-
-    if(data.SubjectRequestHasLockedLesson(request))
-        return;
-
-    // размещение занятий для вечерников
-    if(request.IsEveningClass())
-    {
-        // пытаемся разместить 5-6 парами (отсчёт с 0) в будние дни
-        for(std::size_t dayLesson : std::array{5, 6})
-        {
-            for(std::size_t day : std::array{0, 1, 2, 3, 4, 6, 7, 8, 9, 10})
-            {
-                if(!request.RequestedWeekDay(day))
-                    continue;
-
-                if(ToWeekDay(day) == WeekDay::Saturday)
-                    continue;
-
-                const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
-                if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
-                    continue;
-
-                lessons_.at(requestIndex) = scheduleLesson;
-                if(requestClassrooms.empty())
-                {
-                    classrooms_.at(requestIndex) = ClassroomAddress::Any();
-                    return;
-                }
-
-                for(auto&& classroom : requestClassrooms)
-                {
-                    if(!ClassroomsIntersects(scheduleLesson, classroom))
-                    {
-                        classrooms_.at(requestIndex) = classroom;
-                        return;
-                    }
-                }
-            }
-        }
-
-        // не получилось разместить в будние дни - размещаем в субботу
-        for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
-        {
-            for(std::size_t day : std::array{5, 11})
-            {
-                if(!request.RequestedWeekDay(day))
-                    continue;
-
-                const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
-                if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
-                    continue;
-
-                lessons_.at(requestIndex) = scheduleLesson;
-                if(requestClassrooms.empty())
-                {
-                    classrooms_.at(requestIndex) = ClassroomAddress::Any();
-                    return;
-                }
-
-                for(auto&& classroom : requestClassrooms)
-                {
-                    if(!ClassroomsIntersects(scheduleLesson, classroom))
-                    {
-                        classrooms_.at(requestIndex) = classroom;
-                        return;
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        // размещение занятий для дневников
-        for(std::size_t dayLesson = 0; dayLesson < MAX_LESSONS_PER_DAY; ++dayLesson)
-        {
-            for(std::size_t day = 0; day < DAYS_IN_SCHEDULE; ++day)
-            {
-                if(!request.RequestedWeekDay(day))
-                    continue;
-
-                const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + dayLesson;
-                if(IsLateScheduleLessonInSaturday(scheduleLesson))
-                    continue;
-
-                if(GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
-                    continue;
-
-                lessons_.at(requestIndex) = scheduleLesson;
-                if(requestClassrooms.empty())
-                {
-                    classrooms_.at(requestIndex) = ClassroomAddress::Any();
-                    return;
-                }
-
-                for(auto&& classroom : requestClassrooms)
-                {
-                    if(!ClassroomsIntersects(scheduleLesson, classroom))
-                    {
-                        classrooms_.at(requestIndex) = classroom;
-                        return;
-                    }
-                }
-            }
-        }
-    }
 }
 
 bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const ScheduleData& data,
@@ -229,6 +121,114 @@ std::size_t ScheduleChromosomes::UnassignedClassroomsCount() const
 }
 
 
+void InsertMorningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex)
+{
+    const auto& requests = data.SubjectRequests();
+    const auto& request = requests.at(requestIndex);
+    const auto& requestClassrooms = request.Classrooms();
+    for(auto&&[day, lesson] : MorningClassesDaysLessons())
+    {
+        if(!request.RequestedWeekDay(day))
+            continue;
+
+        const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + lesson;
+        if(IsLateScheduleLessonInSaturday(scheduleLesson))
+            continue;
+
+        if(chromosomes.GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
+            continue;
+
+        chromosomes.Lesson(requestIndex) = scheduleLesson;
+        if(requestClassrooms.empty())
+        {
+            chromosomes.Classroom(requestIndex) = ClassroomAddress::Any();
+            return;
+        }
+
+        for(auto&& classroom : requestClassrooms)
+        {
+            if(!chromosomes.ClassroomsIntersects(scheduleLesson, classroom))
+            {
+                chromosomes.Classroom(requestIndex) = classroom;
+                return;
+            }
+        }
+    }
+}
+
+void InsertEveningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex)
+{
+    const auto& requests = data.SubjectRequests();
+    const auto& request = requests.at(requestIndex);
+    const auto& requestClassrooms = request.Classrooms();
+    for(auto&&[day, lesson] : EveningClassesDaysLessons())
+    {
+        if(!request.RequestedWeekDay(day))
+            continue;
+
+        if(ToWeekDay(day) == WeekDay::Saturday)
+            continue;
+
+        const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + lesson;
+        if(chromosomes.GroupsOrProfessorsIntersects(data, requestIndex, scheduleLesson))
+            continue;
+
+        chromosomes.Lesson(requestIndex) = scheduleLesson;
+        if(requestClassrooms.empty())
+        {
+            chromosomes.Classroom(requestIndex) = ClassroomAddress::Any();
+            return;
+        }
+
+        for(auto&& classroom : requestClassrooms)
+        {
+            if(!chromosomes.ClassroomsIntersects(scheduleLesson, classroom))
+            {
+                chromosomes.Classroom(requestIndex) = classroom;
+                return;
+            }
+        }
+    }
+}
+
+ScheduleChromosomes InitChromosomes(const ScheduleData& data)
+{
+    const auto& requests = data.SubjectRequests();
+    assert(!requests.empty());
+
+    ScheduleChromosomes result(requests.size());
+    for(auto&& locked : data.LockedLessons())
+    {
+        const std::size_t r = data.IndexOfSubjectRequestWithID(locked.SubjectRequestID);
+        result.Lesson(r) = locked.Address;
+
+        const auto& request = requests.at(r);
+        for(auto&& classroom : request.Classrooms())
+        {
+            if(!result.ClassroomsIntersects(locked.Address, classroom))
+            {
+                result.Classroom(r) = classroom;
+                break;
+            }
+        }
+    }
+
+    for(std::size_t r = 0; r < requests.size(); ++r)
+    {
+        const auto& request = requests.at(r);
+        const auto& requestClassrooms = request.Classrooms();
+        if(data.SubjectRequestHasLockedLesson(request))
+            continue;
+
+        if(request.IsEveningClass())
+            InsertEveningRequest(result, data, r);
+        else
+            InsertMorningRequest(result, data, r);
+    }
+
+    return result;
+}
+
 bool ReadyToCrossover(const ScheduleChromosomes& first,
                       const ScheduleChromosomes& second,
                       const ScheduleData& data,
@@ -270,19 +270,19 @@ std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
     std::size_t maxBuildingsChangesForProfessors = 0;
 
     auto calculateGap = [](auto&& lhs, auto&& rhs) {
-           return lhs.first - rhs.first - 1;
+        return lhs.first - rhs.first - 1;
     };
 
     auto buildingsChanged = [&](auto&& lhs, auto&& rhs) -> bool {
-           const auto lhsLesson = lhs.first;
-           const auto rhsLesson = rhs.first;
-           const auto lhsBuilding = scheduleChromosomes.Classroom(lhs.second).Building;
-           const auto rhsBuilding = scheduleChromosomes.Classroom(rhs.second).Building;
+        const auto lhsLesson = lhs.first;
+        const auto rhsLesson = rhs.first;
+        const auto lhsBuilding = scheduleChromosomes.Classroom(lhs.second).Building;
+        const auto rhsBuilding = scheduleChromosomes.Classroom(rhs.second).Building;
 
-           return !(lhsBuilding == rhsBuilding ||
-                    lhsLesson - rhsLesson > 1  ||
-                    lhsBuilding == NO_BUILDING ||
-                    rhsBuilding == NO_BUILDING);
+        return !(lhsBuilding == rhsBuilding ||
+                lhsLesson - rhsLesson > 1  ||
+                lhsBuilding == NO_BUILDING ||
+                rhsBuilding == NO_BUILDING);
     };
 
     const auto& requests = scheduleData.SubjectRequests();
@@ -361,7 +361,7 @@ std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
            scheduleChromosomes.UnassignedClassroomsCount() * 128;
 }
 
-ScheduleResult ToScheduleResult(const ScheduleChromosomes& chromosomes,
+ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
                                 const ScheduleData& scheduleData)
 {
     const auto& lessons = chromosomes.Lessons();

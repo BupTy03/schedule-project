@@ -19,7 +19,7 @@ TEST_CASE("Initialization of chromosomes is valid", "[ScheduleChromosomes]")
     };
 
     const ScheduleData data{requests, {}};
-    const ScheduleChromosomes sut{data};
+    const ScheduleChromosomes sut = InitChromosomes(data);
 
     SECTION("No ovelaps by professors")
     {
@@ -145,7 +145,7 @@ TEST_CASE("Crossover works", "[ScheduleChromosomes]")
     REQUIRE(second.Classroom(0) == ClassroomAddress{0,3});
 }
 
-TEST_CASE("ToScheduleResult works correctly", "[GAScheduleGenerator]")
+TEST_CASE("MakeScheduleResult works correctly", "[GAScheduleGenerator]")
 {
     const std::vector<ClassroomAddress> classrooms = {{0, 1}, {0, 2}, {0, 3}};
     const std::vector requests {
@@ -163,7 +163,7 @@ TEST_CASE("ToScheduleResult works correctly", "[GAScheduleGenerator]")
         {{0,1}, {0,1}, {0,3}, {0, 2}, {0,3}}
     };
 
-    const ScheduleResult scheduleResult = ToScheduleResult(chromosomes, data);
+    const ScheduleResult scheduleResult = MakeScheduleResult(chromosomes, data);
     REQUIRE(scheduleResult.items().at(0) == ScheduleItem{0, 0, 1});
     REQUIRE(scheduleResult.items().at(1) == ScheduleItem{1, 4, 3});
     REQUIRE(scheduleResult.items().at(2) == ScheduleItem{2, 3, 2});
@@ -187,7 +187,7 @@ TEST_CASE("ScheduleIndividual initialized correctly")
 
     std::random_device rd;
     const ScheduleIndividual sut{rd, &data};
-    const ScheduleResult result = ToScheduleResult(sut.Chromosomes(), data);
+    const ScheduleResult result = MakeScheduleResult(sut.Chromosomes(), data);
     const auto checkResult = CheckSchedule(data, result);
 
     REQUIRE(checkResult.OverlappedGroupsList.empty());

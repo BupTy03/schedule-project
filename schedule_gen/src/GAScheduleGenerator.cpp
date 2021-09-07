@@ -18,7 +18,7 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
     const auto stat = algo.Start(data);
     const auto& bestIndividual = algo.Individuals().front();
 
-    auto resultSchedule = ToScheduleResult(bestIndividual.Chromosomes(), data);
+    auto resultSchedule = MakeScheduleResult(bestIndividual.Chromosomes(), data);
 //    std::cout << '\n';
 //    Print(bestIndividual, data);
 //    std::cout << "\nSchedule done [";

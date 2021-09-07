@@ -8,11 +8,9 @@ class ScheduleData;
 class ScheduleChromosomes
 {
 public:
-    // for testing
+    explicit ScheduleChromosomes(std::size_t count);
     explicit ScheduleChromosomes(std::vector<std::size_t> lessons,
                                  std::vector<ClassroomAddress> classrooms);
-
-    explicit ScheduleChromosomes(const ScheduleData& data);
 
     const std::vector<std::size_t>& Lessons() const { return lessons_; }
     const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
@@ -38,13 +36,14 @@ public:
     std::size_t UnassignedClassroomsCount() const;
 
 private:
-    void InitFromRequest(const ScheduleData& data, std::size_t requestIndex);
-
-private:
     std::vector<std::size_t> lessons_;
     std::vector<ClassroomAddress> classrooms_;
 };
 
+
+void InsertMorningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
+void InsertEveningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
+ScheduleChromosomes InitChromosomes(const ScheduleData& data);
 
 bool ReadyToCrossover(const ScheduleChromosomes& first,
                       const ScheduleChromosomes& second,
@@ -58,5 +57,5 @@ void Crossover(ScheduleChromosomes& first,
 std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
                      const ScheduleData& scheduleData);
 
-ScheduleResult ToScheduleResult(const ScheduleChromosomes& chromosomes,
+ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
                                 const ScheduleData& scheduleData);
