@@ -55,14 +55,7 @@ std::size_t ScheduleIndividual::MutationProbability() const
 
 void ScheduleIndividual::Mutate()
 {
-    std::uniform_int_distribution<std::size_t> requestsDistrib(0, pData_->SubjectRequests().size() - 1);
-    const std::size_t requestIndex = requestsDistrib(randomGenerator_);
-
-    std::uniform_int_distribution<std::size_t> headsOrTails(0, 1);
-    if(headsOrTails(randomGenerator_))
-        ChangeClassroom(requestIndex);
-    else
-        ChangeLesson(requestIndex);
+    ::Mutate(chromosomes_, *pData_, randomGenerator_);
 }
 
 std::size_t ScheduleIndividual::Evaluate() const

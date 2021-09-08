@@ -388,3 +388,25 @@ ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
 
     return resultSchedule;
 }
+
+bool CanChangeMorningLesson(const ScheduleChromosomes& chromosomes,
+                            const ScheduleData& data,
+                            std::size_t requestIndex,
+                            std::size_t lesson)
+{
+    const auto& request = data.SubjectRequests().at(requestIndex);
+    return request.RequestedWeekDay(lesson / MAX_LESSONS_PER_DAY) &&
+        !(IsLateScheduleLessonInSaturday(lesson) || 
+          chromosomes.GroupsOrProfessorsOrClassroomsIntersects(data, requestIndex, lesson));
+}
+
+bool CanChangeEveningLesson(const ScheduleChromosomes& chromosomes,
+                            const ScheduleData& data,
+                            std::size_t requestIndex,
+                            std::size_t lesson)
+{
+    const auto& request = data.SubjectRequests().at(requestIndex);
+    return request.RequestedWeekDay(lesson / MAX_LESSONS_PER_DAY) &&
+        SuitableForEveningClasses(lesson) &&
+        !chromosomes.GroupsOrProfessorsOrClassroomsIntersects(data, requestIndex, lesson);
+}
