@@ -377,9 +377,9 @@ ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
             if(classrooms.at(r) != ClassroomAddress::NoClassroom())
             {
                 const auto& request = scheduleData.SubjectRequests().at(r);
-                resultSchedule.insert(ScheduleItem(l,
-                                                   request.ID(),
-                                                   classrooms.at(r).Classroom));
+                resultSchedule.insert(ScheduleItem{.Address = l,
+                                                   .SubjectRequestID = request.ID(),
+                                                   .Classroom = classrooms.at(r).Classroom});
             }
 
             it = std::find(std::next(it), lessons.end(), l);

@@ -12,11 +12,6 @@ class ScheduleData;
 
 struct ScheduleItem
 {
-    ScheduleItem() = default;
-    explicit ScheduleItem(std::size_t lessonAddress,
-                          std::size_t subjectRequestID,
-                          std::size_t classroom);
-
     friend bool operator==(const ScheduleItem& lhs, const ScheduleItem& rhs)
     {
         return lhs.Address == rhs.Address &&

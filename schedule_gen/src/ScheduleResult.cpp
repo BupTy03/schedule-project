@@ -5,15 +5,6 @@
 #include <functional>
 
 
-ScheduleItem::ScheduleItem(std::size_t lessonAddress,
-                           std::size_t subjectRequestID,
-                           std::size_t classroom)
-        : Address(lessonAddress)
-        , SubjectRequestID(subjectRequestID)
-        , Classroom(classroom)
-{}
-
-
 ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
     : items_(std::move(items))
 {

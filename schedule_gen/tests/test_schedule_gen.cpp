@@ -195,11 +195,11 @@ SCENARIO("Check if classrooms overlaps", "[validation]")
         WHEN("no overlaps")
         {
             const ScheduleResult scheduleResult{ {
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{1, 1, 1},
-                ScheduleItem{2, 2, 2},
-                ScheduleItem{3, 3, 3},
-                ScheduleItem{4, 4, 3}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = 1, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 2, .SubjectRequestID = 2, .Classroom = 2},
+                ScheduleItem{.Address = 3, .SubjectRequestID = 3, .Classroom = 3},
+                ScheduleItem{.Address = 4, .SubjectRequestID = 4, .Classroom = 3}
             }};
 
             THEN("empty overlaps list returned")
@@ -211,11 +211,11 @@ SCENARIO("Check if classrooms overlaps", "[validation]")
         WHEN("classroom doesn't matter (classroom = 0)")
         {
             const ScheduleResult scheduleResult {{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{0, 1, 0},
-                ScheduleItem{0, 2, 1},
-                ScheduleItem{0, 3, 2},
-                ScheduleItem{0, 4, 3}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 1, .Classroom = 0},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 2, .Classroom = 1},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 3, .Classroom = 2},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 4, .Classroom = 3}
             }};
 
             THEN("empty overlaps list returned")
@@ -227,11 +227,11 @@ SCENARIO("Check if classrooms overlaps", "[validation]")
         WHEN("some classrooms overlaps")
         {
             const ScheduleResult scheduleResult{{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{0, 1, 1},
-                ScheduleItem{0, 2, 1},
-                ScheduleItem{0, 3, 2},
-                ScheduleItem{0, 4, 3}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 2, .Classroom = 1},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 3, .Classroom = 2},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 4, .Classroom = 3}
             }};
 
             THEN("overlapped classroom found successfully")
@@ -266,11 +266,11 @@ SCENARIO("Check if professors overlaps", "[validation]")
         WHEN("no overlaps")
         {
             const ScheduleResult scheduleResult{{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{0, 1, 1},
-                ScheduleItem{1, 2, 2},
-                ScheduleItem{0, 3, 3},
-                ScheduleItem{0, 4, 4}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 1, .SubjectRequestID = 2, .Classroom = 2},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 3, .Classroom = 3},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 4, .Classroom = 4}
             }};
 
             THEN("empty overlaps list returned")
@@ -282,11 +282,11 @@ SCENARIO("Check if professors overlaps", "[validation]")
         SECTION("some professors overlapped")
         {
             const ScheduleResult scheduleResult{{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{0, 1, 1},
-                ScheduleItem{0, 2, 2},
-                ScheduleItem{0, 3, 3},
-                ScheduleItem{0, 4, 4}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 2, .Classroom = 2},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 3, .Classroom = 3},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 4, .Classroom = 4}
             }};
 
             THEN("overlapped professor found successfully")
@@ -321,11 +321,11 @@ SCENARIO("Check if groups overlaps", "[validation]")
         WHEN("no overlaps")
         {
             const ScheduleResult scheduleResult{{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{0, 1, 1},
-                ScheduleItem{1, 2, 2},
-                ScheduleItem{0, 3, 3},
-                ScheduleItem{0, 4, 4}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 1, .SubjectRequestID = 2, .Classroom = 2},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 3, .Classroom = 3},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 4, .Classroom = 4}
             }};
 
             THEN("empty overlaps list returned")
@@ -337,11 +337,11 @@ SCENARIO("Check if groups overlaps", "[validation]")
         WHEN("groups overlaps")
         {
             const ScheduleResult scheduleResult{{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{0, 1, 1},
-                ScheduleItem{0, 2, 2},
-                ScheduleItem{0, 3, 3},
-                ScheduleItem{0, 4, 4}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 2, .Classroom = 2},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 3, .Classroom = 3},
+                ScheduleItem{.Address = 0, .SubjectRequestID = 4, .Classroom = 4}
             }};
 
             THEN("overlapped groups found successfully")
@@ -376,11 +376,11 @@ SCENARIO("Check if weekday requests violated", "[validation]")
         WHEN("no violations")
         {
             const ScheduleResult scheduleResult{{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{MAX_LESSONS_PER_DAY, 1, 1},
-                ScheduleItem{2 * MAX_LESSONS_PER_DAY, 2, 2},
-                ScheduleItem{3 * MAX_LESSONS_PER_DAY + 2, 3, 3},
-                ScheduleItem{4 * MAX_LESSONS_PER_DAY + 1, 4, 4}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = MAX_LESSONS_PER_DAY, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 2 * MAX_LESSONS_PER_DAY, .SubjectRequestID = 2, .Classroom = 2},
+                ScheduleItem{.Address = 3 * MAX_LESSONS_PER_DAY + 2, .SubjectRequestID = 3, .Classroom = 3},
+                ScheduleItem{.Address = 4 * MAX_LESSONS_PER_DAY + 1, .SubjectRequestID = 4, .Classroom = 4}
             }};
 
             THEN("empty list returned")
@@ -392,11 +392,11 @@ SCENARIO("Check if weekday requests violated", "[validation]")
         WHEN("some violated weekdays")
         {
             const ScheduleResult scheduleResult{{
-                ScheduleItem{0, 0, 0},
-                ScheduleItem{MAX_LESSONS_PER_DAY, 1, 1},
-                ScheduleItem{2 * MAX_LESSONS_PER_DAY, 2, 2},
-                ScheduleItem{3 * MAX_LESSONS_PER_DAY + 2, 3, 3},
-                ScheduleItem{2 * MAX_LESSONS_PER_DAY + 1, 4, 4}
+                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
+                ScheduleItem{.Address = MAX_LESSONS_PER_DAY, .SubjectRequestID = 1, .Classroom = 1},
+                ScheduleItem{.Address = 2 * MAX_LESSONS_PER_DAY, .SubjectRequestID = 2, .Classroom = 2},
+                ScheduleItem{.Address = 3 * MAX_LESSONS_PER_DAY + 2, .SubjectRequestID = 3, .Classroom = 3},
+                ScheduleItem{.Address = 2 * MAX_LESSONS_PER_DAY + 1, .SubjectRequestID = 4, .Classroom = 4}
             }};
 
             THEN("violated weekday found successfully")

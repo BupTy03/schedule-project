@@ -77,12 +77,6 @@ struct SubjectRequestIDEqual
 
 struct SubjectWithAddress
 {
-    SubjectWithAddress() = default;
-    explicit SubjectWithAddress(std::size_t SubjectRequestID, std::size_t Address)
-            : SubjectRequestID(SubjectRequestID)
-            , Address(Address)
-    {}
-
     friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
     {
         return lhs.SubjectRequestID == rhs.SubjectRequestID && lhs.Address == rhs.Address;

@@ -317,9 +317,9 @@ TEST_CASE("MakeScheduleResult works correctly", "[chromosomes][conversion]")
     };
 
     const ScheduleResult scheduleResult = MakeScheduleResult(chromosomes, data);
-    REQUIRE(contains(scheduleResult.items(), ScheduleItem{0, 0, 1}));
-    REQUIRE(contains(scheduleResult.items(), ScheduleItem{1, 4, 3}));
-    REQUIRE(contains(scheduleResult.items(), ScheduleItem{2, 3, 2}));
-    REQUIRE(contains(scheduleResult.items(), ScheduleItem{3, 2, 3}));
-    REQUIRE(contains(scheduleResult.items(), ScheduleItem{4, 1, 1}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 1}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{.Address = 1, .SubjectRequestID = 4, .Classroom = 3}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{.Address = 2, .SubjectRequestID = 3, .Classroom = 2}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{.Address = 3, .SubjectRequestID = 2, .Classroom = 3}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{.Address = 4, .SubjectRequestID = 1, .Classroom = 1}));
 }
