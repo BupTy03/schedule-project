@@ -6,7 +6,7 @@
 #include <array>
 
 
-TEST_CASE("Test.WeekDays.contains", "[WeekDays]")
+TEST_CASE("Test.WeekDays.contains", "[weekdays]")
 {
     WeekDays days;
     REQUIRE(days.contains(WeekDay::Monday));
@@ -17,7 +17,7 @@ TEST_CASE("Test.WeekDays.contains", "[WeekDays]")
     REQUIRE(days.contains(WeekDay::Saturday));
 }
 
-TEST_CASE("Test.WeekDays.erase", "[WeekDays]")
+TEST_CASE("Test.WeekDays.erase", "[weekdays]")
 {
     auto checkRemove = [](const WeekDays& weekDays, WeekDay removed){
         for(int i = 0; i < weekDays.size(); ++i)
@@ -49,7 +49,7 @@ TEST_CASE("Test.WeekDays.erase", "[WeekDays]")
     REQUIRE(days == WeekDays::emptyWeek());
 }
 
-TEST_CASE("Test.WeekDays.insert", "[WeekDays]")
+TEST_CASE("Test.WeekDays.insert", "[weekdays]")
 {
     for(int i = 0; i < 6; ++i)
     {
@@ -65,7 +65,7 @@ TEST_CASE("Test.WeekDays.insert", "[WeekDays]")
     }
 }
 
-TEST_CASE("Test.WeekDays.WeekDaysIterator", "[WeekDays]")
+TEST_CASE("Test.WeekDays.WeekDaysIterator", "[weekdays]")
 {
     for(int i = 0; i < 6; ++i)
     {
@@ -89,7 +89,7 @@ TEST_CASE("Test.WeekDays.WeekDaysIterator", "[WeekDays]")
 }
 
 
-TEST_CASE("SubjectRequest constructs correctly", "[SubjectRequest]")
+TEST_CASE("SubjectRequest constructs correctly", "[subject_request]")
 {
     SECTION("Sorting and removing duplicates from groups list while constructing")
     {
@@ -99,7 +99,7 @@ TEST_CASE("SubjectRequest constructs correctly", "[SubjectRequest]")
     }
 }
 
-TEST_CASE("Week day requested check performs correctly", "[SubjectRequest]")
+TEST_CASE("Week day requested check performs correctly", "[subject_request]")
 {
     const SubjectRequest sut{0, 1, 1, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Thursday},
                               {1, 2, 3}, {{0,0}}};
@@ -121,7 +121,7 @@ TEST_CASE("Week day requested check performs correctly", "[SubjectRequest]")
         REQUIRE_FALSE(sut.RequestedWeekDay(wd));
 }
 
-TEST_CASE("Search by subject id performs correctly", "[ScheduleData]")
+TEST_CASE("Search by subject id performs correctly", "[schedule_data]")
 {
     const std::vector subjectRequests{
         SubjectRequest{0, 1, 1, {}, {0}, {}},
@@ -153,7 +153,7 @@ TEST_CASE("Search by subject id performs correctly", "[ScheduleData]")
     }
 }
 
-TEST_CASE("Check if subject request has locked lesson works", "[ScheduleData]")
+TEST_CASE("Check if subject request has locked lesson works", "[schedule_data]")
 {
     const std::vector subjectRequests{
         SubjectRequest{0, 1, 1, {}, {0}, {}},

@@ -3,7 +3,7 @@
 #include <array>
 
 
-TEST_CASE("Test.SortedSet.construct", "[SortedSet]")
+TEST_CASE("Constructing sorted set", "[sorted_set]")
 {
     std::array arr = {4, 6, 2, 9, 1, 3, 5, 7, 8, 0,
                                4, 2, 6, 1, 3, 0, 7, 5, 2, 6};
@@ -14,7 +14,7 @@ TEST_CASE("Test.SortedSet.construct", "[SortedSet]")
     REQUIRE(std::equal(sortedSet.begin(), sortedSet.end(), expected.begin()));
 }
 
-TEST_CASE("Test.SortedSet.contains", "[SortedSet]")
+TEST_CASE("Check if sorted set contains elems", "[sorted_set]")
 {
     SortedSet<int> emptySet;
     for(auto e : {1, 2, 3, 6})
@@ -31,7 +31,7 @@ TEST_CASE("Test.SortedSet.contains", "[SortedSet]")
     }
 }
 
-TEST_CASE("Test.SortedSet.insert", "[SortedSet]")
+TEST_CASE("Inserting in sorted map", "[sorted_set]")
 {
     const std::pair<int, std::vector<int>> testCases[] = {
         {0, {0}},
@@ -53,7 +53,7 @@ TEST_CASE("Test.SortedSet.insert", "[SortedSet]")
     }
 }
 
-TEST_CASE("Test.SortedSet.erase", "[SortedSet]")
+TEST_CASE("Erase elems from sorted set", "[sorted_set]")
 {
     const std::pair<int, std::vector<int>> testCases[] = {
         {4, {-1, 0, 2, 7, 9}},
@@ -77,7 +77,7 @@ TEST_CASE("Test.SortedSet.erase", "[SortedSet]")
 }
 
 
-TEST_CASE("Test.SortedMap.construct", "[SortedMap]")
+TEST_CASE("Construction sorted map", "[sorted_map]")
 {
     SortedMap<std::string, int> words = {
         {"pen",      1},
@@ -94,7 +94,7 @@ TEST_CASE("Test.SortedMap.construct", "[SortedMap]")
     });
 }
 
-TEST_CASE("Test.SortedMap.operator[]", "[SortedMap]")
+TEST_CASE("Indexing sorted map", "[sorted_map]")
 {
     SortedMap<std::string, int> words = {
         {"pen",      1},
@@ -158,4 +158,16 @@ TEST_CASE("Check if two ordered sets intersects", "[algorithms]")
         REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{0}));
         REQUIRE_FALSE(set_intersects(std::vector{1, 3, 5}, std::vector{9, 10}));
     }
+}
+
+TEST_CASE("Check if container contains elements", "[contains]")
+{
+    constexpr std::array<int, 10> arr{4, 2, 3, 6, 1, 8, 10, 43, 22, 21};
+    for(int v : arr)
+        REQUIRE(contains(arr, v));
+
+    REQUIRE_FALSE(contains(arr, 0));
+    REQUIRE_FALSE(contains(arr, 20));
+    REQUIRE_FALSE(contains(arr, 34));
+    REQUIRE_FALSE(contains(arr, 134));
 }
