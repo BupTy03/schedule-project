@@ -1,7 +1,7 @@
-#include "GAScheduleGenerator.h"
 #include "ScheduleData.h"
-#include "ScheduleIndividual.h"
+#include "ScheduleUtils.h"
 #include "ScheduleChromosomes.h"
+#include "GAScheduleGenerator.h"
 #include <catch2/catch.hpp>
 
 
@@ -190,48 +190,79 @@ TEST_CASE("Evening classes are in 5-6 places (except Saturday)", "[chromosomes][
     }
 }
 
-TEST_CASE("Check if groups or professors or classrooms intersects", "[chromosomes]")
+TEST_CASE("Check for groups intersection performs", "[chromosomes][checks]")
 {
-    const std::vector<ClassroomAddress> classrooms = {{0, 1}, {0, 2}, {0, 3}};
-    const std::vector requests {
-        // [id, professor, complexity, weekDays, groups, classrooms]
-        SubjectRequest(0, 1, 1, {}, {0, 1, 2}, classrooms),
-        SubjectRequest(1, 2, 1, {}, {1, 2, 3}, classrooms),
-        SubjectRequest(2, 1, 1, {}, {4, 5, 6}, classrooms),
-        SubjectRequest(3, 4, 1, {}, {7, 8, 9}, classrooms),
-        SubjectRequest(4, 5, 1, {}, {10},      classrooms)
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {}, {0, 1, 2}, {{0, 1}}},
+        SubjectRequest{1, 2, 1, {}, {2, 3, 5}, {{0, 2}}},
+        SubjectRequest{2, 3, 1, {}, {6, 7, 8}, {{0, 3}}},
+        SubjectRequest{3, 4, 1, {}, {9, 10, 11}, {{0, 4}}},
+        SubjectRequest{4, 5, 1, {}, {12, 13, 14}, {{0, 5}}}
     };
     const ScheduleData data{requests, {}};
     const ScheduleChromosomes sut{{0, 1, 2, 3, 4},
                                   {{0,1}, {0,2}, {0,3}, {0,1}, {0,2}}};
 
-    SECTION("Check if groups intersects")
-    {
-        REQUIRE(sut.GroupsOrProfessorsIntersects(data, 1, 0));
-        REQUIRE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 0));
-    }
-    SECTION("Check if professors intersects")
-    {
-        REQUIRE(sut.GroupsOrProfessorsIntersects(data, 2, 2));
-        REQUIRE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 2, 2));
-    }
-    SECTION("Check if classrooms intersects")
-    {
-        REQUIRE(sut.ClassroomsIntersects(0, {0, 1}));
-        REQUIRE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 3, 0));
-    }
+    REQUIRE(sut.GroupsOrProfessorsIntersects(data, 1, 0));
+    REQUIRE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 0));
+
+    REQUIRE_FALSE(sut.GroupsOrProfessorsIntersects(data, 1, 2));
+    REQUIRE_FALSE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 2));
 }
 
-TEST_CASE("Check if chromosomes ready for crossover", "[chromosomes]")
+TEST_CASE("Check for professors intersection performs", "[chromosomes][checks]")
 {
-    const std::vector<ClassroomAddress> classrooms = {{0, 1}, {0, 2}, {0, 3}};
-    const std::vector requests {
-        // [id, professor, complexity, weekDays, groups, classrooms]
-        SubjectRequest(0, 1, 1, {}, {0, 1, 2}, classrooms),
-        SubjectRequest(1, 2, 1, {}, {1, 2, 3}, classrooms),
-        SubjectRequest(2, 1, 1, {}, {4, 5, 6}, classrooms),
-        SubjectRequest(3, 4, 1, {}, {7, 8, 9}, classrooms),
-        SubjectRequest(4, 5, 1, {}, {10},      classrooms)
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 2, 1, {}, {1}, {{0, 1}}},
+        SubjectRequest{1, 2, 1, {}, {2}, {{0, 2}}},
+        SubjectRequest{2, 3, 1, {}, {3}, {{0, 3}}},
+        SubjectRequest{3, 4, 1, {}, {4}, {{0, 4}}},
+        SubjectRequest{4, 5, 1, {}, {5}, {{0, 5}}}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes sut{{0, 1, 2, 3, 4},
+                                  {{0,1}, {0,2}, {0,3}, {0,1}, {0,2}}};
+
+    REQUIRE(sut.GroupsOrProfessorsIntersects(data, 1, 0));
+    REQUIRE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 0));
+
+    REQUIRE_FALSE(sut.GroupsOrProfessorsIntersects(data, 1, 2));
+    REQUIRE_FALSE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 2));
+}
+
+TEST_CASE("Check for classrooms intersection performs", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {}, {1}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{1, 2, 1, {}, {2}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{2, 3, 1, {}, {3}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{3, 4, 1, {}, {4}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{4, 5, 1, {}, {5}, {{0, 1}, {0, 2}, {0, 3}}}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes sut{{0, 1, 2, 3, 4},
+                                  {{0,1}, {0,2}, {0,3}, {0,1}, {0,2}}};
+
+    REQUIRE_FALSE(sut.GroupsOrProfessorsIntersects(data, 3, 0));
+    REQUIRE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 3, 0));
+
+    REQUIRE_FALSE(sut.GroupsOrProfessorsIntersects(data, 1, 0));
+    REQUIRE_FALSE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 0));
+}
+
+
+TEST_CASE("Check if chromosomes ready for crossover", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {}, {0, 1, 2}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{1, 2, 1, {}, {1, 2, 3}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{2, 1, 1, {}, {4, 5, 6}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{3, 4, 1, {}, {7, 8, 9}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{4, 5, 1, {}, {10},      {{0, 1}, {0, 2}, {0, 3}}}
     };
     const ScheduleData data{requests, {}};
 
@@ -245,16 +276,15 @@ TEST_CASE("Check if chromosomes ready for crossover", "[chromosomes]")
     REQUIRE(ReadyToCrossover(sut1, sut2, data, 4));
 }
 
-TEST_CASE("Crossover works", "[chromosomes]")
+TEST_CASE("Crossover works", "[chromosomes][crossover]")
 {
-    const std::vector<ClassroomAddress> classrooms = {{0, 1}, {0, 2}, {0, 3}};
-    const std::vector requests {
-        // [id, professor, complexity, weekDays, groups, classrooms]
-        SubjectRequest(0, 1, 1, {}, {0, 1, 2}, classrooms),
-        SubjectRequest(1, 2, 1, {}, {1, 2, 3}, classrooms),
-        SubjectRequest(2, 1, 1, {}, {4, 5, 6}, classrooms),
-        SubjectRequest(3, 4, 1, {}, {7, 8, 9}, classrooms),
-        SubjectRequest(4, 5, 1, {}, {10},      classrooms)
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {}, {0, 1, 2}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{1, 2, 1, {}, {1, 2, 3}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{2, 1, 1, {}, {4, 5, 6}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{3, 4, 1, {}, {7, 8, 9}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{4, 5, 1, {}, {10},      {{0, 1}, {0, 2}, {0, 3}}}
     };
     const ScheduleData data{requests, {}};
 
@@ -269,16 +299,15 @@ TEST_CASE("Crossover works", "[chromosomes]")
     REQUIRE(second.Classroom(0) == ClassroomAddress{0,3});
 }
 
-TEST_CASE("MakeScheduleResult works correctly", "[GAScheduleGenerator]")
+TEST_CASE("MakeScheduleResult works correctly", "[chromosomes][conversion]")
 {
-    const std::vector<ClassroomAddress> classrooms = {{0, 1}, {0, 2}, {0, 3}};
-    const std::vector requests {
-        // [id, professor, complexity, weekDays, groups, classrooms]
-        SubjectRequest{0, 1, 1, {}, {0, 1, 2}, classrooms},
-        SubjectRequest{1, 2, 1, {}, {1, 2, 3}, classrooms},
-        SubjectRequest{2, 1, 1, {}, {4, 5, 6}, classrooms},
-        SubjectRequest{3, 4, 1, {}, {7, 8, 9}, classrooms},
-        SubjectRequest{4, 5, 1, {}, {10},      classrooms}
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {}, {0, 1, 2}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{1, 2, 1, {}, {1, 2, 3}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{2, 1, 1, {}, {4, 5, 6}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{3, 4, 1, {}, {7, 8, 9}, {{0, 1}, {0, 2}, {0, 3}}},
+        SubjectRequest{4, 5, 1, {}, {10},      {{0, 1}, {0, 2}, {0, 3}}}
     };
     const ScheduleData data{requests, {}};
 
@@ -288,9 +317,9 @@ TEST_CASE("MakeScheduleResult works correctly", "[GAScheduleGenerator]")
     };
 
     const ScheduleResult scheduleResult = MakeScheduleResult(chromosomes, data);
-    REQUIRE(scheduleResult.items().at(0) == ScheduleItem{0, 0, 1});
-    REQUIRE(scheduleResult.items().at(1) == ScheduleItem{1, 4, 3});
-    REQUIRE(scheduleResult.items().at(2) == ScheduleItem{2, 3, 2});
-    REQUIRE(scheduleResult.items().at(3) == ScheduleItem{3, 2, 3});
-    REQUIRE(scheduleResult.items().at(4) == ScheduleItem{4, 1, 1});
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{0, 0, 1}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{1, 4, 3}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{2, 3, 2}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{3, 2, 3}));
+    REQUIRE(contains(scheduleResult.items(), ScheduleItem{4, 1, 1}));
 }

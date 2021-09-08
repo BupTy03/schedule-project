@@ -362,7 +362,7 @@ std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
 }
 
 ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
-                                const ScheduleData& scheduleData)
+                                  const ScheduleData& scheduleData)
 {
     const auto& lessons = chromosomes.Lessons();
     const auto& classrooms = chromosomes.Classrooms();
