@@ -293,10 +293,10 @@ TEST_CASE("Crossover works", "[chromosomes][crossover]")
 
     Crossover(first, second, 0);
     REQUIRE(first.Lesson(0) == 4);
-    REQUIRE(first.Classroom(0) == ClassroomAddress{0,1});
+    REQUIRE(first.Classroom(0) == ClassroomAddress{.Building = 0, .Classroom = 1});
 
     REQUIRE(second.Lesson(0) == 0);
-    REQUIRE(second.Classroom(0) == ClassroomAddress{0,3});
+    REQUIRE(second.Classroom(0) == ClassroomAddress{.Building = 0, .Classroom = 3});
 }
 
 TEST_CASE("MakeScheduleResult works correctly", "[chromosomes][conversion]")

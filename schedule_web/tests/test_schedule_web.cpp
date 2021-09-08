@@ -81,10 +81,10 @@ TEST_CASE("Parsing subject request", "[parsing]")
 
 
         REQUIRE(request == SubjectRequest(0, 1, 2, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5},
-                                          {ClassroomAddress(0, 2),
-                                            ClassroomAddress(0, 11),
-                                            ClassroomAddress(1, 3),
-                                            ClassroomAddress(1, 12)}));
+                                          {ClassroomAddress{.Building = 0, .Classroom = 2},
+                                            ClassroomAddress{.Building = 0, .Classroom = 11},
+                                            ClassroomAddress{.Building = 1, .Classroom = 3},
+                                            ClassroomAddress{.Building = 1, .Classroom = 12}}));
     }
     SECTION("Subject request includes fields 'id', 'professor', 'complexity', 'days', 'groups' and 'classrooms'")
     {

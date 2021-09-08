@@ -42,16 +42,10 @@ enum class ClassesType
 
 struct ClassroomAddress
 {
-    ClassroomAddress() = default;
-    ClassroomAddress(std::size_t building, std::size_t classroom)
-        : Building(building)
-        , Classroom(classroom)
-    {}
+    static ClassroomAddress NoClassroom() { return ClassroomAddress{.Building = std::numeric_limits<std::size_t>::max(),
+                                                                    .Classroom = std::numeric_limits<std::size_t>::max()}; }
 
-    static ClassroomAddress NoClassroom() { return ClassroomAddress(std::numeric_limits<std::size_t>::max(),
-                                                                    std::numeric_limits<std::size_t>::max()); }
-
-    static ClassroomAddress Any() { return ClassroomAddress(0, 0); }
+    static ClassroomAddress Any() { return ClassroomAddress{.Building = 0, .Classroom = 0}; }
 
     friend bool operator==(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
     {
@@ -67,8 +61,8 @@ struct ClassroomAddress
     friend bool operator<=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(rhs < lhs); }
     friend bool operator>=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(lhs < rhs); }
 
-    std::size_t Building;
-    std::size_t Classroom;
+    std::size_t Building = 0;
+    std::size_t Classroom = 0;
 };
 
 
