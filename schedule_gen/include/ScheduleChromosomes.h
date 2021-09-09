@@ -151,7 +151,7 @@ ClassroomAddress ChangeClassroom(const ScheduleChromosomes& chromosomes,
         ++chooseClassroomTry;
     }
 
-    return (chooseClassroomTry < classrooms.size()) ? scheduleClassroom : classrooms.at(requestIndex);
+    return (chooseClassroomTry < classrooms.size()) ? scheduleClassroom : chromosomes.Classroom(requestIndex);
 }
 
 template<class RandomGenerator>
