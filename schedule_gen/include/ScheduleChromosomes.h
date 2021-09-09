@@ -202,13 +202,16 @@ std::pair<std::size_t, ClassroomAddress> ChangeChromosome(const ScheduleChromoso
 }
 
 template<class RandomGenerator>
-void Mutate(ScheduleChromosomes& chromosomes,
-            const ScheduleData& data,
-            RandomGenerator& randomGenerator)
+bool Mutate(ScheduleChromosomes& chromosomes, const ScheduleData& data, RandomGenerator& randomGenerator)
 {
     std::uniform_int_distribution<std::size_t> requestsDistrib(0, data.SubjectRequests().size() - 1);
-    const std::size_t requestIndex = requestsDistrib(randomGenerator);
+    const auto requestIndex = requestsDistrib(randomGenerator);
+
+    const auto oldLesson = chromosomes.Lesson(requestIndex);
+    const auto oldClassrooms = chromosomes.Classroom(requestIndex);
 
     std::tie(chromosomes.Lesson(requestIndex), chromosomes.Classroom(requestIndex)) = 
         ChangeChromosome(chromosomes, data, requestIndex, randomGenerator);
+
+    return !(oldLesson == chromosomes.Lesson(requestIndex) && oldClassrooms == chromosomes.Classroom(requestIndex));
 }

@@ -55,7 +55,8 @@ std::size_t ScheduleIndividual::MutationProbability() const
 
 void ScheduleIndividual::Mutate()
 {
-    ::Mutate(chromosomes_, *pData_, randomGenerator_);
+    if(::Mutate(chromosomes_, *pData_, randomGenerator_))
+        evaluatedValue_ = NOT_EVALUATED;
 }
 
 std::size_t ScheduleIndividual::Evaluate() const
