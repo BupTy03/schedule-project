@@ -21,7 +21,7 @@
 			}
 		},
 		{
-			"name": "x86-windows",
+			"name": "x86-windows-debug",
 			"description": "Sets x86 arch, compilers, build type",
 			"inherits": [ "base" ],
 			"architecture": {
@@ -34,7 +34,25 @@
 			},
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
-				"hostOS": [ "Windows" ]
+					"hostOS": [ "Windows" ]
+				}
+			}
+		},
+		{
+			"name": "x86-windows-release",
+			"description": "Sets x86 arch, compilers, build type",
+			"inherits": [ "base" ],
+			"architecture": {
+				"value": "x86",
+				"strategy": "external"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_CXX_COMPILER": "cl"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [ "Windows" ]
 				}
 			}
 		}
@@ -50,8 +68,13 @@
 			}
 		},
 		{
-			"name": "windows-core-test",
-			"configurePreset": "x86-windows",
+			"name": "x86-windows-core-test-debug",
+			"configurePreset": "x86-windows-debug",
+			"inherits": "core-test"
+		},
+		{
+			"name": "x86-windows-core-test-release",
+			"configurePreset": "x86-windows-release",
 			"inherits": "core-test"
 		}
 	]
