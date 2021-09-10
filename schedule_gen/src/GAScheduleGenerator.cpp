@@ -6,9 +6,6 @@
 #include <exception>
 #include <execution>
 
-#undef min
-#undef max
-
 
 ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
 {
