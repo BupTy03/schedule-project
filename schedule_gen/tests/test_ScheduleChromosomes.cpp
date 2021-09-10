@@ -4,7 +4,7 @@
 #include "GAScheduleGenerator.h"
 #include <catch2/catch.hpp>
 
-
+#if 0
 TEST_CASE("No ovelaps by professors", "[chromosomes][initialization]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
@@ -535,3 +535,5 @@ TEST_CASE("MakeScheduleResult works correctly", "[chromosomes][conversions]")
     REQUIRE(contains(scheduleResult.items(), ScheduleItem{.Address = 3, .SubjectRequestID = 2, .Classroom = 3}));
     REQUIRE(contains(scheduleResult.items(), ScheduleItem{.Address = 4, .SubjectRequestID = 1, .Classroom = 1}));
 }
+
+#endif

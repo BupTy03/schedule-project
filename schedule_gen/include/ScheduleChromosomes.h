@@ -34,14 +34,6 @@ public:
     bool ClassroomsIntersects(std::size_t currentLesson,
                               const ClassroomAddress& currentClassroom) const;
 
-    bool CanChangeMorningLesson(const ScheduleData& data,
-                                std::size_t requestIndex,
-                                std::size_t lesson) const;
-
-    bool CanChangeEveningLesson(const ScheduleData& data,
-                                std::size_t requestIndex,
-                                std::size_t lesson) const;
-
     std::size_t UnassignedLessonsCount() const;
     std::size_t UnassignedClassroomsCount() const;
 
@@ -51,8 +43,7 @@ private:
 };
 
 
-void InsertMorningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
-void InsertEveningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
+void InsertRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
 ScheduleChromosomes InitializeChromosomes(const ScheduleData& data);
 
 bool ReadyToCrossover(const ScheduleChromosomes& first,
@@ -68,63 +59,24 @@ ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes, const 
 
 
 template<class RandomGenerator>
-std::size_t ChangeMorningLesson(const ScheduleChromosomes& chromosomes,
-                                const ScheduleData& data,
-                                std::size_t requestIndex,
-                                RandomGenerator& randomGenerator)
-{
-    const auto& request = data.SubjectRequests().at(requestIndex);
-    assert(!request.IsEveningClass());
-    assert(!data.SubjectRequestHasLockedLesson(request));
-
-    std::uniform_int_distribution<std::size_t> lessonsDistrib(0, MAX_LESSONS_COUNT - 1);
-
-    std::size_t lesson = lessonsDistrib(randomGenerator);
-    std::size_t chooseLessonTry = 0;
-    while(chooseLessonTry < MAX_LESSONS_COUNT && 
-          !chromosomes.CanChangeMorningLesson(data, requestIndex, lesson))
-    {
-        lesson = lessonsDistrib(randomGenerator);
-        ++chooseLessonTry;
-    }
-
-    return (chooseLessonTry < MAX_LESSONS_COUNT) ? lesson : chromosomes.Lesson(requestIndex);
-}
-
-template<class RandomGenerator>
-std::size_t ChangeEveningLesson(const ScheduleChromosomes& chromosomes,
-                                const ScheduleData& data,
-                                std::size_t requestIndex,
-                                RandomGenerator& randomGenerator)
-{
-    const auto& request = data.SubjectRequests().at(requestIndex);
-    assert(request.IsEveningClass());
-    assert(!data.SubjectRequestHasLockedLesson(request));
-
-    std::uniform_int_distribution<std::size_t> lessonsDistrib(0, MAX_LESSONS_COUNT - 1);
-
-    std::size_t lesson = lessonsDistrib(randomGenerator);
-    std::size_t chooseLessonTry = 0;
-    while(chooseLessonTry < MAX_LESSONS_COUNT &&
-          !chromosomes.CanChangeEveningLesson(data, requestIndex, lesson))
-    {
-        lesson = lessonsDistrib(randomGenerator);
-        ++chooseLessonTry;
-    }
-
-    return (chooseLessonTry < MAX_LESSONS_COUNT) ? lesson : chromosomes.Lesson(requestIndex);
-}
-
-template<class RandomGenerator>
 std::size_t ChangeLesson(const ScheduleChromosomes& chromosomes,
                          const ScheduleData& data,
                          std::size_t requestIndex,
                          RandomGenerator& randomGenerator)
 {
     const auto& request = data.SubjectRequests().at(requestIndex);
-    return request.IsEveningClass()
-        ? ChangeEveningLesson(chromosomes, data, requestIndex, randomGenerator)
-        : ChangeMorningLesson(chromosomes, data, requestIndex, randomGenerator);
+    const auto& lessons = request.Lessons();
+    assert(lessons.size() > 1);
+
+    std::uniform_int_distribution<std::size_t> lessonsDistrib(0, lessons.size() - 1);
+    for(std::size_t tryNum = 0; tryNum < lessons.size(); ++tryNum)
+    {
+        const std::size_t lesson = lessons.at(lessonsDistrib(randomGenerator));
+        if(!chromosomes.GroupsOrProfessorsOrClassroomsIntersects(data, requestIndex, lesson))
+            return lesson;
+    }
+
+    return chromosomes.Lesson(requestIndex);
 }
 
 template<class RandomGenerator>
@@ -135,20 +87,17 @@ ClassroomAddress ChangeClassroom(const ScheduleChromosomes& chromosomes,
 {
     const auto& request = data.SubjectRequests().at(requestIndex);
     const auto& classrooms = request.Classrooms();
-    assert(!classrooms.empty());
+    assert(classrooms.size() > 1);
 
     std::uniform_int_distribution<std::size_t> classroomDistrib(0, classrooms.size() - 1);
-    auto scheduleClassroom = classrooms.at(classroomDistrib(randomGenerator));
-
-    std::size_t chooseClassroomTry = 0;
-    while(chooseClassroomTry < classrooms.size() &&
-          chromosomes.ClassroomsIntersects(chromosomes.Lesson(requestIndex), scheduleClassroom))
+    for(std::size_t tryNum = 0; tryNum < classrooms.size(); ++tryNum)
     {
-        scheduleClassroom = classrooms.at(classroomDistrib(randomGenerator));
-        ++chooseClassroomTry;
+        const auto scheduleClassroom = classrooms.at(classroomDistrib(randomGenerator));
+        if(!chromosomes.ClassroomsIntersects(chromosomes.Lesson(requestIndex), scheduleClassroom))
+            return scheduleClassroom;
     }
 
-    return (chooseClassroomTry < classrooms.size()) ? scheduleClassroom : chromosomes.Classroom(requestIndex);
+    return chromosomes.Classroom(requestIndex);
 }
 
 template<class RandomGenerator>
@@ -158,8 +107,8 @@ std::pair<std::size_t, ClassroomAddress> ChangeChromosome(const ScheduleChromoso
                                                           RandomGenerator& randomGenerator)
 {
     const auto& request = data.SubjectRequests().at(requestIndex);
-    const bool canChangeLesson = !data.SubjectRequestHasLockedLesson(request);
-    const bool canChangeClassroom = !std::empty(request.Classrooms());
+    const bool canChangeLesson = request.Lessons().size() > 1;
+    const bool canChangeClassroom = request.Classrooms().size() > 1;
     if(!(canChangeLesson || canChangeClassroom))
         return {chromosomes.Lesson(requestIndex), chromosomes.Classroom(requestIndex)};
 

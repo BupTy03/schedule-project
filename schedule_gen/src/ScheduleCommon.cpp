@@ -1,8 +1,14 @@
 #include "ScheduleCommon.h"
 
-#undef min
-#undef max
+#include <numeric>
 
+
+std::vector<std::size_t> AllLessons()
+{
+    std::vector<std::size_t> result(MAX_LESSONS_COUNT);
+    std::iota(result.begin(), result.end(), 0);
+    return result;
+}
 
 std::size_t LessonToScheduleDay(std::size_t lesson) { return lesson / MAX_LESSONS_PER_DAY; }
 WeekDay DayToWeekDay(std::size_t d) { return static_cast<WeekDay>(d % DAYS_IN_SCHEDULE_WEEK); }
