@@ -32,7 +32,7 @@ TEST_CASE("Check if two ordered sets intersects", "[algorithms]")
     }
 }
 
-TEST_CASE("Check if container contains elements", "[contains]")
+TEST_CASE("Check if container contains elements", "[algorithms]")
 {
     constexpr std::array arr{4, 2, 3, 6, 1, 8, 10, 43, 22, 21};
     for(auto v : arr)

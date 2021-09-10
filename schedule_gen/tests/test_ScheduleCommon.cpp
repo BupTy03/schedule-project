@@ -4,7 +4,7 @@
 #include <array>
 
 
-TEST_CASE("Day to week day conversion works", "[common][conversion][day][weekday]")
+TEST_CASE("Day to week day conversion works", "[common][conversions]")
 {
     constexpr std::array<WeekDay, DAYS_IN_SCHEDULE> expected {
         WeekDay::Monday,
@@ -25,7 +25,7 @@ TEST_CASE("Day to week day conversion works", "[common][conversion][day][weekday
         REQUIRE(DayToWeekDay(d) == expected.at(d));
 }
 
-TEST_CASE("Lesson to week day conversion works", "[common][conversion][lesson][weekday]")
+TEST_CASE("Lesson to week day conversion works", "[common][conversions]")
 {
     constexpr std::array<WeekDay, MAX_LESSONS_COUNT> expected {
         WeekDay::Monday,
@@ -129,7 +129,7 @@ TEST_CASE("Lesson to week day conversion works", "[common][conversion][lesson][w
         REQUIRE(LessonToWeekDay(lesson) == expected.at(lesson));
 }
 
-TEST_CASE("Getting first lesson number in weekday (first week)", "[common][conversion][weekday][lesson]")
+TEST_CASE("Getting first lesson number in weekday (first week)", "[common][conversions]")
 {
     constexpr std::array<std::size_t, DAYS_IN_SCHEDULE_WEEK> expected {
         0,
@@ -144,7 +144,7 @@ TEST_CASE("Getting first lesson number in weekday (first week)", "[common][conve
         REQUIRE(FirstWeekFirstLessonIn(static_cast<WeekDay>(wd)) == expected.at(wd));
 }
 
-TEST_CASE("Getting first lesson number in weekday (second week)", "[common][conversion][weekday][lesson]")
+TEST_CASE("Getting first lesson number in weekday (second week)", "[common][conversions]")
 {
     constexpr std::array<std::size_t, DAYS_IN_SCHEDULE_WEEK> expected {
         42,
@@ -159,7 +159,7 @@ TEST_CASE("Getting first lesson number in weekday (second week)", "[common][conv
         REQUIRE(SecondWeekFirstLessonIn(static_cast<WeekDay>(wd)) == expected.at(wd));
 }
 
-TEST_CASE("Check if WeekDays contains elements", "[weekdays]")
+TEST_CASE("Check if WeekDays contains elements", "[common][weekdays]")
 {
     WeekDays days;
     REQUIRE(days.contains(WeekDay::Monday));
@@ -170,7 +170,7 @@ TEST_CASE("Check if WeekDays contains elements", "[weekdays]")
     REQUIRE(days.contains(WeekDay::Saturday));
 }
 
-TEST_CASE("Erase elements from WeekDays", "[weekdays]")
+TEST_CASE("Erase elements from WeekDays", "[common][weekdays]")
 {
     auto checkRemove = [](const WeekDays& weekDays, WeekDay removed){
         for(int i = 0; i < weekDays.size(); ++i)
@@ -202,7 +202,7 @@ TEST_CASE("Erase elements from WeekDays", "[weekdays]")
     REQUIRE(days == WeekDays::emptyWeek());
 }
 
-TEST_CASE("Inserting new elements to WeekDays", "[weekdays]")
+TEST_CASE("Inserting new elements to WeekDays", "[common][weekdays]")
 {
     for(int i = 0; i < 6; ++i)
     {
@@ -218,7 +218,7 @@ TEST_CASE("Inserting new elements to WeekDays", "[weekdays]")
     }
 }
 
-TEST_CASE("Iterating through WeekDays elements", "[weekdays]")
+TEST_CASE("Iterating through WeekDays elements", "[common][weekdays]")
 {
     for(int i = 0; i < 6; ++i)
     {

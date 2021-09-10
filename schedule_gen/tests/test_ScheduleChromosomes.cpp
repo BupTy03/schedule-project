@@ -190,7 +190,7 @@ TEST_CASE("Evening classes are in 5-6 places (except Saturday)", "[chromosomes][
     }
 }
 
-TEST_CASE("Check for groups intersection performs", "[chromosomes][checks]")
+TEST_CASE("Check for groups intersection performs", "[chromosomes][checks][intersections]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -211,7 +211,7 @@ TEST_CASE("Check for groups intersection performs", "[chromosomes][checks]")
     REQUIRE_FALSE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 2));
 }
 
-TEST_CASE("Check for professors intersection performs", "[chromosomes][checks]")
+TEST_CASE("Check for professors intersection performs", "[chromosomes][checks][intersections]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -232,7 +232,7 @@ TEST_CASE("Check for professors intersection performs", "[chromosomes][checks]")
     REQUIRE_FALSE(sut.GroupsOrProfessorsOrClassroomsIntersects(data, 1, 2));
 }
 
-TEST_CASE("Check for classrooms intersection performs", "[chromosomes][checks]")
+TEST_CASE("Check for classrooms intersection performs", "[chromosomes][checks][intersections]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -254,7 +254,7 @@ TEST_CASE("Check for classrooms intersection performs", "[chromosomes][checks]")
 }
 
 
-TEST_CASE("Check if chromosomes ready for crossover", "[chromosomes][checks]")
+TEST_CASE("Check if chromosomes ready for crossover", "[chromosomes][checks][crossover]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -299,7 +299,7 @@ TEST_CASE("Crossover works", "[chromosomes][crossover]")
     REQUIRE(second.Classroom(0) == ClassroomAddress{.Building = 0, .Classroom = 3});
 }
 
-TEST_CASE("Check if chromosome can change lesson: handling requested weekday violation", "[chromosomes][checks]")
+TEST_CASE("Check if chromosome can change lesson: handling requested weekday violation", "[chromosomes][checks][can_change]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -328,7 +328,7 @@ TEST_CASE("Check if chromosome can change lesson: handling requested weekday vio
     }
 }
 
-TEST_CASE("Check if chromosome can change morning lesson: handling late Saturday lesson", "[chromosomes][checks]")
+TEST_CASE("Check if chromosome can change morning lesson: handling late Saturday lesson", "[chromosomes][checks][can_change]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -364,7 +364,7 @@ TEST_CASE("Check if chromosome can change morning lesson: handling late Saturday
     }
 }
 
-TEST_CASE("Check if chromosome can change evening lesson: handling morning lesson (except Saturday)", "[chromosomes][checks]")
+TEST_CASE("Check if chromosome can change evening lesson: handling morning lessons (except Saturday)", "[chromosomes][checks][can_change]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -415,7 +415,7 @@ TEST_CASE("Check if chromosome can change evening lesson: handling morning lesso
     }
 }
 
-TEST_CASE("Check if chromosome can change lesson: handling groups intersections", "[chromosomes][checks]")
+TEST_CASE("Check if chromosome can change lesson: handling groups intersections", "[chromosomes][checks][can_change]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -449,7 +449,7 @@ TEST_CASE("Check if chromosome can change lesson: handling groups intersections"
     REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
 }
 
-TEST_CASE("Check if chromosome can change lesson: handling professors intersections", "[chromosomes][checks]")
+TEST_CASE("Check if chromosome can change lesson: handling professors intersections", "[chromosomes][checks][can_change]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
@@ -483,7 +483,7 @@ TEST_CASE("Check if chromosome can change lesson: handling professors intersecti
     REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
 }
 
-TEST_CASE("Check if chromosome can change lesson: handling classrooms intersections", "[chromosomes][checks]")
+TEST_CASE("Check if chromosome can change lesson: handling classrooms intersections", "[chromosomes][checks][can_change]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {
