@@ -12,27 +12,37 @@ public:
     explicit SubjectRequest(std::size_t id,
                             std::size_t professor,
                             std::size_t complexity,
-                            WeekDays days,
                             std::vector<std::size_t> groups,
-                            std::vector<ClassroomAddress> classrooms,
-                            ClassesType classesType = ClassesType::Morning);
+                            std::vector<std::size_t> lessons,
+                            std::vector<ClassroomAddress> classrooms);
 
     std::size_t ID() const { return id_; }
     std::size_t Professor() const { return professor_; }
     std::size_t Complexity() const { return complexity_; }
     const std::vector<std::size_t>& Groups() const { return groups_; }
+    const std::vector<std::size_t>& Lessons() const { return lessons_; }
     const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
-    bool RequestedWeekDay(std::size_t day) const;
-    bool IsEveningClass() const { return isEveningClass_; }
+
+    void SetLessons(std::vector<std::size_t> lessons) 
+    {
+        if(lessons.empty())
+        {
+            lessons_ = AllLessons();
+            return;
+        }
+
+        std::ranges::sort(lessons);
+        lessons.erase(std::unique(lessons.begin(), lessons.end()), lessons.end());
+        lessons_ = std::move(lessons); 
+    }
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
     {
         return lhs.id_ == rhs.id_ &&
-            lhs.isEveningClass_ == rhs.isEveningClass_ &&
             lhs.professor_ == rhs.professor_ &&
             lhs.complexity_ == rhs.complexity_ &&
-            lhs.days_ == rhs.days_ &&
             lhs.groups_ == rhs.groups_ &&
+            lhs.lessons_ == rhs.lessons_ &&
             lhs.classrooms_ == rhs.classrooms_;
     }
 
@@ -42,14 +52,14 @@ public:
     }
 
 private:
-    bool isEveningClass_ = false;
     std::size_t id_ = 0;
     std::size_t professor_ = 0;
     std::size_t complexity_ = 0;
-    WeekDays days_;
     std::vector<std::size_t> groups_;
+    std::vector<std::size_t> lessons_;
     std::vector<ClassroomAddress> classrooms_;
 };
+
 
 struct SubjectRequestIDLess
 {
@@ -95,24 +105,23 @@ class ScheduleData
 {
 public:
     ScheduleData() = default;
-    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests,
-                          std::vector<SubjectWithAddress> lockedLessons);
+    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests);
 
     const std::vector<SubjectRequest>& SubjectRequests() const { return subjectRequests_; }
-    const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
-    std::size_t IndexOfSubjectRequestWithID(std::size_t subjectRequestID) const;
 
-    const std::vector<SubjectWithAddress>& LockedLessons() const { return lockedLessons_; }
-    bool SubjectRequestHasLockedLesson(const SubjectRequest& request) const;
+    const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
+    SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID);
+
+    std::size_t IndexOfSubjectRequestWithID(std::size_t subjectRequestID) const;
 
     const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& Professors() const { return professorRequests_; }
     const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& Groups() const { return groupRequests_; }
 
 private:
     std::vector<SubjectRequest> subjectRequests_;
-    std::vector<SubjectWithAddress> lockedLessons_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> professorRequests_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> groupRequests_;
 };
 
-bool WeekDayRequestedForSubject(const ScheduleData& data, std::size_t subjectRequestID, std::size_t scheduleDay);
+
+std::vector<std::size_t> ConvertToRequestedLessons(const WeekDays& days, ClassesType classesType);

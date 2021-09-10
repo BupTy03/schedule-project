@@ -53,8 +53,8 @@ void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest)
         j.at("id").get<std::size_t>(),
         j.at("professor").get<std::size_t>(),
         j.at("complexity").get<std::size_t>(),
-        j.at("days").get<WeekDays>(),
         ParseIDsSet(j.at("groups")),
+        ConvertToRequestedLessons(j.at("days").get<WeekDays>(), ClassesType::Morning),
         j.at("classrooms"));
 }
 
@@ -91,13 +91,18 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
     if(requests.empty())
         throw std::invalid_argument("'subject_requests' array is empty");
 
+    scheduleData = ScheduleData(std::move(requests));
+
     // 'locked_lessons' field is optional
-    std::vector<SubjectWithAddress> locked;
+    std::vector<SubjectWithAddress> lockedLessons;
     auto lockedLessonsIt = j.find("locked_lessons");
     if(lockedLessonsIt != j.end())
-        lockedLessonsIt->get_to(locked);
+        lockedLessonsIt->get_to(lockedLessons);
 
-    scheduleData = ScheduleData(std::move(requests), std::move(locked));
+    std::ranges::sort(lockedLessons, {}, &SubjectWithAddress::SubjectRequestID);
+    lockedLessons.erase(std::unique(lockedLessons.begin(), lockedLessons.end()), lockedLessons.end());
+    for(auto&& lockedLesson : lockedLessons)
+        scheduleData.SubjectRequestAtID(lockedLesson.SubjectRequestID).SetLessons(std::vector<std::size_t>({lockedLesson.Address}));
 }
 
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem)

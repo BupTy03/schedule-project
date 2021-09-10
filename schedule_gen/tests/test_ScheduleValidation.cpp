@@ -1,7 +1,7 @@
 #include "ScheduleValidation.h"
 #include <catch2/catch.hpp>
 
-
+#if 0
 SCENARIO("Check if classrooms overlaps", "[validation]")
 {
     GIVEN("ScheduleData with requests with some classrooms")
@@ -237,3 +237,4 @@ SCENARIO("Check if weekday requests violated", "[validation]")
     }
 }
 
+#endif

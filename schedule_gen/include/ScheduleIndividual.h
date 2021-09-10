@@ -28,10 +28,6 @@ public:
     void Crossover(ScheduleIndividual& other);
 
 private:
-    void ChangeClassroom(std::size_t requestIndex);
-    void ChangeLesson(std::size_t requestIndex);
-
-private:
     const ScheduleData* pData_;
     mutable std::size_t evaluatedValue_;
     ScheduleChromosomes chromosomes_;
