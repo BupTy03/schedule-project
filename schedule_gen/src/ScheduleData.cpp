@@ -29,6 +29,15 @@ SubjectRequest::SubjectRequest(std::size_t id,
     classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
 }
 
+const std::vector<std::size_t>& SubjectRequest::Lessons() const { return lessons_.empty() ? AllLessons() : lessons_; }
+
+void SubjectRequest::SetLessons(std::vector<std::size_t> lessons) 
+{
+    std::ranges::sort(lessons);
+    lessons.erase(std::unique(lessons.begin(), lessons.end()), lessons.end());
+    lessons_ = std::move(lessons);
+}
+
 
 ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests)
     : subjectRequests_(std::move(subjectRequests))
@@ -72,8 +81,11 @@ std::size_t ScheduleData::IndexOfSubjectRequestWithID(std::size_t subjectRequest
 }
 
 
-std::vector<std::size_t> ConvertToRequestedLessons(const WeekDays& days, ClassesType classesType)
+std::vector<std::size_t> WeekdaysToLessons(WeekDays days, ClassesType classesType)
 {
+    if(days == WeekDays::emptyWeek())
+        days = WeekDays::fullWeek();
+
     std::vector<std::size_t> result;
     for(std::size_t lesson = 0; lesson < MAX_LESSONS_COUNT; ++lesson)
     {
@@ -81,15 +93,10 @@ std::vector<std::size_t> ConvertToRequestedLessons(const WeekDays& days, Classes
         if(!days.contains(wd))
             continue;
 
-        if(classesType == ClassesType::Morning)
+        if((classesType == ClassesType::Morning && IsLateScheduleLessonInSaturday(lesson)) ||
+            classesType == ClassesType::Evening && !SuitableForEveningClasses(lesson))
         {
-            if(IsLateScheduleLessonInSaturday(lesson))
-                continue;
-        }
-        else if(classesType == ClassesType::Evening)
-        {
-            if(!SuitableForEveningClasses(lesson))
-                continue;
+            continue;
         }
 
         result.emplace_back(lesson);

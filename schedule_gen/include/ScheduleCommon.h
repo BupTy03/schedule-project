@@ -22,7 +22,7 @@ constexpr std::size_t NO_BUILDING = std::numeric_limits<std::size_t>::max();
 constexpr std::size_t NOT_EVALUATED = std::numeric_limits<std::size_t>::max();
 
 
-std::vector<std::size_t> AllLessons();
+const std::vector<std::size_t>& AllLessons();
 
 enum class WeekDay : std::uint8_t
 {

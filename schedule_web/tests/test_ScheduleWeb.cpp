@@ -80,12 +80,15 @@ TEST_CASE("Parsing subject request", "[parsing]")
             "classrooms": [[2, 11], [3, 12]]
         })"_json;
 
+        const SubjectRequest expected{
+            0, 1, 2, {1, 2, 4, 5}, WeekdaysToLessons({WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}),
+                                          {ClassroomAddress{.Building = 0, .Classroom = 2},
+                                            ClassroomAddress{.Building = 0, .Classroom = 11},
+                                            ClassroomAddress{.Building = 1, .Classroom = 3},
+                                            ClassroomAddress{.Building = 1, .Classroom = 12}}
+        };
 
-        // REQUIRE(request == SubjectRequest(0, 1, 2, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5},
-        //                                   {ClassroomAddress{.Building = 0, .Classroom = 2},
-        //                                     ClassroomAddress{.Building = 0, .Classroom = 11},
-        //                                     ClassroomAddress{.Building = 1, .Classroom = 3},
-        //                                     ClassroomAddress{.Building = 1, .Classroom = 12}}));
+        REQUIRE(request == expected);
     }
     SECTION("Subject request includes fields 'id', 'professor', 'complexity', 'days', 'groups' and 'classrooms'")
     {
@@ -716,5 +719,4 @@ TEST_CASE("Integration test #1", "[integration]")
     REQUIRE(std::empty(checkResult.OverlappedClassroomsList));
     REQUIRE(std::empty(checkResult.OverlappedProfessorsList));
     REQUIRE(std::empty(checkResult.OverlappedGroupsList));
-    REQUIRE(std::empty(checkResult.ViolatedWeekdayRequestsList));
 }

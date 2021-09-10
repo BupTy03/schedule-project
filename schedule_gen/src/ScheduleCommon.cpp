@@ -3,11 +3,15 @@
 #include <numeric>
 
 
-std::vector<std::size_t> AllLessons()
+const std::vector<std::size_t>& AllLessons()
 {
-    std::vector<std::size_t> result(MAX_LESSONS_COUNT);
-    std::iota(result.begin(), result.end(), 0);
-    return result;
+    static const auto allLessons = []{
+        std::vector<std::size_t> result(MAX_LESSONS_COUNT);
+        std::iota(result.begin(), result.end(), 0);
+        return result;
+    }();
+    
+    return allLessons;
 }
 
 std::size_t LessonToScheduleDay(std::size_t lesson) { return lesson / MAX_LESSONS_PER_DAY; }

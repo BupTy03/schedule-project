@@ -20,21 +20,10 @@ public:
     std::size_t Professor() const { return professor_; }
     std::size_t Complexity() const { return complexity_; }
     const std::vector<std::size_t>& Groups() const { return groups_; }
-    const std::vector<std::size_t>& Lessons() const { return lessons_; }
     const std::vector<ClassroomAddress>& Classrooms() const { return classrooms_; }
 
-    void SetLessons(std::vector<std::size_t> lessons) 
-    {
-        if(lessons.empty())
-        {
-            lessons_ = AllLessons();
-            return;
-        }
-
-        std::ranges::sort(lessons);
-        lessons.erase(std::unique(lessons.begin(), lessons.end()), lessons.end());
-        lessons_ = std::move(lessons); 
-    }
+    const std::vector<std::size_t>& Lessons() const;
+    void SetLessons(std::vector<std::size_t> lessons);
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
     {
@@ -124,4 +113,4 @@ private:
 };
 
 
-std::vector<std::size_t> ConvertToRequestedLessons(const WeekDays& days, ClassesType classesType);
+std::vector<std::size_t> WeekdaysToLessons(WeekDays days, ClassesType classesType = ClassesType::Morning);

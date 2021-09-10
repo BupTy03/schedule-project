@@ -67,7 +67,6 @@ struct CheckScheduleResult
     std::vector<OverlappedClassroom> OverlappedClassroomsList;
     std::vector<OverlappedProfessor> OverlappedProfessorsList;
     std::vector<OverlappedGroups> OverlappedGroupsList;
-    std::vector<ViolatedWeekdayRequest> ViolatedWeekdayRequestsList;
 };
 
 
@@ -79,9 +78,6 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
 
 std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
                                                    const ScheduleResult& result);
-
-std::vector<ViolatedWeekdayRequest> FindViolatedWeekdayRequests(const ScheduleData& data,
-                                                                const ScheduleResult& result);
 
 CheckScheduleResult CheckSchedule(const ScheduleData& data,
                                   const ScheduleResult& result);

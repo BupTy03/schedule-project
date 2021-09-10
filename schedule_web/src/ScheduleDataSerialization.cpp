@@ -54,7 +54,7 @@ void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest)
         j.at("professor").get<std::size_t>(),
         j.at("complexity").get<std::size_t>(),
         ParseIDsSet(j.at("groups")),
-        ConvertToRequestedLessons(j.at("days").get<WeekDays>(), ClassesType::Morning),
+        WeekdaysToLessons(j.at("days").get<WeekDays>()),
         j.at("classrooms"));
 }
 
@@ -148,8 +148,7 @@ void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult)
 {
     j = nlohmann::json{{"overlapped_classrooms", checkScheduleResult.OverlappedClassroomsList},
                        {"overlapped_professors", checkScheduleResult.OverlappedProfessorsList},
-                       {"overlapped_groups", checkScheduleResult.OverlappedGroupsList},
-                       {"violated_weekday_requests", checkScheduleResult.ViolatedWeekdayRequestsList}};
+                       {"overlapped_groups", checkScheduleResult.OverlappedGroupsList}};
 }
 
 void from_json(const nlohmann::json& j, ScheduleItem& scheduleItem)

@@ -112,36 +112,12 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
     return overlapped;
 }
 
-std::vector<ViolatedWeekdayRequest> FindViolatedWeekdayRequests(const ScheduleData& data,
-                                                                const ScheduleResult& result)
-{
-    return {};
-    // std::vector<ViolatedWeekdayRequest> violatedRequests;
-    // for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
-    // {
-    //     for(auto&& item : result.at(l))
-    //     {
-    //         const std::size_t day = LessonToScheduleDay(item.Address);
-    //         if(!WeekDayRequestedForSubject(data, item.SubjectRequestID, day))
-    //         {
-    //             ViolatedWeekdayRequest violatedRequest;
-    //             violatedRequest.Address = l;
-    //             violatedRequest.SubjectRequestID = item.SubjectRequestID;
-    //             violatedRequests.emplace_back(violatedRequest);
-    //         }
-    //     }
-    // }
-
-    // return violatedRequests;
-}
-
 CheckScheduleResult CheckSchedule(const ScheduleData& data,
                                   const ScheduleResult& result)
 {
-    CheckScheduleResult checkResult;
-    checkResult.OverlappedClassroomsList = FindOverlappedClassrooms(data, result);
-    checkResult.OverlappedProfessorsList = FindOverlappedProfessors(data, result);
-    checkResult.OverlappedGroupsList = FindOverlappedGroups(data, result);
-    checkResult.ViolatedWeekdayRequestsList = FindViolatedWeekdayRequests(data, result);
-    return checkResult;
+    return CheckScheduleResult{
+        .OverlappedClassroomsList = FindOverlappedClassrooms(data, result),
+        .OverlappedProfessorsList = FindOverlappedProfessors(data, result),
+        .OverlappedGroupsList = FindOverlappedGroups(data, result)
+    };
 }

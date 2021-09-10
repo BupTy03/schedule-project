@@ -1,20 +1,20 @@
 #include "ScheduleValidation.h"
 #include <catch2/catch.hpp>
 
-#if 0
+
 SCENARIO("Check if classrooms overlaps", "[validation]")
 {
     GIVEN("ScheduleData with requests with some classrooms")
     {
         const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-        const std::vector subjectRequests{
-            SubjectRequest{0, 1, 1, {}, {0}, classrooms},
-            SubjectRequest{1, 2, 1, {}, {1}, classrooms},
-            SubjectRequest{2, 3, 2, {}, {2}, classrooms},
-            SubjectRequest{3, 4, 3, {}, {3}, classrooms},
-            SubjectRequest{4, 5, 4, {}, {4}, classrooms}
-        };
-        const ScheduleData scheduleData{subjectRequests,{}};
+        // [id, professor, complexity, groups, lessons, classrooms]
+        const ScheduleData scheduleData{{
+            SubjectRequest{0, 1, 1, {0}, {}, classrooms},
+            SubjectRequest{1, 2, 1, {1}, {}, classrooms},
+            SubjectRequest{2, 3, 2, {2}, {}, classrooms},
+            SubjectRequest{3, 4, 3, {3}, {}, classrooms},
+            SubjectRequest{4, 5, 4, {4}, {}, classrooms}
+        }};
 
         WHEN("no overlaps")
         {
@@ -78,14 +78,14 @@ SCENARIO("Check if professors overlaps", "[validation]")
     GIVEN("ScheduleData with requests with some professors")
     {
         const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-        const std::vector subjectRequests{
-            SubjectRequest{0, 1, 1, {}, {1}, classrooms},
-            SubjectRequest{1, 2, 1, {}, {2}, classrooms},
-            SubjectRequest{2, 2, 2, {}, {3}, classrooms},
-            SubjectRequest{3, 3, 3, {}, {4}, classrooms},
-            SubjectRequest{4, 4, 4, {}, {5}, classrooms}
-        };
-        const ScheduleData scheduleData{subjectRequests, {}};
+        // [id, professor, complexity, groups, lessons, classrooms]
+        const ScheduleData scheduleData{{
+            SubjectRequest{0, 1, 1, {1}, {}, classrooms},
+            SubjectRequest{1, 2, 1, {2}, {}, classrooms},
+            SubjectRequest{2, 2, 2, {3}, {}, classrooms},
+            SubjectRequest{3, 3, 3, {4}, {}, classrooms},
+            SubjectRequest{4, 4, 4, {5}, {}, classrooms}
+        }};
 
         WHEN("no overlaps")
         {
@@ -133,14 +133,14 @@ SCENARIO("Check if groups overlaps", "[validation]")
     GIVEN("ScheduleData with requests with some groups")
     {
         const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-        const std::vector subjectRequests{
-            SubjectRequest{0, 1, 1, {}, {1, 3, 5}, classrooms},
-            SubjectRequest{1, 2, 1, {}, {21, 4}, classrooms},
-            SubjectRequest{2, 3, 2, {}, {0, 3, 2, 5}, classrooms},
-            SubjectRequest{3, 4, 3, {}, {9, 10}, classrooms},
-            SubjectRequest{4, 5, 4, {}, {11, 12}, classrooms}
-        };
-        const ScheduleData scheduleData{subjectRequests, {}};
+        // [id, professor, complexity, groups, lessons, classrooms]
+        const ScheduleData scheduleData{{
+            SubjectRequest{0, 1, 1, {1, 3, 5},    {}, classrooms},
+            SubjectRequest{1, 2, 1, {21, 4},      {}, classrooms},
+            SubjectRequest{2, 3, 2, {0, 3, 2, 5}, {}, classrooms},
+            SubjectRequest{3, 4, 3, {9, 10},      {}, classrooms},
+            SubjectRequest{4, 5, 4, {11, 12},     {}, classrooms}
+        }};
 
         WHEN("no overlaps")
         {
@@ -182,59 +182,3 @@ SCENARIO("Check if groups overlaps", "[validation]")
         }
     }
 }
-
-SCENARIO("Check if weekday requests violated", "[validation]")
-{
-    GIVEN("ScheduleData with subject requests with weekday requests")
-    {
-        const std::vector<ClassroomAddress> classrooms {{0, 0}, {0, 1}, {0, 2}, {0, 3}};
-        const std::vector subjectRequests{
-            SubjectRequest{0, 1, 1, {WeekDay::Monday}, {1}, classrooms},
-            SubjectRequest{1, 2, 1, {WeekDay::Tuesday}, {2}, classrooms},
-            SubjectRequest{2, 3, 2, {WeekDay::Wednesday}, {3}, classrooms},
-            SubjectRequest{3, 4, 3, {WeekDay::Thursday}, {4}, classrooms},
-            SubjectRequest{4, 5, 4, {WeekDay::Friday, WeekDay::Saturday}, {5}, classrooms}
-        };
-        const ScheduleData scheduleData{subjectRequests, {}};
-
-        WHEN("no violations")
-        {
-            const ScheduleResult scheduleResult{{
-                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
-                ScheduleItem{.Address = MAX_LESSONS_PER_DAY, .SubjectRequestID = 1, .Classroom = 1},
-                ScheduleItem{.Address = 2 * MAX_LESSONS_PER_DAY, .SubjectRequestID = 2, .Classroom = 2},
-                ScheduleItem{.Address = 3 * MAX_LESSONS_PER_DAY + 2, .SubjectRequestID = 3, .Classroom = 3},
-                ScheduleItem{.Address = 4 * MAX_LESSONS_PER_DAY + 1, .SubjectRequestID = 4, .Classroom = 4}
-            }};
-
-            THEN("empty list returned")
-            {
-                const auto result = FindViolatedWeekdayRequests(scheduleData, scheduleResult);
-                REQUIRE(result.empty());
-            }
-        }
-        WHEN("some violated weekdays")
-        {
-            const ScheduleResult scheduleResult{{
-                ScheduleItem{.Address = 0, .SubjectRequestID = 0, .Classroom = 0},
-                ScheduleItem{.Address = MAX_LESSONS_PER_DAY, .SubjectRequestID = 1, .Classroom = 1},
-                ScheduleItem{.Address = 2 * MAX_LESSONS_PER_DAY, .SubjectRequestID = 2, .Classroom = 2},
-                ScheduleItem{.Address = 3 * MAX_LESSONS_PER_DAY + 2, .SubjectRequestID = 3, .Classroom = 3},
-                ScheduleItem{.Address = 2 * MAX_LESSONS_PER_DAY + 1, .SubjectRequestID = 4, .Classroom = 4}
-            }};
-
-            THEN("violated weekday found successfully")
-            {
-                const auto result = FindViolatedWeekdayRequests(scheduleData, scheduleResult);
-                const ViolatedWeekdayRequest expected{
-                    .Address = 2 * MAX_LESSONS_PER_DAY + 1,
-                    .SubjectRequestID = 4
-                };
-                REQUIRE(result.size() == 1);
-                REQUIRE(result.front() == expected);
-            }
-        }
-    }
-}
-
-#endif
