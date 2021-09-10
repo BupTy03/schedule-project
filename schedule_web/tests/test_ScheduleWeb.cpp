@@ -701,11 +701,11 @@ TEST_CASE("Integration test #1", "[integration]")
 
     GAScheduleGenerator generator;
     generator.SetOptions(ScheduleGenOptions{
-        {"individuals_count", 100},
-        {"iterations_count", 110},
-        {"selection_count", 36},
-        {"crossover_count", 22},
-        {"mutation_chance", 49}
+        {"individuals_count", 50},
+        {"iterations_count", 20},
+        {"selection_count", 16},
+        {"crossover_count", 12},
+        {"mutation_chance", 39}
     });
 
     const ScheduleData scheduleData = jsonData;

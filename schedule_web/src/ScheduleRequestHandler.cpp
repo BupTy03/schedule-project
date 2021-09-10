@@ -1,7 +1,9 @@
 #include "ScheduleRequestHandler.h"
 #include "ScheduleServer.h"
+#include "ScheduleValidation.h"
 #include "GAScheduleGenerator.h"
 #include "ScheduleDataSerialization.h"
+
 #include <spdlog/spdlog.h>
 #include <Poco/URI.h>
 #include <cassert>
