@@ -49,13 +49,17 @@ void from_json(const nlohmann::json& j, WeekDays& weekDays)
 
 void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest)
 {
+    auto isEveningIt = j.find("is_evening");
+    const bool isEvening = (isEveningIt != j.end() && isEveningIt->get<bool>());
+
     subjectRequest = SubjectRequest(
         j.at("id").get<std::size_t>(),
         j.at("professor").get<std::size_t>(),
         j.at("complexity").get<std::size_t>(),
         j.at("days").get<WeekDays>(),
         ParseIDsSet(j.at("groups")),
-        j.at("classrooms"));
+        j.at("classrooms"),
+        isEvening ? ClassesType::Evening : ClassesType::Morning);
 }
 
 void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classrooms)

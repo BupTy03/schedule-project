@@ -77,15 +77,16 @@ TEST_CASE("Parsing subject request", "[parsing]")
             "complexity": 2,
             "days": [0, 2, 4],
             "groups": [1, 2, 4, 5],
-            "classrooms": [[2, 11], [3, 12]]
+            "classrooms": [[2, 11], [3, 12]],
+            "is_evening": true
         })"_json;
 
-
-        REQUIRE(request == SubjectRequest(0, 1, 2, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5},
+        REQUIRE(request.IsEveningClass());
+        REQUIRE(request == SubjectRequest{0, 1, 2, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5},
                                           {ClassroomAddress{.Building = 0, .Classroom = 2},
                                             ClassroomAddress{.Building = 0, .Classroom = 11},
                                             ClassroomAddress{.Building = 1, .Classroom = 3},
-                                            ClassroomAddress{.Building = 1, .Classroom = 12}}));
+                                            ClassroomAddress{.Building = 1, .Classroom = 12}}, ClassesType::Evening});
     }
     SECTION("Subject request includes fields 'id', 'professor', 'complexity', 'days', 'groups' and 'classrooms'")
     {
@@ -139,6 +140,45 @@ TEST_CASE("Parsing subject request", "[parsing]")
             "days": [0, 2, 4],
             "groups": [1, 2, 4, 5],
         })"_json);
+    }
+
+    SECTION("If 'is_evening' field is missing - it means it's morning class")
+    {
+        const SubjectRequest request = R"({
+            "id": 0,
+            "professor": 1,
+            "complexity": 2,
+            "days": [0, 2, 4],
+            "groups": [1, 2, 4, 5],
+            "classrooms": [[2, 11], [3, 12]]
+        })"_json;
+
+        REQUIRE_FALSE(request.IsEveningClass());
+        REQUIRE(request == SubjectRequest{0, 1, 2, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5},
+                                          {ClassroomAddress{.Building = 0, .Classroom = 2},
+                                            ClassroomAddress{.Building = 0, .Classroom = 11},
+                                            ClassroomAddress{.Building = 1, .Classroom = 3},
+                                            ClassroomAddress{.Building = 1, .Classroom = 12}}, ClassesType::Morning});
+    }
+
+    SECTION("If 'is_evening' was 'false' - it's morning class too")
+    {
+        const SubjectRequest request = R"({
+            "id": 0,
+            "professor": 1,
+            "complexity": 2,
+            "days": [0, 2, 4],
+            "groups": [1, 2, 4, 5],
+            "classrooms": [[2, 11], [3, 12]],
+            "is_evening": false
+        })"_json;
+
+        REQUIRE_FALSE(request.IsEveningClass());
+        REQUIRE(request == SubjectRequest{0, 1, 2, {WeekDay::Monday, WeekDay::Wednesday, WeekDay::Friday}, {1, 2, 4, 5},
+                                          {ClassroomAddress{.Building = 0, .Classroom = 2},
+                                            ClassroomAddress{.Building = 0, .Classroom = 11},
+                                            ClassroomAddress{.Building = 1, .Classroom = 3},
+                                            ClassroomAddress{.Building = 1, .Classroom = 12}}, ClassesType::Morning});
     }
 }
 
