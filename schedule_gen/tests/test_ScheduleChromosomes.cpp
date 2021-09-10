@@ -10,24 +10,24 @@ TEST_CASE("No ovelaps by professors", "[chromosomes][initialization]")
     // [id, professor, complexity, groups, lessons, classrooms]
     const ScheduleData data{{
         // lesson numbers may NOT intersect
-        SubjectRequest{0, 1, 1, {0}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{1, 1, 2, {1}, WeekdaysToLessons({WeekDay::Monday}), {{0, 2}}},
-        SubjectRequest{2, 1, 3, {2}, WeekdaysToLessons({WeekDay::Monday}), {{0, 3}}},
-        SubjectRequest{3, 1, 4, {3}, WeekdaysToLessons({WeekDay::Monday}), {{0, 4}}},
-        SubjectRequest{4, 1, 1, {4}, WeekdaysToLessons({WeekDay::Monday}), {{0, 5}}},
-        SubjectRequest{5, 1, 2, {5}, WeekdaysToLessons({WeekDay::Monday}), {{0, 6}}},
-        SubjectRequest{6, 1, 3, {6}, WeekdaysToLessons({WeekDay::Monday}), {{0, 7}}},
-        SubjectRequest{7, 1, 4, {7}, WeekdaysToLessons({WeekDay::Monday}), {{0, 8}}},
-        SubjectRequest{8, 1, 1, {8}, WeekdaysToLessons({WeekDay::Monday}), {{0, 9}}},
-        SubjectRequest{9, 1, 2, {9}, WeekdaysToLessons({WeekDay::Monday}), {{0, 10}}},
-        SubjectRequest{10, 1, 3, {10}, WeekdaysToLessons({WeekDay::Monday}), {{0, 11}}},
-        SubjectRequest{11, 1, 4, {11}, WeekdaysToLessons({WeekDay::Monday}), {{0, 12}}},
-        SubjectRequest{12, 1, 1, {12}, WeekdaysToLessons({WeekDay::Monday}), {{0, 13}}},
-        SubjectRequest{13, 1, 2, {13}, WeekdaysToLessons({WeekDay::Monday}), {{0, 14}}},
+        SubjectRequest{0, 1, 1, {0}, {}, {{0, 1}}},
+        SubjectRequest{1, 1, 2, {1}, {}, {{0, 2}}},
+        SubjectRequest{2, 1, 3, {2}, {}, {{0, 3}}},
+        SubjectRequest{3, 1, 4, {3}, {}, {{0, 4}}},
+        SubjectRequest{4, 1, 1, {4}, {}, {{0, 5}}},
+        SubjectRequest{5, 1, 2, {5}, {}, {{0, 6}}},
+        SubjectRequest{6, 1, 3, {6}, {}, {{0, 7}}},
+        SubjectRequest{7, 1, 4, {7}, {}, {{0, 8}}},
+        SubjectRequest{8, 1, 1, {8}, {}, {{0, 9}}},
+        SubjectRequest{9, 1, 2, {9}, {}, {{0, 10}}},
+        SubjectRequest{10, 1, 3, {10}, {}, {{0, 11}}},
+        SubjectRequest{11, 1, 4, {11}, {}, {{0, 12}}},
+        SubjectRequest{12, 1, 1, {12}, {}, {{0, 13}}},
+        SubjectRequest{13, 1, 2, {13}, {}, {{0, 14}}},
 
         // lesson numbers MAY intersect
-        SubjectRequest{14, 2, 3, {14}, WeekdaysToLessons({WeekDay::Monday}), {{0, 15}}},
-        SubjectRequest{15, 3, 4, {15}, WeekdaysToLessons({WeekDay::Monday}), {{0, 16}}}
+        SubjectRequest{14, 2, 3, {14}, {}, {{0, 15}}},
+        SubjectRequest{15, 3, 4, {15}, {}, {{0, 16}}}
     }};
     const ScheduleChromosomes sut = InitializeChromosomes(data);
     for(std::size_t r = 1; r < 14; ++r)
@@ -39,24 +39,24 @@ TEST_CASE("No ovelaps by groups", "[chromosomes][initialization]")
     // [id, professor, complexity, groups, lessons, classrooms]
     const ScheduleData data{{
         // lesson numbers may NOT intersect
-        SubjectRequest{0, 1, 1, {1}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{1, 2, 2, {1, 2}, WeekdaysToLessons({WeekDay::Monday}), {{0, 2}}},
-        SubjectRequest{2, 3, 3, {1, 3}, WeekdaysToLessons({WeekDay::Monday}), {{0, 3}}},
-        SubjectRequest{3, 4, 4, {1, 2, 4}, WeekdaysToLessons({WeekDay::Monday}), {{0, 4}}},
-        SubjectRequest{4, 5, 1, {1, 4, 5}, WeekdaysToLessons({WeekDay::Monday}), {{0, 5}}},
-        SubjectRequest{5, 6, 2, {1, 2, 3}, WeekdaysToLessons({WeekDay::Monday}), {{0, 6}}},
-        SubjectRequest{6, 7, 3, {1, 8, 9}, WeekdaysToLessons({WeekDay::Monday}), {{0, 7}}},
-        SubjectRequest{7, 8, 4, {1, 2, 4, 5}, WeekdaysToLessons({WeekDay::Monday}), {{0, 8}}},
-        SubjectRequest{8, 9, 1, {1, 3, 6, 7}, WeekdaysToLessons({WeekDay::Monday}), {{0, 9}}},
-        SubjectRequest{9, 10, 2, {1, 11, 12}, WeekdaysToLessons({WeekDay::Monday}), {{0, 10}}},
-        SubjectRequest{10, 11, 3, {1, 16, 17}, WeekdaysToLessons({WeekDay::Monday}), {{0, 11}}},
-        SubjectRequest{11, 12, 4, {1, 2, 4, 5}, WeekdaysToLessons({WeekDay::Monday}), {{0, 12}}},
-        SubjectRequest{12, 13, 1, {1, 2, 3}, WeekdaysToLessons({WeekDay::Monday}), {{0, 13}}},
-        SubjectRequest{13, 14, 2, {1, 5, 6, 7, 8}, WeekdaysToLessons({WeekDay::Monday}), {{0, 14}}},
+        SubjectRequest{0, 1, 1, {1}, {}, {{0, 1}}},
+        SubjectRequest{1, 2, 2, {1, 2}, {}, {{0, 2}}},
+        SubjectRequest{2, 3, 3, {1, 3}, {}, {{0, 3}}},
+        SubjectRequest{3, 4, 4, {1, 2, 4}, {}, {{0, 4}}},
+        SubjectRequest{4, 5, 1, {1, 4, 5}, {}, {{0, 5}}},
+        SubjectRequest{5, 6, 2, {1, 2, 3}, {}, {{0, 6}}},
+        SubjectRequest{6, 7, 3, {1, 8, 9}, {}, {{0, 7}}},
+        SubjectRequest{7, 8, 4, {1, 2, 4, 5}, {}, {{0, 8}}},
+        SubjectRequest{8, 9, 1, {1, 3, 6, 7}, {}, {{0, 9}}},
+        SubjectRequest{9, 10, 2, {1, 11, 12}, {}, {{0, 10}}},
+        SubjectRequest{10, 11, 3, {1, 16, 17}, {}, {{0, 11}}},
+        SubjectRequest{11, 12, 4, {1, 2, 4, 5}, {}, {{0, 12}}},
+        SubjectRequest{12, 13, 1, {1, 2, 3}, {}, {{0, 13}}},
+        SubjectRequest{13, 14, 2, {1, 5, 6, 7, 8}, {}, {{0, 14}}},
 
         // lesson numbers MAY intersect
-        SubjectRequest{14, 15, 3, {200}, WeekdaysToLessons({WeekDay::Monday}), {{0, 15}}},
-        SubjectRequest{15, 16, 4, {300}, WeekdaysToLessons({WeekDay::Monday}), {{0, 16}}}
+        SubjectRequest{14, 15, 3, {200}, {}, {{0, 15}}},
+        SubjectRequest{15, 16, 4, {300}, {}, {{0, 16}}}
     }};
     const ScheduleChromosomes sut = InitializeChromosomes(data);
 
@@ -69,24 +69,24 @@ TEST_CASE("No ovelaps by classrooms", "[chromosomes][initialization]")
     // [id, professor, complexity, groups, lessons, classrooms]
     const ScheduleData data{{
         // lesson numbers may NOT intersect
-        SubjectRequest{0, 1, 1, {1}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{1, 2, 2, {2}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{2, 3, 3, {3}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{3, 4, 4, {4}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{4, 5, 1, {5}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{5, 6, 2, {6}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{6, 7, 3, {7}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{7, 8, 4, {8}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{8, 9, 1, {9}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{9, 10, 2, {10}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{10, 11, 3, {11}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{11, 12, 4, {12}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{12, 13, 1, {13}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
-        SubjectRequest{13, 14, 2, {14}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}}},
+        SubjectRequest{0, 1, 1, {1}, {}, {{0, 1}}},
+        SubjectRequest{1, 2, 2, {2}, {}, {{0, 1}}},
+        SubjectRequest{2, 3, 3, {3}, {}, {{0, 1}}},
+        SubjectRequest{3, 4, 4, {4}, {}, {{0, 1}}},
+        SubjectRequest{4, 5, 1, {5}, {}, {{0, 1}}},
+        SubjectRequest{5, 6, 2, {6}, {}, {{0, 1}}},
+        SubjectRequest{6, 7, 3, {7}, {}, {{0, 1}}},
+        SubjectRequest{7, 8, 4, {8}, {}, {{0, 1}}},
+        SubjectRequest{8, 9, 1, {9}, {}, {{0, 1}}},
+        SubjectRequest{9, 10, 2, {10}, {}, {{0, 1}}},
+        SubjectRequest{10, 11, 3, {11}, {}, {{0, 1}}},
+        SubjectRequest{11, 12, 4, {12}, {}, {{0, 1}}},
+        SubjectRequest{12, 13, 1, {13}, {}, {{0, 1}}},
+        SubjectRequest{13, 14, 2, {14}, {}, {{0, 1}}},
 
         // lesson numbers MAY intersect
-        SubjectRequest{14, 15, 3, {15}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}, {0, 200}}},
-        SubjectRequest{15, 16, 4, {16}, WeekdaysToLessons({WeekDay::Monday}), {{0, 1}, {0, 300}}}
+        SubjectRequest{14, 15, 3, {15}, {}, {{0, 1}, {0, 200}}},
+        SubjectRequest{15, 16, 4, {16}, {}, {{0, 1}, {0, 300}}}
     }};
     const ScheduleChromosomes sut = InitializeChromosomes(data);
 

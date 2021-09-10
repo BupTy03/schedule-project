@@ -24,27 +24,26 @@ std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
     return result;
 }
 
-
-void from_json(const nlohmann::json& j, SubjectWithAddress& subjectWithAddress)
+std::vector<std::size_t> ParseLessonsSet(const nlohmann::json& arr)
 {
-    j.at("subject_request_id").get_to(subjectWithAddress.SubjectRequestID);
-    j.at("address").get_to(subjectWithAddress.Address);
-}
-
-void from_json(const nlohmann::json& j, WeekDays& weekDays)
-{
-    weekDays = WeekDays::emptyWeek();
-    if(!j.is_array())
+    if(!arr.is_array())
         throw std::invalid_argument("Json array expected");
 
-    for(auto&& wd : j)
+    std::vector<std::size_t> result;
+    result.reserve(arr.size());
+    for(auto&& value : arr)
     {
-        const auto value = wd.get<int>();
-        if(value < 0 || value > 5)
-            throw std::invalid_argument("Week day number must be in range [0, 5]");
+        const auto v = value.get<std::int64_t>();
+        if(value < 0 || value >= MAX_LESSONS_COUNT)
+            throw std::out_of_range("Lesson value must be in range [0, " + std::to_string(MAX_LESSONS_COUNT) + ')');
 
-        weekDays.insert(static_cast<WeekDay>(value % DAYS_IN_SCHEDULE_WEEK));
+        result.emplace_back(static_cast<std::size_t>(v));
     }
+
+    std::sort(result.begin(), result.end());
+    result.erase(std::unique(result.begin(), result.end()), result.end());
+    result.shrink_to_fit();
+    return result;
 }
 
 void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest)
@@ -54,7 +53,7 @@ void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest)
         j.at("professor").get<std::size_t>(),
         j.at("complexity").get<std::size_t>(),
         ParseIDsSet(j.at("groups")),
-        WeekdaysToLessons(j.at("days").get<WeekDays>()),
+        ParseLessonsSet(j.at("lessons")),
         j.at("classrooms"));
 }
 
@@ -92,17 +91,6 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
         throw std::invalid_argument("'subject_requests' array is empty");
 
     scheduleData = ScheduleData(std::move(requests));
-
-    // 'locked_lessons' field is optional
-    std::vector<SubjectWithAddress> lockedLessons;
-    auto lockedLessonsIt = j.find("locked_lessons");
-    if(lockedLessonsIt != j.end())
-        lockedLessonsIt->get_to(lockedLessons);
-
-    std::ranges::sort(lockedLessons, {}, &SubjectWithAddress::SubjectRequestID);
-    lockedLessons.erase(std::unique(lockedLessons.begin(), lockedLessons.end()), lockedLessons.end());
-    for(auto&& lockedLesson : lockedLessons)
-        scheduleData.SubjectRequestAtID(lockedLesson.SubjectRequestID).SetLessons(std::vector<std::size_t>({lockedLesson.Address}));
 }
 
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem)

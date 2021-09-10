@@ -79,28 +79,3 @@ std::size_t ScheduleData::IndexOfSubjectRequestWithID(std::size_t subjectRequest
 
     return std::distance(subjectRequests_.begin(), it);
 }
-
-
-std::vector<std::size_t> WeekdaysToLessons(WeekDays days, ClassesType classesType)
-{
-    if(days == WeekDays::emptyWeek())
-        days = WeekDays::fullWeek();
-
-    std::vector<std::size_t> result;
-    for(std::size_t lesson = 0; lesson < MAX_LESSONS_COUNT; ++lesson)
-    {
-        const WeekDay wd = LessonToWeekDay(lesson);
-        if(!days.contains(wd))
-            continue;
-
-        if((classesType == ClassesType::Morning && IsLateScheduleLessonInSaturday(lesson)) ||
-            classesType == ClassesType::Evening && !SuitableForEveningClasses(lesson))
-        {
-            continue;
-        }
-
-        result.emplace_back(lesson);
-    }
-
-    return result;
-}

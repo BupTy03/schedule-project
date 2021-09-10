@@ -74,22 +74,6 @@ struct SubjectRequestIDEqual
     }
 };
 
-struct SubjectWithAddress
-{
-    friend bool operator==(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
-    {
-        return lhs.SubjectRequestID == rhs.SubjectRequestID && lhs.Address == rhs.Address;
-    }
-
-    friend bool operator!=(const SubjectWithAddress& lhs, const SubjectWithAddress& rhs)
-    {
-        return !(lhs == rhs);
-    }
-
-    std::size_t SubjectRequestID = 0;
-    std::size_t Address = 0;
-};
-
 class ScheduleData
 {
 public:
@@ -111,6 +95,3 @@ private:
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> professorRequests_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> groupRequests_;
 };
-
-
-std::vector<std::size_t> WeekdaysToLessons(WeekDays days, ClassesType classesType = ClassesType::Morning);
