@@ -115,12 +115,12 @@ TEST_CASE("No weekday violations", "[chromosomes][initialization]")
     const ScheduleData data{requests, {}};
     const ScheduleChromosomes sut = InitializeChromosomes(data);
 
-    REQUIRE(ToWeekDay(LessonToScheduleDay(sut.Lesson(0))) == WeekDay::Monday);
-    REQUIRE(ToWeekDay(LessonToScheduleDay(sut.Lesson(1))) == WeekDay::Tuesday);
-    REQUIRE(ToWeekDay(LessonToScheduleDay(sut.Lesson(2))) == WeekDay::Wednesday);
-    REQUIRE(ToWeekDay(LessonToScheduleDay(sut.Lesson(3))) == WeekDay::Thursday);
-    REQUIRE(ToWeekDay(LessonToScheduleDay(sut.Lesson(4))) == WeekDay::Friday);
-    REQUIRE(ToWeekDay(LessonToScheduleDay(sut.Lesson(5))) == WeekDay::Saturday);
+    REQUIRE(LessonToWeekDay(sut.Lesson(0)) == WeekDay::Monday);
+    REQUIRE(LessonToWeekDay(sut.Lesson(1)) == WeekDay::Tuesday);
+    REQUIRE(LessonToWeekDay(sut.Lesson(2)) == WeekDay::Wednesday);
+    REQUIRE(LessonToWeekDay(sut.Lesson(3)) == WeekDay::Thursday);
+    REQUIRE(LessonToWeekDay(sut.Lesson(4)) == WeekDay::Friday);
+    REQUIRE(LessonToWeekDay(sut.Lesson(5)) == WeekDay::Saturday);
 }
 
 TEST_CASE("Morning classes are in 0-3 places in Saturday", "[chromosomes][initialization]")
@@ -299,7 +299,219 @@ TEST_CASE("Crossover works", "[chromosomes][crossover]")
     REQUIRE(second.Classroom(0) == ClassroomAddress{.Building = 0, .Classroom = 3});
 }
 
-TEST_CASE("MakeScheduleResult works correctly", "[chromosomes][conversion]")
+TEST_CASE("Check if chromosome can change lesson: handling requested weekday violation", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {WeekDay::Monday}, {1}, {{0, 1}, {0, 2}, {0, 3}}, ClassesType::Morning},
+        SubjectRequest{1, 2, 1, {WeekDay::Tuesday}, {2}, {{0, 1}, {0, 2}, {0, 3}}, ClassesType::Evening}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes chromosomes{{0, 7}, {{0, 1}, {0, 2}}};
+
+    SECTION("Lesson is in requested weekday")
+    {
+        REQUIRE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Monday) + 3));
+        REQUIRE(chromosomes.CanChangeMorningLesson(data, 0, SecondWeekFirstLessonIn(WeekDay::Monday) + 2));
+
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Tuesday) + 5));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, SecondWeekFirstLessonIn(WeekDay::Tuesday) + 6));
+    }
+
+    SECTION("Lesson is NOT in requested weekday")
+    {
+        REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Thursday) + 1));
+        REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Friday)));
+
+        REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Monday) + 5));
+        REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Friday) + 6));
+    }
+}
+
+TEST_CASE("Check if chromosome can change morning lesson: handling late Saturday lesson", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {WeekDay::Saturday}, {1}, {{0, 1}, {0, 2}, {0, 3}}, ClassesType::Morning},
+        SubjectRequest{1, 2, 1, {WeekDay::Saturday}, {2}, {{0, 1}, {0, 2}, {0, 3}}, ClassesType::Evening}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes chromosomes{
+        {FirstWeekFirstLessonIn(WeekDay::Saturday), FirstWeekFirstLessonIn(WeekDay::Saturday) + 4},
+        {{0,1}, {0,2}}
+    };
+
+    SECTION("Is NOT late Saturday lesson")
+    {
+        REQUIRE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Saturday) + 1));
+        REQUIRE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Saturday) + 2));
+        REQUIRE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Saturday) + 3));
+
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Saturday)));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Saturday) + 1));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Saturday) + 2));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Saturday) + 3));
+    }
+
+    SECTION("Is late Saturday lesson")
+    {
+        REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Saturday) + 4));
+        REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Saturday) + 5));
+        REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Saturday) + 6));
+
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Saturday) + 5));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Saturday) + 6));
+    }
+}
+
+TEST_CASE("Check if chromosome can change evening lesson: handling morning lesson (except Saturday)", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {WeekDay::Monday},    {1}, {{0, 1}}, ClassesType::Evening},
+        SubjectRequest{1, 2, 1, {WeekDay::Tuesday},   {2}, {{0, 2}}, ClassesType::Evening},
+        SubjectRequest{2, 3, 1, {WeekDay::Wednesday}, {3}, {{0, 3}}, ClassesType::Evening},
+        SubjectRequest{3, 4, 1, {WeekDay::Thursday},  {4}, {{0, 4}}, ClassesType::Evening},
+        SubjectRequest{4, 5, 1, {WeekDay::Friday},    {5}, {{0, 5}}, ClassesType::Evening},
+        SubjectRequest{5, 6, 1, {WeekDay::Saturday},  {6}, {{0, 6}}, ClassesType::Evening}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes chromosomes{
+        {FirstWeekFirstLessonIn(WeekDay::Monday) + 5,
+         FirstWeekFirstLessonIn(WeekDay::Tuesday) + 6,
+         FirstWeekFirstLessonIn(WeekDay::Wednesday) + 6,
+         FirstWeekFirstLessonIn(WeekDay::Thursday) + 5,
+         FirstWeekFirstLessonIn(WeekDay::Friday) + 6,
+         FirstWeekFirstLessonIn(WeekDay::Saturday) + 5},
+        {{0,1}, {0,2}, {0,3}, {0,4}, {0,5}, {0,6}}
+    };
+
+    SECTION("Is evening lesson in weekday (except Saturday)")
+    {
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Monday) + 6));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Tuesday) + 5));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 2, FirstWeekFirstLessonIn(WeekDay::Wednesday) + 5));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 3, FirstWeekFirstLessonIn(WeekDay::Thursday) + 6));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 4, FirstWeekFirstLessonIn(WeekDay::Friday) + 5));
+    }
+
+    SECTION("Is morning lesson in weekday (except Saturday)")
+    {
+        REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 0, FirstWeekFirstLessonIn(WeekDay::Monday) + 1));
+        REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 1, FirstWeekFirstLessonIn(WeekDay::Tuesday) + 1));
+        REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 2, FirstWeekFirstLessonIn(WeekDay::Wednesday) + 1));
+        REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, FirstWeekFirstLessonIn(WeekDay::Thursday) + 1));
+        REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 4, FirstWeekFirstLessonIn(WeekDay::Friday) + 1));
+    }
+
+    SECTION("Lessons in Saturday may be morning or evening")
+    {
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, FirstWeekFirstLessonIn(WeekDay::Saturday)));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, FirstWeekFirstLessonIn(WeekDay::Saturday) + 1));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, FirstWeekFirstLessonIn(WeekDay::Saturday) + 2));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, FirstWeekFirstLessonIn(WeekDay::Saturday) + 3));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, FirstWeekFirstLessonIn(WeekDay::Saturday) + 4));
+        REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, FirstWeekFirstLessonIn(WeekDay::Saturday) + 6));
+    }
+}
+
+TEST_CASE("Check if chromosome can change lesson: handling groups intersections", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {WeekDay::Monday}, {0}, {}, ClassesType::Morning},
+        SubjectRequest{1, 2, 1, {WeekDay::Monday}, {0, 1}, {}, ClassesType::Morning},
+        SubjectRequest{2, 3, 1, {WeekDay::Monday}, {111, 222}, {}, ClassesType::Morning},
+
+        SubjectRequest{3, 4, 1, {WeekDay::Monday}, {2, 4, 6}, {}, ClassesType::Evening},
+        SubjectRequest{4, 5, 1, {WeekDay::Monday}, {4, 6, 8, 9}, {}, ClassesType::Evening},
+        SubjectRequest{5, 6, 1, {WeekDay::Monday}, {333}, {}, ClassesType::Evening}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes chromosomes{
+        {0, 1, 2, 5, 6, 6}, 
+        {ClassroomAddress::Any(),
+        ClassroomAddress::Any(),
+        ClassroomAddress::Any(),
+        ClassroomAddress::Any(),
+        ClassroomAddress::Any(),
+        ClassroomAddress::Any()}
+    };
+
+    REQUIRE(chromosomes.CanChangeMorningLesson(data, 2, 0));
+    REQUIRE(chromosomes.CanChangeMorningLesson(data, 2, 1));
+    REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, 5));
+
+    REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 1, 0));
+    REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, 1));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 4, 5));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
+}
+
+TEST_CASE("Check if chromosome can change lesson: handling professors intersections", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {WeekDay::Monday}, {1}, {}, ClassesType::Morning},
+        SubjectRequest{1, 1, 1, {WeekDay::Monday}, {2}, {}, ClassesType::Morning},
+        SubjectRequest{2, 2, 1, {WeekDay::Monday}, {3}, {}, ClassesType::Morning},
+
+        SubjectRequest{3, 3, 1, {WeekDay::Monday}, {4}, {}, ClassesType::Evening},
+        SubjectRequest{4, 3, 1, {WeekDay::Monday}, {5}, {}, ClassesType::Evening},
+        SubjectRequest{5, 4, 1, {WeekDay::Monday}, {6}, {}, ClassesType::Evening}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes chromosomes{
+        {0, 1, 2, 5, 6, 5}, 
+        {ClassroomAddress::Any(),
+         ClassroomAddress::Any(),
+         ClassroomAddress::Any(),
+         ClassroomAddress::Any(),
+         ClassroomAddress::Any(),
+         ClassroomAddress::Any()}
+    };
+
+    REQUIRE(chromosomes.CanChangeMorningLesson(data, 2, 0));
+    REQUIRE(chromosomes.CanChangeMorningLesson(data, 2, 1));
+    REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, 6));
+
+    REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 1, 0));
+    REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, 1));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 4, 5));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
+}
+
+TEST_CASE("Check if chromosome can change lesson: handling classrooms intersections", "[chromosomes][checks]")
+{
+    // [id, professor, complexity, weekDays, groups, classrooms]
+    const std::vector<SubjectRequest> requests {
+        SubjectRequest{0, 1, 1, {WeekDay::Monday}, {1}, {{0, 1}}, ClassesType::Morning},
+        SubjectRequest{1, 2, 1, {WeekDay::Monday}, {2}, {{0, 1}, {0, 2}}, ClassesType::Morning},
+        SubjectRequest{2, 3, 1, {WeekDay::Monday}, {3}, {{0, 3}}, ClassesType::Morning},
+
+        SubjectRequest{3, 4, 1, {WeekDay::Monday}, {4}, {{0, 4}, {0, 5}}, ClassesType::Evening},
+        SubjectRequest{4, 5, 1, {WeekDay::Monday}, {5}, {{0, 5}}, ClassesType::Evening},
+        SubjectRequest{5, 6, 1, {WeekDay::Monday}, {6}, {{0, 6}, {0, 8}}, ClassesType::Evening}
+    };
+    const ScheduleData data{requests, {}};
+    const ScheduleChromosomes chromosomes{
+        {0, 1, 2, 5, 6, 5}, 
+        {{0, 1}, {0, 1}, {0, 3}, {0, 5}, {0, 5}, {0, 8}}};
+
+    REQUIRE(chromosomes.CanChangeMorningLesson(data, 2, 0));
+    REQUIRE(chromosomes.CanChangeMorningLesson(data, 2, 1));
+    REQUIRE(chromosomes.CanChangeEveningLesson(data, 5, 6));
+
+    REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 1, 0));
+    REQUIRE_FALSE(chromosomes.CanChangeMorningLesson(data, 0, 1));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 4, 5));
+    REQUIRE_FALSE(chromosomes.CanChangeEveningLesson(data, 3, 6));
+}
+
+TEST_CASE("MakeScheduleResult works correctly", "[chromosomes][conversions]")
 {
     // [id, professor, complexity, weekDays, groups, classrooms]
     const std::vector<SubjectRequest> requests {

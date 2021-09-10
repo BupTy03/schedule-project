@@ -34,6 +34,14 @@ public:
     bool ClassroomsIntersects(std::size_t currentLesson,
                               const ClassroomAddress& currentClassroom) const;
 
+    bool CanChangeMorningLesson(const ScheduleData& data,
+                                std::size_t requestIndex,
+                                std::size_t lesson) const;
+
+    bool CanChangeEveningLesson(const ScheduleData& data,
+                                std::size_t requestIndex,
+                                std::size_t lesson) const;
+
     std::size_t UnassignedLessonsCount() const;
     std::size_t UnassignedClassroomsCount() const;
 
@@ -59,17 +67,6 @@ std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes, const Sched
 ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes, const ScheduleData& scheduleData);
 
 
-bool CanChangeMorningLesson(const ScheduleChromosomes& chromosomes,
-                            const ScheduleData& data,
-                            std::size_t requestIndex,
-                            std::size_t lesson);
-
-bool CanChangeEveningLesson(const ScheduleChromosomes& chromosomes,
-                            const ScheduleData& data,
-                            std::size_t requestIndex,
-                            std::size_t lesson);
-
-
 template<class RandomGenerator>
 std::size_t ChangeMorningLesson(const ScheduleChromosomes& chromosomes,
                                 const ScheduleData& data,
@@ -85,7 +82,7 @@ std::size_t ChangeMorningLesson(const ScheduleChromosomes& chromosomes,
     std::size_t lesson = lessonsDistrib(randomGenerator);
     std::size_t chooseLessonTry = 0;
     while(chooseLessonTry < MAX_LESSONS_COUNT && 
-          !CanChangeMorningLesson(chromosomes, data, requestIndex, lesson))
+          !chromosomes.CanChangeMorningLesson(data, requestIndex, lesson))
     {
         lesson = lessonsDistrib(randomGenerator);
         ++chooseLessonTry;
@@ -109,7 +106,7 @@ std::size_t ChangeEveningLesson(const ScheduleChromosomes& chromosomes,
     std::size_t lesson = lessonsDistrib(randomGenerator);
     std::size_t chooseLessonTry = 0;
     while(chooseLessonTry < MAX_LESSONS_COUNT &&
-          !CanChangeEveningLesson(chromosomes, data, requestIndex, lesson))
+          !chromosomes.CanChangeEveningLesson(data, requestIndex, lesson))
     {
         lesson = lessonsDistrib(randomGenerator);
         ++chooseLessonTry;

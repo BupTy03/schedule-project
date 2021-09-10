@@ -110,6 +110,26 @@ bool ScheduleChromosomes::ClassroomsIntersects(std::size_t currentLesson,
     return false;
 }
 
+bool ScheduleChromosomes::CanChangeMorningLesson(const ScheduleData& data,
+                                                 std::size_t requestIndex,
+                                                 std::size_t lesson) const
+{
+    const auto& request = data.SubjectRequests().at(requestIndex);
+    return request.RequestedWeekDay(lesson / MAX_LESSONS_PER_DAY) &&
+        !(IsLateScheduleLessonInSaturday(lesson) || 
+          GroupsOrProfessorsOrClassroomsIntersects(data, requestIndex, lesson));
+}
+
+bool ScheduleChromosomes::CanChangeEveningLesson(const ScheduleData& data,
+                                                 std::size_t requestIndex,
+                                                 std::size_t lesson) const
+{
+    const auto& request = data.SubjectRequests().at(requestIndex);
+    return request.RequestedWeekDay(lesson / MAX_LESSONS_PER_DAY) &&
+        SuitableForEveningClasses(lesson) &&
+        !GroupsOrProfessorsOrClassroomsIntersects(data, requestIndex, lesson);
+}
+
 std::size_t ScheduleChromosomes::UnassignedLessonsCount() const
 {
     return std::ranges::count(lessons_, NO_LESSON);
@@ -166,7 +186,7 @@ void InsertEveningRequest(ScheduleChromosomes& chromosomes, const ScheduleData& 
         if(!request.RequestedWeekDay(day))
             continue;
 
-        if(ToWeekDay(day) == WeekDay::Saturday)
+        if(DayToWeekDay(day) == WeekDay::Saturday)
             continue;
 
         const std::size_t scheduleLesson = day * MAX_LESSONS_PER_DAY + lesson;
@@ -387,26 +407,4 @@ ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
     }
 
     return resultSchedule;
-}
-
-bool CanChangeMorningLesson(const ScheduleChromosomes& chromosomes,
-                            const ScheduleData& data,
-                            std::size_t requestIndex,
-                            std::size_t lesson)
-{
-    const auto& request = data.SubjectRequests().at(requestIndex);
-    return request.RequestedWeekDay(lesson / MAX_LESSONS_PER_DAY) &&
-        !(IsLateScheduleLessonInSaturday(lesson) || 
-          chromosomes.GroupsOrProfessorsOrClassroomsIntersects(data, requestIndex, lesson));
-}
-
-bool CanChangeEveningLesson(const ScheduleChromosomes& chromosomes,
-                            const ScheduleData& data,
-                            std::size_t requestIndex,
-                            std::size_t lesson)
-{
-    const auto& request = data.SubjectRequests().at(requestIndex);
-    return request.RequestedWeekDay(lesson / MAX_LESSONS_PER_DAY) &&
-        SuitableForEveningClasses(lesson) &&
-        !chromosomes.GroupsOrProfessorsOrClassroomsIntersects(data, requestIndex, lesson);
 }

@@ -5,7 +5,10 @@
 
 
 std::size_t LessonToScheduleDay(std::size_t lesson) { return lesson / MAX_LESSONS_PER_DAY; }
-WeekDay ToWeekDay(std::size_t d) { return static_cast<WeekDay>(d % DAYS_IN_SCHEDULE_WEEK); }
+WeekDay DayToWeekDay(std::size_t d) { return static_cast<WeekDay>(d % DAYS_IN_SCHEDULE_WEEK); }
+WeekDay LessonToWeekDay(std::size_t lesson) { return DayToWeekDay(LessonToScheduleDay(lesson)); }
+std::size_t FirstWeekFirstLessonIn(WeekDay d) { return static_cast<std::uint8_t>(d) * MAX_LESSONS_PER_DAY; }
+std::size_t SecondWeekFirstLessonIn(WeekDay d) { return (static_cast<std::uint8_t>(d) + DAYS_IN_SCHEDULE_WEEK) * MAX_LESSONS_PER_DAY; }
 
 WeekDays::WeekDays() : days_(FULL_WEEK) { }
 
