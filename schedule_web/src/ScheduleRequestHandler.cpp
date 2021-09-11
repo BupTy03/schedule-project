@@ -33,7 +33,7 @@ void MakeScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& req
         auto logger = spdlog::get("server");
         logger->info("Start generate schedule...");
         jsonResponse = generator_->Generate(jsonRequest);
-        logger->info("Schedule done: requests: {}, responses: {}", jsonRequest["subject_requests"].size(), jsonResponse.size());
+        logger->info("Schedule done: requests: {}, responses: {}", jsonRequest.size(), jsonResponse.size());
 
         response.setStatus(HTTPResponse::HTTP_OK);
     }

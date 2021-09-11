@@ -22,3 +22,5 @@ void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups);
 void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult);
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem);
 void to_json(nlohmann::json& j, const ScheduleResult& scheduleResult);
+
+nlohmann::json JsonConvertFromOldFormat(const nlohmann::json& j);

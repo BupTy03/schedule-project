@@ -1,6 +1,8 @@
 #include "ScheduleDataSerialization.h"
 #include "ScheduleUtils.h"
 
+#include <set>
+
 
 std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
 {
@@ -86,7 +88,7 @@ void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classroom
 void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
 {
     std::vector<SubjectRequest> requests;
-    j.at("subject_requests").get_to(requests);
+    j.get_to(requests);
     if(requests.empty())
         throw std::invalid_argument("'subject_requests' array is empty");
 
@@ -151,4 +153,258 @@ void from_json(const nlohmann::json& j, ScheduleResult& scheduleResult)
     std::vector<ScheduleItem> scheduleItems;
     j.get_to(scheduleItems);
     scheduleResult = ScheduleResult(std::move(scheduleItems));
+}
+
+
+constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
+{
+    constexpr std::array lateSaturdayLessonsTable = {
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+    };
+
+    static_assert(lateSaturdayLessonsTable.size() == MAX_LESSONS_COUNT, "re-fill lateSaturdayLessonsTable");
+    return lateSaturdayLessonsTable[l];
+}
+
+
+constexpr bool SuitableForEveningClasses(std::size_t l)
+{
+    constexpr std::array eveningLessonsTable = {
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+    };
+
+    static_assert(eveningLessonsTable.size() == MAX_LESSONS_COUNT, "re-fill eveningLessonsTable");
+    return eveningLessonsTable[l];
+}
+
+
+nlohmann::json JsonConvertFromOldFormat(const nlohmann::json& j)
+{
+    nlohmann::json result;
+
+    auto subjectRequests = j.at("subject_requests");
+    const auto lockedLessons = j.at("locked_lessons");
+    std::size_t subjectRequestIndex = 0;
+    for(auto&& subjectRequest : subjectRequests)
+    {
+        const std::set<std::size_t> weekDays = subjectRequest.at("days");
+        std::set<std::size_t> lessons;
+        for(std::size_t lesson = 0; lesson < MAX_LESSONS_COUNT; ++lesson)
+        {
+            std::size_t weekDay = (lesson / MAX_LESSONS_PER_DAY) % 6;
+            if(weekDays.count(weekDay) == 0)
+                continue;
+
+            if(IsLateScheduleLessonInSaturday(lesson))
+                continue;
+
+            lessons.emplace(lesson);
+        }
+
+        subjectRequest.erase("days");
+        for(const auto& lockedLesson : lockedLessons)
+        {
+            if(lockedLesson.at("subject_request_id") == subjectRequest.at("id"))
+            {
+                for(std::size_t l : std::set<std::size_t>{lessons})
+                {
+                    if(l % MAX_LESSONS_PER_DAY != lockedLesson.at("address"))
+                        lessons.erase(l);
+                }
+            }
+        }
+
+        subjectRequest.emplace("lessons", lessons);
+        result.emplace_back(subjectRequest);
+    }
+
+    return result;
 }
