@@ -253,7 +253,7 @@ constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
         false,
         true,
         true,
-        true,
+        true
     };
 
     static_assert(lateSaturdayLessonsTable.size() == MAX_LESSONS_COUNT, "re-fill lateSaturdayLessonsTable");
@@ -358,7 +358,7 @@ constexpr bool SuitableForEveningClasses(std::size_t l)
         true,
         true,
         true,
-        true,
+        true
     };
 
     static_assert(eveningLessonsTable.size() == MAX_LESSONS_COUNT, "re-fill eveningLessonsTable");
