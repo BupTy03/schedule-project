@@ -135,8 +135,14 @@ ScheduleChromosomes InitializeChromosomes(const ScheduleData& data)
     const auto& requests = data.SubjectRequests();
     assert(!requests.empty());
 
+    std::vector<std::size_t> requestsIndexes(requests.size());
+    std::iota(requestsIndexes.begin(), requestsIndexes.end(), 0);
+    std::sort(requestsIndexes.begin(), requestsIndexes.end(), [&](std::size_t lhs, std::size_t rhs) { 
+        return std::size(requests.at(lhs).Lessons()) < std::size(requests.at(rhs).Lessons()); 
+    });
+
     ScheduleChromosomes result(requests.size());
-    for(std::size_t r = 0; r < requests.size(); ++r)
+    for(std::size_t r : requestsIndexes)
         InsertRequest(result, data, r);
 
     return result;
