@@ -1,9 +1,9 @@
 #include "ScheduleIndividual.h"
+
 #include "ScheduleData.h"
 
 
-ScheduleIndividual::ScheduleIndividual(std::random_device& randomDevice,
-                                       const ScheduleData* pData)
+ScheduleIndividual::ScheduleIndividual(std::random_device& randomDevice, const ScheduleData* pData)
     : pData_(pData)
     , evaluatedValue_(NOT_EVALUATED)
     , chromosomes_(InitializeChromosomes(*pData))
@@ -70,7 +70,8 @@ std::size_t ScheduleIndividual::Evaluate() const
 
 void ScheduleIndividual::Crossover(ScheduleIndividual& other)
 {
-    std::uniform_int_distribution<std::size_t> requestsDist(0, pData_->SubjectRequests().size() - 1);
+    std::uniform_int_distribution<std::size_t> requestsDist(0,
+                                                            pData_->SubjectRequests().size() - 1);
     const auto requestIndex = requestsDist(randomGenerator_);
     if(ReadyToCrossover(chromosomes_, other.chromosomes_, *pData_, requestIndex))
     {
@@ -82,8 +83,7 @@ void ScheduleIndividual::Crossover(ScheduleIndividual& other)
 
 void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs) { lhs.swap(rhs); }
 
-void Print(const ScheduleIndividual& individ,
-           const ScheduleData& data)
+void Print(const ScheduleIndividual& individ, const ScheduleData& data)
 {
     const auto& requests = data.SubjectRequests();
     const auto& lessons = individ.Chromosomes().Lessons();
@@ -104,9 +104,9 @@ void Print(const ScheduleIndividual& individ,
             {
                 const std::size_t r = std::distance(lessons.begin(), it);
                 const auto& request = requests.at(r);
-                std::cout << "[s:" << request.ID() <<
-                          ", p:" << request.Professor() <<
-                          ", c:(" << classrooms.at(r).Building << ", " << classrooms.at(r).Classroom << "), g: {";
+                std::cout << "[s:" << request.ID() << ", p:" << request.Professor() << ", c:("
+                          << classrooms.at(r).Building << ", " << classrooms.at(r).Classroom
+                          << "), g: {";
 
                 for(auto&& g : request.Groups())
                     std::cout << ' ' << g;

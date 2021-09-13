@@ -1,8 +1,10 @@
 #include "ScheduleResult.h"
+
 #include "ScheduleData.h"
-#include <iostream>
+
 #include <algorithm>
 #include <functional>
+#include <iostream>
 
 
 ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
@@ -12,13 +14,15 @@ ScheduleResult::ScheduleResult(std::vector<ScheduleItem> items)
 }
 
 
-std::ranges::subrange<std::vector<ScheduleItem>::const_iterator> ScheduleResult::at(std::size_t lessonAddress) const
+std::ranges::subrange<std::vector<ScheduleItem>::const_iterator>
+    ScheduleResult::at(std::size_t lessonAddress) const
 {
     return std::ranges::equal_range(items_, lessonAddress, {}, &ScheduleItem::Address);
 }
 
 std::vector<ScheduleItem>::iterator ScheduleResult::insert(const ScheduleItem& item)
 {
-    auto it = std::ranges::lower_bound(items_.begin(), items_.end(), item.Address, {}, &ScheduleItem::Address);
+    auto it = std::ranges::lower_bound(
+        items_.begin(), items_.end(), item.Address, {}, &ScheduleItem::Address);
     return items_.insert(it, item);
 }

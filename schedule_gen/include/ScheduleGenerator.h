@@ -1,12 +1,13 @@
 #pragma once
 #include "ScheduleData.h"
 #include "ScheduleResult.h"
+
+#include <iostream>
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <variant>
-#include <iostream>
-#include <stdexcept>
 
 
 using ScheduleGenOption = std::variant<int, bool>;
@@ -30,15 +31,14 @@ public:
 
 std::ostream& operator<<(std::ostream& os, const ScheduleGenOptions& options);
 
-template<typename T>
-T RequireOption(const ScheduleGenOptions& options, const std::string& name)
+template<typename T> T RequireOption(const ScheduleGenOptions& options, const std::string& name)
 {
     auto it = options.find(name);
-    if(it == options.end())
-        throw std::invalid_argument("Missing option '" + name + '\'');
+    if(it == options.end()) throw std::invalid_argument("Missing option '" + name + '\'');
 
     if(!std::holds_alternative<T>(it->second))
-        throw std::invalid_argument(std::string("Invalid option type. Expected '") + typeid(T).name() + '\'');
+        throw std::invalid_argument(std::string("Invalid option type. Expected '")
+                                    + typeid(T).name() + '\'');
 
     return std::get<T>(it->second);
 }

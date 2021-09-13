@@ -1,8 +1,9 @@
 #pragma once
 #include "ScheduleData.h"
 #include "ScheduleResult.h"
-#include <vector>
+
 #include <random>
+#include <vector>
 
 
 class ScheduleData;
@@ -43,7 +44,9 @@ private:
 };
 
 
-void InsertRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex);
+void InsertRequest(ScheduleChromosomes& chromosomes,
+                   const ScheduleData& data,
+                   std::size_t requestIndex);
 ScheduleChromosomes InitializeChromosomes(const ScheduleData& data);
 
 bool ReadyToCrossover(const ScheduleChromosomes& first,
@@ -53,9 +56,11 @@ bool ReadyToCrossover(const ScheduleChromosomes& first,
 
 void Crossover(ScheduleChromosomes& first, ScheduleChromosomes& second, std::size_t r);
 
-std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes, const ScheduleData& scheduleData);
+std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
+                     const ScheduleData& scheduleData);
 
-ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes, const ScheduleData& scheduleData);
+ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
+                                  const ScheduleData& scheduleData);
 
 
 template<class RandomGenerator>
@@ -117,47 +122,43 @@ std::pair<std::size_t, ClassroomAddress> ChangeChromosome(const ScheduleChromoso
         std::uniform_int_distribution<std::size_t> headsOrTails(0, 1);
         if(headsOrTails(randomGenerator))
         {
-            return {
-                ChangeLesson(chromosomes, data, requestIndex, randomGenerator), 
-                chromosomes.Classroom(requestIndex)
-            };
+            return {ChangeLesson(chromosomes, data, requestIndex, randomGenerator),
+                    chromosomes.Classroom(requestIndex)};
         }
         else
         {
-            return {
-                chromosomes.Lesson(requestIndex),
-                ChangeClassroom(chromosomes, data, requestIndex, randomGenerator)
-            };
+            return {chromosomes.Lesson(requestIndex),
+                    ChangeClassroom(chromosomes, data, requestIndex, randomGenerator)};
         }
     }
-    
+
     if(canChangeLesson)
     {
-        return {
-            ChangeLesson(chromosomes, data, requestIndex, randomGenerator), 
-            chromosomes.Classroom(requestIndex)
-        };
+        return {ChangeLesson(chromosomes, data, requestIndex, randomGenerator),
+                chromosomes.Classroom(requestIndex)};
     }
     else
     {
-        return {
-            chromosomes.Lesson(requestIndex),
-            ChangeClassroom(chromosomes, data, requestIndex, randomGenerator)
-        };
+        return {chromosomes.Lesson(requestIndex),
+                ChangeClassroom(chromosomes, data, requestIndex, randomGenerator)};
     }
 }
 
 template<class RandomGenerator>
-bool Mutate(ScheduleChromosomes& chromosomes, const ScheduleData& data, RandomGenerator& randomGenerator)
+bool Mutate(ScheduleChromosomes& chromosomes,
+            const ScheduleData& data,
+            RandomGenerator& randomGenerator)
 {
-    std::uniform_int_distribution<std::size_t> requestsDistrib(0, data.SubjectRequests().size() - 1);
+    std::uniform_int_distribution<std::size_t> requestsDistrib(0,
+                                                               data.SubjectRequests().size() - 1);
     const auto requestIndex = requestsDistrib(randomGenerator);
 
     const auto oldLesson = chromosomes.Lesson(requestIndex);
     const auto oldClassrooms = chromosomes.Classroom(requestIndex);
 
-    std::tie(chromosomes.Lesson(requestIndex), chromosomes.Classroom(requestIndex)) = 
+    std::tie(chromosomes.Lesson(requestIndex), chromosomes.Classroom(requestIndex)) =
         ChangeChromosome(chromosomes, data, requestIndex, randomGenerator);
 
-    return !(oldLesson == chromosomes.Lesson(requestIndex) && oldClassrooms == chromosomes.Classroom(requestIndex));
+    return !(oldLesson == chromosomes.Lesson(requestIndex)
+             && oldClassrooms == chromosomes.Classroom(requestIndex));
 }

@@ -1,10 +1,12 @@
 #include "ScheduleChromosomes.h"
+
 #include "ScheduleData.h"
-#include <array>
-#include <utility>
-#include <numeric>
+
 #include <algorithm>
+#include <array>
 #include <experimental/generator>
+#include <numeric>
+#include <utility>
 
 
 ScheduleChromosomes::ScheduleChromosomes(std::size_t count)
@@ -35,9 +37,9 @@ bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const Schedul
     {
         const std::size_t requestIndex = std::distance(lessons_.begin(), it);
         const auto& otherRequest = requests.at(requestIndex);
-        if(thisRequest.Professor() == otherRequest.Professor() ||
-            classrooms_.at(currentRequest) == classrooms_.at(requestIndex) ||
-           set_intersects(thisRequest.Groups(), otherRequest.Groups()))
+        if(thisRequest.Professor() == otherRequest.Professor()
+           || classrooms_.at(currentRequest) == classrooms_.at(requestIndex)
+           || set_intersects(thisRequest.Groups(), otherRequest.Groups()))
         {
             return true;
         }
@@ -59,7 +61,8 @@ bool ScheduleChromosomes::GroupsOrProfessorsIntersects(const ScheduleData& data,
     {
         const std::size_t requestIndex = std::distance(lessons_.begin(), it);
         const auto& otherRequest = requests.at(requestIndex);
-        if(thisRequest.Professor() == otherRequest.Professor() || set_intersects(thisRequest.Groups(), otherRequest.Groups()))
+        if(thisRequest.Professor() == otherRequest.Professor()
+           || set_intersects(thisRequest.Groups(), otherRequest.Groups()))
             return true;
 
         it = std::find(std::next(it), lessons_.end(), currentLesson);
@@ -99,7 +102,9 @@ std::size_t ScheduleChromosomes::UnassignedClassroomsCount() const
 }
 
 
-void InsertRequest(ScheduleChromosomes& chromosomes, const ScheduleData& data, std::size_t requestIndex)
+void InsertRequest(ScheduleChromosomes& chromosomes,
+                   const ScheduleData& data,
+                   std::size_t requestIndex)
 {
     const auto& requests = data.SubjectRequests();
     const auto& request = requests.at(requestIndex);
@@ -137,9 +142,11 @@ ScheduleChromosomes InitializeChromosomes(const ScheduleData& data)
 
     std::vector<std::size_t> requestsIndexes(requests.size());
     std::iota(requestsIndexes.begin(), requestsIndexes.end(), 0);
-    std::sort(requestsIndexes.begin(), requestsIndexes.end(), [&](std::size_t lhs, std::size_t rhs) { 
-        return std::size(requests.at(lhs).Lessons()) < std::size(requests.at(rhs).Lessons()); 
-    });
+    std::sort(
+        requestsIndexes.begin(),
+        requestsIndexes.end(),
+        [&](std::size_t lhs, std::size_t rhs)
+        { return std::size(requests.at(lhs).Lessons()) < std::size(requests.at(rhs).Lessons()); });
 
     ScheduleChromosomes result(requests.size());
     for(std::size_t r : requestsIndexes)
@@ -159,20 +166,18 @@ bool ReadyToCrossover(const ScheduleChromosomes& first,
     const auto secondLesson = second.Lesson(r);
     const auto secondClassroom = second.Classroom(r);
 
-    if(first.ClassroomsIntersects(secondLesson, secondClassroom) ||
-       second.ClassroomsIntersects(firstLesson, firstClassroom))
+    if(first.ClassroomsIntersects(secondLesson, secondClassroom)
+       || second.ClassroomsIntersects(firstLesson, firstClassroom))
         return false;
 
-    if(first.GroupsOrProfessorsOrClassroomsIntersects(data, r, secondLesson) ||
-       second.GroupsOrProfessorsOrClassroomsIntersects(data, r, firstLesson))
+    if(first.GroupsOrProfessorsOrClassroomsIntersects(data, r, secondLesson)
+       || second.GroupsOrProfessorsOrClassroomsIntersects(data, r, firstLesson))
         return false;
 
     return true;
 }
 
-void Crossover(ScheduleChromosomes& first,
-               ScheduleChromosomes& second,
-               std::size_t r)
+void Crossover(ScheduleChromosomes& first, ScheduleChromosomes& second, std::size_t r)
 {
     using std::swap;
     swap(first.Lesson(r), second.Lesson(r));
@@ -188,96 +193,125 @@ std::size_t Evaluate(const ScheduleChromosomes& scheduleChromosomes,
     std::size_t maxBuildingsChangesForGroups = 0;
     std::size_t maxBuildingsChangesForProfessors = 0;
 
-    auto calculateGap = [](auto&& lhs, auto&& rhs) {
-        return lhs.first - rhs.first - 1;
-    };
+    auto calculateGap = [](auto&& lhs, auto&& rhs) { return lhs.first - rhs.first - 1; };
 
-    auto buildingsChanged = [&](auto&& lhs, auto&& rhs) -> bool {
+    auto buildingsChanged = [&](auto&& lhs, auto&& rhs) -> bool
+    {
         const auto lhsLesson = lhs.first;
         const auto rhsLesson = rhs.first;
         const auto lhsBuilding = scheduleChromosomes.Classroom(lhs.second).Building;
         const auto rhsBuilding = scheduleChromosomes.Classroom(rhs.second).Building;
 
-        return !(lhsBuilding == rhsBuilding ||
-                lhsLesson - rhsLesson > 1  ||
-                lhsBuilding == NO_BUILDING ||
-                rhsBuilding == NO_BUILDING);
+        return !(lhsBuilding == rhsBuilding || lhsLesson - rhsLesson > 1
+                 || lhsBuilding == NO_BUILDING || rhsBuilding == NO_BUILDING);
     };
 
     const auto& requests = scheduleData.SubjectRequests();
     std::vector<std::pair<std::size_t, std::size_t>> lessonsBuffer;
-    for(auto&&[professor, professorRequests] : scheduleData.Professors())
+    for(auto&& [professor, professorRequests] : scheduleData.Professors())
     {
         lessonsBuffer.clear();
         lessonsBuffer.reserve(professorRequests.size());
-        std::ranges::transform(professorRequests, std::back_inserter(lessonsBuffer),
-                               [&](std::size_t r) { return std::pair{scheduleChromosomes.Lesson(r), r}; });
+        std::ranges::transform(professorRequests,
+                               std::back_inserter(lessonsBuffer),
+                               [&](std::size_t r) {
+                                   return std::pair{scheduleChromosomes.Lesson(r), r};
+                               });
 
         std::ranges::sort(lessonsBuffer);
-        auto lastLesson = std::ranges::lower_bound(lessonsBuffer, NO_LESSON,
-                                                   std::less<>{}, [](auto&& p) { return p.first; });
+        auto lastLesson = std::ranges::lower_bound(
+            lessonsBuffer, NO_LESSON, std::less<>{}, [](auto&& p) { return p.first; });
 
         for(auto firstDayLessonIt = lessonsBuffer.begin(); firstDayLessonIt != lastLesson;)
         {
             const std::size_t day = firstDayLessonIt->first / MAX_LESSONS_PER_DAY;
             const std::size_t nextDayFirstLesson = (day + 1) * MAX_LESSONS_PER_DAY;
-            const auto lastDayLessonIt = std::ranges::lower_bound(std::next(firstDayLessonIt), lastLesson, nextDayFirstLesson,
-                                                                  std::less<>{}, [](auto&& p) { return p.first; });
+            const auto lastDayLessonIt = std::ranges::lower_bound(std::next(firstDayLessonIt),
+                                                                  lastLesson,
+                                                                  nextDayFirstLesson,
+                                                                  std::less<>{},
+                                                                  [](auto&& p) { return p.first; });
 
             maxLessonsGapsForProfessors = std::max(maxLessonsGapsForProfessors,
-                                                   std::inner_product(std::next(firstDayLessonIt), lastDayLessonIt,
-                                                                      firstDayLessonIt, std::size_t{0}, std::plus<>{}, calculateGap));
+                                                   std::inner_product(std::next(firstDayLessonIt),
+                                                                      lastDayLessonIt,
+                                                                      firstDayLessonIt,
+                                                                      std::size_t{0},
+                                                                      std::plus<>{},
+                                                                      calculateGap));
 
-            maxBuildingsChangesForProfessors = std::max(maxBuildingsChangesForProfessors,
-                                                        std::inner_product(std::next(firstDayLessonIt), lastDayLessonIt,
-                                                                           firstDayLessonIt, std::size_t{0}, std::plus<>{}, buildingsChanged));
+            maxBuildingsChangesForProfessors =
+                std::max(maxBuildingsChangesForProfessors,
+                         std::inner_product(std::next(firstDayLessonIt),
+                                            lastDayLessonIt,
+                                            firstDayLessonIt,
+                                            std::size_t{0},
+                                            std::plus<>{},
+                                            buildingsChanged));
 
             firstDayLessonIt = lastDayLessonIt;
         }
     }
 
-    for(auto&&[group, groupRequests] : scheduleData.Groups())
+    for(auto&& [group, groupRequests] : scheduleData.Groups())
     {
         lessonsBuffer.clear();
         lessonsBuffer.reserve(groupRequests.size());
-        std::ranges::transform(groupRequests, std::back_inserter(lessonsBuffer),
-                               [&](std::size_t r) { return std::pair{scheduleChromosomes.Lesson(r), r}; });
+        std::ranges::transform(groupRequests,
+                               std::back_inserter(lessonsBuffer),
+                               [&](std::size_t r) {
+                                   return std::pair{scheduleChromosomes.Lesson(r), r};
+                               });
 
         std::ranges::sort(lessonsBuffer);
-        auto lastLesson = std::ranges::lower_bound(lessonsBuffer, NO_LESSON,
-                                                   std::less<>{}, [](auto&& p) { return p.first; });
+        auto lastLesson = std::ranges::lower_bound(
+            lessonsBuffer, NO_LESSON, std::less<>{}, [](auto&& p) { return p.first; });
 
         for(auto firstDayLessonIt = lessonsBuffer.begin(); firstDayLessonIt != lastLesson;)
         {
             const std::size_t day = firstDayLessonIt->first / MAX_LESSONS_PER_DAY;
             const std::size_t nextDayFirstLesson = (day + 1) * MAX_LESSONS_PER_DAY;
-            const auto lastDayLessonIt = std::ranges::lower_bound(std::next(firstDayLessonIt), lastLesson, nextDayFirstLesson,
-                                                                  std::less<>{}, [](auto&& p) { return p.first; });
+            const auto lastDayLessonIt = std::ranges::lower_bound(std::next(firstDayLessonIt),
+                                                                  lastLesson,
+                                                                  nextDayFirstLesson,
+                                                                  std::less<>{},
+                                                                  [](auto&& p) { return p.first; });
 
             maxLessonsGapsForGroups = std::max(maxLessonsGapsForGroups,
-                                               std::inner_product(std::next(firstDayLessonIt), lastDayLessonIt,
-                                                                  firstDayLessonIt, std::size_t{0}, std::plus<>{}, calculateGap));
+                                               std::inner_product(std::next(firstDayLessonIt),
+                                                                  lastDayLessonIt,
+                                                                  firstDayLessonIt,
+                                                                  std::size_t{0},
+                                                                  std::plus<>{},
+                                                                  calculateGap));
 
             maxBuildingsChangesForGroups = std::max(maxBuildingsChangesForGroups,
-                                                    std::inner_product(std::next(firstDayLessonIt), lastDayLessonIt,
-                                                                       firstDayLessonIt, std::size_t{0}, std::plus<>{}, buildingsChanged));
+                                                    std::inner_product(std::next(firstDayLessonIt),
+                                                                       lastDayLessonIt,
+                                                                       firstDayLessonIt,
+                                                                       std::size_t{0},
+                                                                       std::plus<>{},
+                                                                       buildingsChanged));
 
-            maxDayComplexity = std::max(maxDayComplexity,
-                                        std::accumulate(firstDayLessonIt, lastDayLessonIt, std::size_t{0}, [&](auto accum, auto&& p){
-                                               return accum + (p.first % MAX_LESSONS_PER_DAY) * requests.at(p.second).Complexity();
-                                        }));
+            maxDayComplexity =
+                std::max(maxDayComplexity,
+                         std::accumulate(firstDayLessonIt,
+                                         lastDayLessonIt,
+                                         std::size_t{0},
+                                         [&](auto accum, auto&& p) {
+                                             return accum
+                                                    + (p.first % MAX_LESSONS_PER_DAY)
+                                                          * requests.at(p.second).Complexity();
+                                         }));
 
             firstDayLessonIt = lastDayLessonIt;
         }
     }
 
-    return maxLessonsGapsForGroups * 3 +
-           maxLessonsGapsForProfessors * 2 +
-           maxDayComplexity * 4 +
-           maxBuildingsChangesForProfessors * 64 +
-           maxBuildingsChangesForGroups * 64 +
-           scheduleChromosomes.UnassignedLessonsCount() * 128 +
-           scheduleChromosomes.UnassignedClassroomsCount() * 128;
+    return maxLessonsGapsForGroups * 3 + maxLessonsGapsForProfessors * 2 + maxDayComplexity * 4
+           + maxBuildingsChangesForProfessors * 64 + maxBuildingsChangesForGroups * 64
+           + scheduleChromosomes.UnassignedLessonsCount() * 128
+           + scheduleChromosomes.UnassignedClassroomsCount() * 128;
 }
 
 ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,

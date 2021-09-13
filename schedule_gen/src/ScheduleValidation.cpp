@@ -1,7 +1,8 @@
 #include "ScheduleValidation.h"
 
 
-std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data, const ScheduleResult& result)
+std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
+                                                          const ScheduleResult& result)
 {
     std::vector<OverlappedClassroom> overlappedClassrooms;
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
@@ -16,7 +17,7 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
             classroomsAndSubjects[item.Classroom].emplace_back(item.SubjectRequestID);
         }
 
-        for(auto&[classroom, subjects] : classroomsAndSubjects)
+        for(auto& [classroom, subjects] : classroomsAndSubjects)
         {
             if(subjects.size() > 1)
             {
@@ -34,7 +35,8 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
     return overlappedClassrooms;
 }
 
-std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data, const ScheduleResult& result)
+std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& data,
+                                                          const ScheduleResult& result)
 {
     std::vector<OverlappedProfessor> overlappedProfessors;
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
@@ -47,7 +49,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
             professorsAndSubjects[request.Professor()].emplace_back(item.SubjectRequestID);
         }
 
-        for(auto&[professor, subjects] : professorsAndSubjects)
+        for(auto& [professor, subjects] : professorsAndSubjects)
         {
             if(subjects.size() > 1)
             {
@@ -72,7 +74,8 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
         const auto lessonsRange = result.at(l);
-        std::map<std::pair<std::size_t, std::size_t>, std::vector<std::size_t>> subjectGroupsIntersections;
+        std::map<std::pair<std::size_t, std::size_t>, std::vector<std::size_t>>
+            subjectGroupsIntersections;
         for(auto f = lessonsRange.begin(); f != lessonsRange.end(); ++f)
         {
             for(auto s = lessonsRange.begin(); s != lessonsRange.end(); ++s)
@@ -87,24 +90,29 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
                 const auto& secondGroups = data.SubjectRequestAtID(s->SubjectRequestID).Groups();
 
                 std::vector<std::size_t> intersectedGroups;
-                std::set_intersection(firstGroups.begin(), firstGroups.end(),
-                                      secondGroups.begin(), secondGroups.end(), std::back_inserter(intersectedGroups));
+                std::set_intersection(firstGroups.begin(),
+                                      firstGroups.end(),
+                                      secondGroups.begin(),
+                                      secondGroups.end(),
+                                      std::back_inserter(intersectedGroups));
                 if(intersectedGroups.empty())
                     continue;
 
-                subjectGroupsIntersections.emplace(std::pair{f->SubjectRequestID, s->SubjectRequestID}, std::move(intersectedGroups));
+                subjectGroupsIntersections.emplace(
+                    std::pair{f->SubjectRequestID, s->SubjectRequestID},
+                    std::move(intersectedGroups));
             }
         }
 
-        for(auto&[subjPair, groups] : subjectGroupsIntersections)
+        for(auto& [subjPair, groups] : subjectGroupsIntersections)
         {
             OverlappedGroups overlappedGroups;
             overlappedGroups.Address = l;
             overlappedGroups.Groups = std::move(groups);
 
             // sorted
-            overlappedGroups.SubjectRequestsIDs = { std::min(subjPair.first, subjPair.second),
-                                                    std::max(subjPair.first, subjPair.second) };
+            overlappedGroups.SubjectRequestsIDs = {std::min(subjPair.first, subjPair.second),
+                                                   std::max(subjPair.first, subjPair.second)};
             overlapped.emplace_back(std::move(overlappedGroups));
         }
     }
@@ -112,12 +120,9 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
     return overlapped;
 }
 
-CheckScheduleResult CheckSchedule(const ScheduleData& data,
-                                  const ScheduleResult& result)
+CheckScheduleResult CheckSchedule(const ScheduleData& data, const ScheduleResult& result)
 {
-    return CheckScheduleResult{
-        .OverlappedClassroomsList = FindOverlappedClassrooms(data, result),
-        .OverlappedProfessorsList = FindOverlappedProfessors(data, result),
-        .OverlappedGroupsList = FindOverlappedGroups(data, result)
-    };
+    return CheckScheduleResult{.OverlappedClassroomsList = FindOverlappedClassrooms(data, result),
+                               .OverlappedProfessorsList = FindOverlappedProfessors(data, result),
+                               .OverlappedGroupsList = FindOverlappedGroups(data, result)};
 }

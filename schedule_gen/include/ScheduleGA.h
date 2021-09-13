@@ -1,8 +1,9 @@
 #pragma once
 #include "ScheduleData.h"
 #include "ScheduleIndividual.h"
-#include <vector>
+
 #include <chrono>
+#include <vector>
 
 
 struct ScheduleGAStatistics

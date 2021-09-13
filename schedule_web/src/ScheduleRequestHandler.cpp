@@ -1,11 +1,12 @@
 #include "ScheduleRequestHandler.h"
-#include "ScheduleServer.h"
-#include "ScheduleValidation.h"
+
 #include "GAScheduleGenerator.h"
 #include "ScheduleDataSerialization.h"
+#include "ScheduleServer.h"
+#include "ScheduleValidation.h"
 
-#include <spdlog/spdlog.h>
 #include <Poco/URI.h>
+#include <spdlog/spdlog.h>
 #include <cassert>
 
 
@@ -20,20 +21,22 @@ MakeScheduleRequestHandler::MakeScheduleRequestHandler(std::unique_ptr<ScheduleG
 }
 
 void MakeScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
-                                         Poco::Net::HTTPServerResponse& response)
+                                               Poco::Net::HTTPServerResponse& response)
 {
     std::istream& in = request.stream();
     std::vector<char> requestBody(request.getContentLength(), '\0');
     in.read(requestBody.data(), requestBody.size());
 
     nlohmann::json jsonResponse;
-    try {
+    try
+    {
         const auto jsonRequest = nlohmann::json::parse(requestBody);
 
         auto logger = spdlog::get("server");
         logger->info("Start generate schedule...");
         jsonResponse = generator_->Generate(jsonRequest);
-        logger->info("Schedule done: requests: {}, responses: {}", jsonRequest.size(), jsonResponse.size());
+        logger->info(
+            "Schedule done: requests: {}, responses: {}", jsonRequest.size(), jsonResponse.size());
 
         response.setStatus(HTTPResponse::HTTP_OK);
     }
@@ -58,7 +61,8 @@ void CheckScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& re
     in.read(requestBody.data(), requestBody.size());
 
     nlohmann::json jsonResponse;
-    try {
+    try
+    {
         const auto jsonRequest = nlohmann::json::parse(requestBody);
         const ScheduleData scheduleData = jsonRequest;
         jsonResponse = CheckSchedule(scheduleData, jsonRequest.at("placed_lessons"));
@@ -77,13 +81,15 @@ void CheckScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& re
 }
 
 
-ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(std::unique_ptr<ScheduleGenerator> generator)
+ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(
+    std::unique_ptr<ScheduleGenerator> generator)
     : generator_(std::move(generator))
 {
     assert(generator_ != nullptr);
 }
 
-Poco::Net::HTTPRequestHandler* ScheduleRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
+Poco::Net::HTTPRequestHandler*
+    ScheduleRequestHandlerFactory::createRequestHandler(const Poco::Net::HTTPServerRequest& request)
 {
     if(!request.serverAddress().host().isLoopback())
         return nullptr;

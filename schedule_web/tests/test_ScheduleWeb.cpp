@@ -1,5 +1,6 @@
-#include "ScheduleDataSerialization.h"
 #include "GAScheduleGenerator.h"
+#include "ScheduleDataSerialization.h"
+
 #include <catch2/catch.hpp>
 
 
@@ -7,11 +8,13 @@ TEST_CASE("Parsing lessons set", "[parsing]")
 {
     SECTION("Normal week days json array parsed successfully")
     {
-        REQUIRE(ParseLessonsSet("[0, 1, 2, 3, 4, 5]"_json) == std::vector<std::size_t>{0, 1, 2, 3, 4, 5});
+        REQUIRE(ParseLessonsSet("[0, 1, 2, 3, 4, 5]"_json)
+                == std::vector<std::size_t>{0, 1, 2, 3, 4, 5});
     }
     SECTION("If duplications found - they are ignored")
     {
-        REQUIRE(ParseLessonsSet("[0, 0, 1, 2, 3, 3, 3]"_json) == std::vector<std::size_t>{0, 1, 2, 3});
+        REQUIRE(ParseLessonsSet("[0, 0, 1, 2, 3, 3, 3]"_json)
+                == std::vector<std::size_t>{0, 1, 2, 3});
     }
     SECTION("Negative value is incorrect")
     {
@@ -63,17 +66,21 @@ TEST_CASE("Parsing subject request", "[parsing]")
             "classrooms": [[2, 11], [3, 12]]
         })"_json;
 
-        const SubjectRequest expected{
-            0, 1, 2, {1, 2, 4, 5}, {0, 2, 4},
-            {ClassroomAddress{.Building = 0, .Classroom = 2},
-            ClassroomAddress{.Building = 0, .Classroom = 11},
-            ClassroomAddress{.Building = 1, .Classroom = 3},
-            ClassroomAddress{.Building = 1, .Classroom = 12}}
-        };
+        const SubjectRequest expected{0,
+                                      1,
+                                      2,
+                                      {1, 2, 4, 5},
+                                      {0, 2, 4},
+                                      {ClassroomAddress{.Building = 0, .Classroom = 2},
+                                       ClassroomAddress{.Building = 0, .Classroom = 11},
+                                       ClassroomAddress{.Building = 1, .Classroom = 3},
+                                       ClassroomAddress{.Building = 1, .Classroom = 12}}};
 
         REQUIRE(request == expected);
     }
-    SECTION("Subject request includes fields 'id', 'professor', 'complexity', 'groups', 'lessons' and 'classrooms'")
+    SECTION(
+        "Subject request includes fields 'id', 'professor', 'complexity', 'groups', 'lessons' and "
+        "'classrooms'")
     {
         SubjectRequest request;
         REQUIRE_THROWS(request = "{}"_json);
@@ -1124,13 +1131,11 @@ TEST_CASE("Integration test #1", "[integration]")
     )"_json;
 
     GAScheduleGenerator generator;
-    generator.SetOptions(ScheduleGenOptions{
-        {"individuals_count", 50},
-        {"iterations_count", 20},
-        {"selection_count", 16},
-        {"crossover_count", 12},
-        {"mutation_chance", 39}
-    });
+    generator.SetOptions(ScheduleGenOptions{{"individuals_count", 50},
+                                            {"iterations_count", 20},
+                                            {"selection_count", 16},
+                                            {"crossover_count", 12},
+                                            {"mutation_chance", 39}});
 
     const ScheduleData scheduleData = jsonData;
     const ScheduleResult scheduleResult = generator.Generate(scheduleData);

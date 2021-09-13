@@ -1,4 +1,5 @@
 #include "ScheduleDataSerialization.h"
+
 #include "ScheduleUtils.h"
 
 #include <set>
@@ -37,7 +38,8 @@ std::vector<std::size_t> ParseLessonsSet(const nlohmann::json& arr)
     {
         const auto v = value.get<std::int64_t>();
         if(value < 0 || value >= MAX_LESSONS_COUNT)
-            throw std::out_of_range("Lesson value must be in range [0, " + std::to_string(MAX_LESSONS_COUNT) + ')');
+            throw std::out_of_range("Lesson value must be in range [0, "
+                                    + std::to_string(MAX_LESSONS_COUNT) + ')');
 
         result.emplace_back(static_cast<std::size_t>(v));
     }
@@ -50,13 +52,12 @@ std::vector<std::size_t> ParseLessonsSet(const nlohmann::json& arr)
 
 void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest)
 {
-    subjectRequest = SubjectRequest(
-        j.at("id").get<std::size_t>(),
-        j.at("professor").get<std::size_t>(),
-        j.at("complexity").get<std::size_t>(),
-        ParseIDsSet(j.at("groups")),
-        ParseLessonsSet(j.at("lessons")),
-        j.at("classrooms"));
+    subjectRequest = SubjectRequest(j.at("id").get<std::size_t>(),
+                                    j.at("professor").get<std::size_t>(),
+                                    j.at("complexity").get<std::size_t>(),
+                                    ParseIDsSet(j.at("groups")),
+                                    ParseLessonsSet(j.at("lessons")),
+                                    j.at("classrooms"));
 }
 
 void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classrooms)
@@ -98,8 +99,8 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem)
 {
     j = nlohmann::json::object({{"address", scheduleItem.Address},
-                                   {"subject_request_id", scheduleItem.SubjectRequestID},
-                                   {"classroom", scheduleItem.Classroom}});
+                                {"subject_request_id", scheduleItem.SubjectRequestID},
+                                {"classroom", scheduleItem.Classroom}});
 }
 
 void to_json(nlohmann::json& j, const ScheduleResult& scheduleResult)
@@ -109,23 +110,23 @@ void to_json(nlohmann::json& j, const ScheduleResult& scheduleResult)
 
 void to_json(nlohmann::json& j, const OverlappedClassroom& overlappedClassroom)
 {
-    j = nlohmann::json{ { "address", overlappedClassroom.Address },
-                        { "classroom", overlappedClassroom.Classroom },
-                        { "subject_ids", overlappedClassroom.SubjectRequestsIDs } };
+    j = nlohmann::json{{"address", overlappedClassroom.Address},
+                       {"classroom", overlappedClassroom.Classroom},
+                       {"subject_ids", overlappedClassroom.SubjectRequestsIDs}};
 }
 
 void to_json(nlohmann::json& j, const OverlappedProfessor& overlappedProfessor)
 {
-    j = nlohmann::json{ { "address", overlappedProfessor.Address },
-                        { "professor", overlappedProfessor.Professor },
-                        { "subject_ids", overlappedProfessor.SubjectRequestsIDs } };
+    j = nlohmann::json{{"address", overlappedProfessor.Address},
+                       {"professor", overlappedProfessor.Professor},
+                       {"subject_ids", overlappedProfessor.SubjectRequestsIDs}};
 }
 
 void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups)
 {
-    j = nlohmann::json{ { "address", overlappedGroups.Address },
-                        { "groups", overlappedGroups.Groups },
-                        { "subject_ids", overlappedGroups.SubjectRequestsIDs } };
+    j = nlohmann::json{{"address", overlappedGroups.Address},
+                       {"groups", overlappedGroups.Groups},
+                       {"subject_ids", overlappedGroups.SubjectRequestsIDs}};
 }
 
 void to_json(nlohmann::json& j, const ViolatedWeekdayRequest& violatedWeekdayRequest)
@@ -159,207 +160,61 @@ void from_json(const nlohmann::json& j, ScheduleResult& scheduleResult)
 constexpr bool IsLateScheduleLessonInSaturday(std::size_t l)
 {
     constexpr std::array lateSaturdayLessonsTable = {
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
-        true,
+        false, false, false, false, true,  true,  true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
+        false, false, false, false, false, false, false,
 
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
-        true
-    };
+        false, false, false, false, true,  true,  true};
 
-    static_assert(lateSaturdayLessonsTable.size() == MAX_LESSONS_COUNT, "re-fill lateSaturdayLessonsTable");
+    static_assert(lateSaturdayLessonsTable.size() == MAX_LESSONS_COUNT,
+                  "re-fill lateSaturdayLessonsTable");
     return lateSaturdayLessonsTable[l];
 }
 
 
 constexpr bool SuitableForEveningClasses(std::size_t l)
 {
-    constexpr std::array eveningLessonsTable = {
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+    constexpr std::array eveningLessonsTable = {false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
+                                                true,  true,  true,  true,  true,  true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
+                                                false, false, false, false, false, true, true,
 
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-    };
+                                                true,  true,  true,  true,  true,  true, true};
 
     static_assert(eveningLessonsTable.size() == MAX_LESSONS_COUNT, "re-fill eveningLessonsTable");
     return eveningLessonsTable[l];

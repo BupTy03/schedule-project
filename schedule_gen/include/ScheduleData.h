@@ -1,8 +1,9 @@
 #pragma once
 #include "ScheduleCommon.h"
-#include <vector>
+
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 
 class SubjectRequest
@@ -27,12 +28,9 @@ public:
 
     friend bool operator==(const SubjectRequest& lhs, const SubjectRequest& rhs)
     {
-        return lhs.id_ == rhs.id_ &&
-            lhs.professor_ == rhs.professor_ &&
-            lhs.complexity_ == rhs.complexity_ &&
-            lhs.groups_ == rhs.groups_ &&
-            lhs.lessons_ == rhs.lessons_ &&
-            lhs.classrooms_ == rhs.classrooms_;
+        return lhs.id_ == rhs.id_ && lhs.professor_ == rhs.professor_
+               && lhs.complexity_ == rhs.complexity_ && lhs.groups_ == rhs.groups_
+               && lhs.lessons_ == rhs.lessons_ && lhs.classrooms_ == rhs.classrooms_;
     }
 
     friend bool operator!=(const SubjectRequest& lhs, const SubjectRequest& rhs)
@@ -56,14 +54,8 @@ struct SubjectRequestIDLess
     {
         return lhs.ID() < rhs.ID();
     }
-    bool operator()(const SubjectRequest& lhs, std::size_t rhsID) const
-    {
-        return lhs.ID() < rhsID;
-    }
-    bool operator()(std::size_t lhsID, const SubjectRequest& rhs) const
-    {
-        return lhsID < rhs.ID();
-    }
+    bool operator()(const SubjectRequest& lhs, std::size_t rhsID) const { return lhs.ID() < rhsID; }
+    bool operator()(std::size_t lhsID, const SubjectRequest& rhs) const { return lhsID < rhs.ID(); }
 };
 
 struct SubjectRequestIDEqual
@@ -87,8 +79,14 @@ public:
 
     std::size_t IndexOfSubjectRequestWithID(std::size_t subjectRequestID) const;
 
-    const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& Professors() const { return professorRequests_; }
-    const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& Groups() const { return groupRequests_; }
+    const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& Professors() const
+    {
+        return professorRequests_;
+    }
+    const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& Groups() const
+    {
+        return groupRequests_;
+    }
 
 private:
     std::vector<SubjectRequest> subjectRequests_;

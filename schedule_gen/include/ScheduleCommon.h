@@ -1,14 +1,14 @@
 #pragma once
+#include <algorithm>
 #include <array>
-#include <vector>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cassert>
-#include <iterator>
-#include <iostream>
-#include <algorithm>
-#include <stdexcept>
 #include <initializer_list>
+#include <iostream>
+#include <iterator>
+#include <stdexcept>
+#include <vector>
 
 
 constexpr std::size_t SCHEDULE_DAYS_COUNT = 12;
@@ -27,8 +27,11 @@ const std::vector<std::size_t>& AllLessons();
 
 struct ClassroomAddress
 {
-    static ClassroomAddress NoClassroom() { return ClassroomAddress{.Building = std::numeric_limits<std::size_t>::max(),
-                                                                    .Classroom = std::numeric_limits<std::size_t>::max()}; }
+    static ClassroomAddress NoClassroom()
+    {
+        return ClassroomAddress{.Building = std::numeric_limits<std::size_t>::max(),
+                                .Classroom = std::numeric_limits<std::size_t>::max()};
+    }
 
     static ClassroomAddress Any() { return ClassroomAddress{.Building = 0, .Classroom = 0}; }
 
@@ -36,15 +39,28 @@ struct ClassroomAddress
     {
         return lhs.Building == rhs.Building && lhs.Classroom == rhs.Classroom;
     }
-    friend bool operator!=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(lhs == rhs); }
+    friend bool operator!=(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
+    {
+        return !(lhs == rhs);
+    }
 
     friend bool operator<(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
     {
-        return (lhs.Building < rhs.Building) || (lhs.Building == rhs.Building && lhs.Classroom < rhs.Classroom);
+        return (lhs.Building < rhs.Building)
+               || (lhs.Building == rhs.Building && lhs.Classroom < rhs.Classroom);
     }
-    friend bool operator>(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return rhs < lhs; }
-    friend bool operator<=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(rhs < lhs); }
-    friend bool operator>=(const ClassroomAddress& lhs, const ClassroomAddress& rhs) { return !(lhs < rhs); }
+    friend bool operator>(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
+    {
+        return rhs < lhs;
+    }
+    friend bool operator<=(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
+    {
+        return !(rhs < lhs);
+    }
+    friend bool operator>=(const ClassroomAddress& lhs, const ClassroomAddress& rhs)
+    {
+        return !(lhs < rhs);
+    }
 
     std::size_t Building = 0;
     std::size_t Classroom = 0;

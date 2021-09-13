@@ -1,11 +1,13 @@
 #pragma once
 #include "ScheduleGenerator.h"
-#include <Poco/Util/ServerApplication.h>
-#include <nlohmann/json.hpp>
+
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
+
+#include <Poco/Util/ServerApplication.h>
+#include <nlohmann/json.hpp>
 
 
 class ScheduleServer : public Poco::Util::ServerApplication

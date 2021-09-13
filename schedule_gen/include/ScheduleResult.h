@@ -1,11 +1,12 @@
 #pragma once
-#include "ScheduleUtils.h"
 #include "ScheduleCommon.h"
-#include <map>
-#include <vector>
+#include "ScheduleUtils.h"
+
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <stdexcept>
+#include <vector>
 
 
 class ScheduleData;
@@ -14,9 +15,8 @@ struct ScheduleItem
 {
     friend bool operator==(const ScheduleItem& lhs, const ScheduleItem& rhs)
     {
-        return lhs.Address == rhs.Address &&
-            lhs.SubjectRequestID == rhs.SubjectRequestID &&
-            lhs.Classroom == rhs.Classroom;
+        return lhs.Address == rhs.Address && lhs.SubjectRequestID == rhs.SubjectRequestID
+               && lhs.Classroom == rhs.Classroom;
     }
     friend bool operator!=(const ScheduleItem& lhs, const ScheduleItem& rhs)
     {
@@ -36,7 +36,8 @@ public:
 
     const std::vector<ScheduleItem>& items() const { return items_; }
     std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
-    std::ranges::subrange<std::vector<ScheduleItem>::const_iterator> at(std::size_t lessonAddress) const;
+    std::ranges::subrange<std::vector<ScheduleItem>::const_iterator>
+        at(std::size_t lessonAddress) const;
 
 private:
     std::vector<ScheduleItem> items_;

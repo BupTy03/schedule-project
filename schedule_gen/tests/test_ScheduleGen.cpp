@@ -1,9 +1,10 @@
-#include "ScheduleUtils.h"
 #include "ScheduleCommon.h"
 #include "ScheduleData.h"
 #include "ScheduleResult.h"
-#include <catch2/catch.hpp>
+#include "ScheduleUtils.h"
+
 #include <array>
+#include <catch2/catch.hpp>
 
 
 TEST_CASE("SubjectRequest constructs correctly", "[subject_request]")
@@ -21,13 +22,11 @@ TEST_CASE("SubjectRequest constructs correctly", "[subject_request]")
 TEST_CASE("Search by subject id performs correctly", "[schedule_data]")
 {
     // [id, professor, complexity, groups, lessons, classrooms]
-    const ScheduleData sut{{
-        SubjectRequest{0, 1, 1, {0}, {}, {}},
-        SubjectRequest{1, 2, 1, {1}, {}, {}},
-        SubjectRequest{2, 3, 2, {2}, {}, {}},
-        SubjectRequest{3, 4, 3, {3}, {}, {}},
-        SubjectRequest{4, 5, 4, {4}, {}, {}}
-    }};
+    const ScheduleData sut{{SubjectRequest{0, 1, 1, {0}, {}, {}},
+                            SubjectRequest{1, 2, 1, {1}, {}, {}},
+                            SubjectRequest{2, 3, 2, {2}, {}, {}},
+                            SubjectRequest{3, 4, 3, {3}, {}, {}},
+                            SubjectRequest{4, 5, 4, {4}, {}, {}}}};
 
     SECTION("Searching subject request by id")
     {

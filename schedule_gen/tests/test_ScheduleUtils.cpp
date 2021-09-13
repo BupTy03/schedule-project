@@ -1,6 +1,7 @@
 #include "ScheduleUtils.h"
-#include <catch2/catch.hpp>
+
 #include <array>
+#include <catch2/catch.hpp>
 
 
 TEST_CASE("Check if two ordered sets intersects", "[algorithms]")

@@ -1,8 +1,9 @@
 #pragma once
+#include "ScheduleCommon.h"
 #include "ScheduleData.h"
 #include "ScheduleResult.h"
-#include "ScheduleCommon.h"
 #include "ScheduleValidation.h"
+
 #include <nlohmann/json.hpp>
 #include <vector>
 

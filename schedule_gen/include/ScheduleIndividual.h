@@ -1,7 +1,8 @@
 #pragma once
 #include "ScheduleChromosomes.h"
-#include <vector>
+
 #include <random>
+#include <vector>
 
 
 class ScheduleData;
@@ -9,8 +10,7 @@ class ScheduleData;
 class ScheduleIndividual
 {
 public:
-    explicit ScheduleIndividual(std::random_device& randomDevice,
-                                const ScheduleData* pData);
+    explicit ScheduleIndividual(std::random_device& randomDevice, const ScheduleData* pData);
     void swap(ScheduleIndividual& other) noexcept;
 
     ScheduleIndividual(const ScheduleIndividual& other);
@@ -37,8 +37,7 @@ private:
 
 void swap(ScheduleIndividual& lhs, ScheduleIndividual& rhs);
 
-void Print(const ScheduleIndividual& individ,
-           const ScheduleData& data);
+void Print(const ScheduleIndividual& individ, const ScheduleData& data);
 
 struct ScheduleIndividualLess
 {
@@ -50,17 +49,15 @@ struct ScheduleIndividualLess
 
 struct ScheduleIndividualEvaluator
 {
-    void operator()(ScheduleIndividual& individual) const
-    {
-        individual.Evaluate();
-    }
+    void operator()(ScheduleIndividual& individual) const { individual.Evaluate(); }
 };
 
 struct ScheduleIndividualMutator
 {
     explicit ScheduleIndividualMutator(std::size_t mutationChance)
         : MutationChance(mutationChance)
-    { }
+    {
+    }
 
     void operator()(ScheduleIndividual& individual) const
     {

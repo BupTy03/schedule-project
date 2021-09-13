@@ -1,10 +1,12 @@
 #include "GAScheduleGenerator.h"
+
 #include "ScheduleGA.h"
+
 #include <array>
 #include <cassert>
-#include <iostream>
 #include <exception>
 #include <execution>
+#include <iostream>
 
 
 ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
@@ -16,13 +18,14 @@ ScheduleResult GAScheduleGenerator::Generate(const ScheduleData& data)
     const auto& bestIndividual = algo.Individuals().front();
 
     auto resultSchedule = MakeScheduleResult(bestIndividual.Chromosomes(), data);
-//    std::cout << '\n';
-//    Print(bestIndividual, data);
-//    std::cout << "\nSchedule done [";
-//    std::cout << "score: " << bestIndividual.Evaluate() << "; ";
-//    std::cout << "time: " << std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s; ";
-//    std::cout << "requests: " << subjectRequests.size() << "; ";
-//    std::cout << "results: " << resultSchedule.items().size() << ']' << std::endl;
+    //    std::cout << '\n';
+    //    Print(bestIndividual, data);
+    //    std::cout << "\nSchedule done [";
+    //    std::cout << "score: " << bestIndividual.Evaluate() << "; ";
+    //    std::cout << "time: " <<
+    //    std::chrono::duration_cast<std::chrono::seconds>(stat.Time).count() << "s; "; std::cout <<
+    //    "requests: " << subjectRequests.size() << "; "; std::cout << "results: " <<
+    //    resultSchedule.items().size() << ']' << std::endl;
     return resultSchedule;
 }
 

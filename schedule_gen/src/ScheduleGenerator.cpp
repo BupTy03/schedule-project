@@ -3,10 +3,10 @@
 
 std::ostream& operator<<(std::ostream& os, const ScheduleGenOptions& options)
 {
-    for(auto&&[key, option] : options)
+    for(auto&& [key, option] : options)
     {
         os << '[' << key << "] = ";
-        std::visit([&](auto&& value){ os << value; }, option);
+        std::visit([&](auto&& value) { os << value; }, option);
         os << '\n';
     }
 
@@ -14,7 +14,4 @@ std::ostream& operator<<(std::ostream& os, const ScheduleGenOptions& options)
 }
 
 
-ScheduleGenOptions ScheduleGenerator::DefaultOptions() const
-{
-    return {};
-}
+ScheduleGenOptions ScheduleGenerator::DefaultOptions() const { return {}; }
