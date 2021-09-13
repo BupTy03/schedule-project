@@ -36,10 +36,7 @@ bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const Schedul
     while(it != lessons_.end())
     {
         const std::size_t requestIndex = std::distance(lessons_.begin(), it);
-        const auto& otherRequest = requests.at(requestIndex);
-        if(thisRequest.Professor() == otherRequest.Professor()
-           || classrooms_.at(currentRequest) == classrooms_.at(requestIndex)
-           || set_intersects(thisRequest.Groups(), otherRequest.Groups()))
+        if(data.Intersects(currentRequest, requestIndex) || classrooms_.at(currentRequest) == classrooms_.at(requestIndex))
         {
             return true;
         }
@@ -60,9 +57,7 @@ bool ScheduleChromosomes::GroupsOrProfessorsIntersects(const ScheduleData& data,
     while(it != lessons_.end())
     {
         const std::size_t requestIndex = std::distance(lessons_.begin(), it);
-        const auto& otherRequest = requests.at(requestIndex);
-        if(thisRequest.Professor() == otherRequest.Professor()
-           || set_intersects(thisRequest.Groups(), otherRequest.Groups()))
+        if(data.Intersects(currentRequest, requestIndex))
             return true;
 
         it = std::find(std::next(it), lessons_.end(), currentLesson);

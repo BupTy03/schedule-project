@@ -79,6 +79,8 @@ public:
 
     std::size_t IndexOfSubjectRequestWithID(std::size_t subjectRequestID) const;
 
+    bool Intersects(std::size_t lhsSubjectRequest, std::size_t rhsSubjectRequest) const;
+
     const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& Professors() const
     {
         return professorRequests_;
@@ -90,6 +92,7 @@ public:
 
 private:
     std::vector<SubjectRequest> subjectRequests_;
+    std::vector<std::vector<bool>> intersectionsTable_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> professorRequests_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> groupRequests_;
 };
