@@ -44,3 +44,37 @@ TEST_CASE("Check if container contains elements", "[algorithms]")
     REQUIRE_FALSE(contains(arr, 34));
     REQUIRE_FALSE(contains(arr, 134));
 }
+
+TEST_CASE("Constructing bit vector", "[bit_vector]")
+{
+    BitVector vec(4);
+    REQUIRE_FALSE(vec.get_bit(0));
+    REQUIRE_FALSE(vec.get_bit(1));
+    REQUIRE_FALSE(vec.get_bit(2));
+    REQUIRE_FALSE(vec.get_bit(3));
+}
+
+TEST_CASE("Indexing bit vector", "[bit_vector]")
+{
+    BitVector vec(100);
+    for(std::size_t i = 0; i < 100; ++i)
+        REQUIRE_FALSE(vec.get_bit(i));
+
+    vec.set_bit(70, true);
+    for(std::size_t i = 0; i < 100; ++i)
+    {
+        if(i == 70)
+            REQUIRE(vec.get_bit(i));
+        else
+            REQUIRE_FALSE(vec.get_bit(i));
+    }
+
+    vec.set_bit(72, true);
+    for(std::size_t i = 0; i < 100; ++i)
+    {
+        if(i == 70 || i == 72)
+            REQUIRE(vec.get_bit(i));
+        else
+            REQUIRE_FALSE(vec.get_bit(i));
+    }
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cassert>
+#include <vector>
 
 
 template<class InputIt1, class InputIt2>
@@ -41,3 +42,69 @@ template<class Container, class Value> bool contains(const Container& container,
 {
     return contains(std::begin(container), std::end(container), value);
 }
+
+
+class BitVector
+{
+    static constexpr std::uint64_t MASK_TEMPLATE = 1;
+public:
+    BitVector() = default;
+    explicit BitVector(std::size_t n)
+        : chunks_(n / 64 + 1)
+    {}
+
+    bool get_bit(std::size_t index) const
+    {
+        const std::size_t chunkIndex = index / 64;
+        const std::uint64_t bitIndex = index % 64;
+        return chunks_.at(chunkIndex) & (MASK_TEMPLATE << bitIndex);
+    }
+
+    void set_bit(std::size_t index, bool value)
+    {
+        const std::size_t chunkIndex = index / 64;
+        const std::uint64_t bitIndex = index % 64;
+        if(value)
+            chunks_.at(chunkIndex) |= (MASK_TEMPLATE << bitIndex);
+        else
+            chunks_.at(chunkIndex) &= ~(MASK_TEMPLATE << bitIndex);
+    }
+
+private:
+    std::vector<std::uint64_t> chunks_;
+};
+
+
+class BitIntersectionsMatrix
+{
+public:
+    BitIntersectionsMatrix() = default;
+    explicit BitIntersectionsMatrix(std::size_t n)
+        : data_((n * n) / 2 - 2)
+    {}
+
+    bool get_bit(std::size_t i, std::size_t j) const
+    {
+        if(i == j)
+            return true;
+
+        return data_.get_bit(to_bit_index(i, j));
+    }
+
+    void set_bit(std::size_t i, std::size_t j, bool value)
+    {
+        if(i == j)
+            return;
+
+        data_.set_bit(to_bit_index(i, j), value);
+    }
+
+private:
+    static constexpr std::size_t to_bit_index(std::size_t i, std::size_t j) noexcept
+    {
+        return i > j ? i * (i - 1) / 2 + j : to_bit_index(j, i);
+    }
+
+private:
+    BitVector data_;
+};

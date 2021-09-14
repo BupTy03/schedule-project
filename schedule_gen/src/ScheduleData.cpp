@@ -46,7 +46,7 @@ void SubjectRequest::SetLessons(std::vector<std::size_t> lessons)
 
 ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests)
     : subjectRequests_(std::move(subjectRequests))
-    , intersectionsTable_()
+    , intersectionsTable_(subjectRequests_.size())
     , professorRequests_()
     , groupRequests_()
 {
@@ -63,31 +63,24 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests)
             groupRequests_[g].insert(r);
     }
 
-    intersectionsTable_.resize(subjectRequests_.size(), std::vector<bool>(subjectRequests_.size()));
-    for(std::size_t i = 0; i < subjectRequests_.size(); ++i)
+    for(std::size_t i = 1; i < subjectRequests_.size(); ++i)
     {
-        for(std::size_t j = 0; j < subjectRequests_.size(); ++j)
+        for(std::size_t j = 0; j < i; ++j)
         {
-            if(i == j)
-            {
-                intersectionsTable_[i][j] = true;
-                continue;
-            }
-
             const auto& thisRequest = subjectRequests_[i];
             const auto& otherRequest = subjectRequests_[j];
-            intersectionsTable_[i][j] = thisRequest.Professor() == otherRequest.Professor() || 
+            intersectionsTable_.set_bit(i, j, thisRequest.Professor() == otherRequest.Professor() || 
                 set_intersects(thisRequest.Groups(), otherRequest.Groups()) || 
                 (thisRequest.Classrooms().size() == 1 && 
                  otherRequest.Classrooms().size() == 1 &&
-                 thisRequest.Classrooms().front() == otherRequest.Classrooms().front());
+                 thisRequest.Classrooms().front() == otherRequest.Classrooms().front()));
         }
     }
 }
 
 bool ScheduleData::Intersects(std::size_t lhsSubjectRequest, std::size_t rhsSubjectRequest) const
 {
-    return intersectionsTable_.at(lhsSubjectRequest).at(rhsSubjectRequest);
+    return intersectionsTable_.get_bit(lhsSubjectRequest, rhsSubjectRequest);
 }
 
 const SubjectRequest& ScheduleData::SubjectRequestAtID(std::size_t subjectRequestID) const

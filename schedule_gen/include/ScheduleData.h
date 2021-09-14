@@ -1,4 +1,5 @@
 #pragma once
+#include "ScheduleUtils.h"
 #include "ScheduleCommon.h"
 
 #include <unordered_map>
@@ -92,7 +93,7 @@ public:
 
 private:
     std::vector<SubjectRequest> subjectRequests_;
-    std::vector<std::vector<bool>> intersectionsTable_;
+    BitIntersectionsMatrix intersectionsTable_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> professorRequests_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> groupRequests_;
 };
