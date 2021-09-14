@@ -47,6 +47,11 @@ private:
 void InsertRequest(ScheduleChromosomes& chromosomes,
                    const ScheduleData& data,
                    std::size_t requestIndex);
+
+void InsertBlock(ScheduleChromosomes& chromosomes,
+                 const ScheduleData& data,
+                 const SubjectsBlock& block);
+
 ScheduleChromosomes InitializeChromosomes(const ScheduleData& data);
 
 bool ReadyToCrossover(const ScheduleChromosomes& first,

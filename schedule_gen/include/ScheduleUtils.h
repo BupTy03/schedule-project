@@ -108,3 +108,79 @@ private:
 private:
     BitVector data_;
 };
+
+
+template<class Iter>
+Iter remove_duplicates(Iter first, Iter last)
+{
+    auto result = first;
+    for(; first != last; ++first)
+    {
+        bool found = false;
+        for(auto s = first; s != last; ++s)
+        {
+            if(first != s && *first == *s)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            *result = std::move(*first);
+            ++result;
+        }
+    }
+
+    return result;
+}
+
+template<class Iter, class Pred>
+Iter remove_duplicates(Iter first, Iter last, Pred pred)
+{
+    auto result = first;
+    for(; first != last; ++first)
+    {
+        bool found = false;
+        for(auto s = first; s != last; ++s)
+        {
+            if(first != s && pred(*first, *s))
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            *result = std::move(*first);
+            ++result;
+        }
+    }
+
+    return result;
+}
+
+template<typename InputIter1, typename InputIter2>
+bool unsorted_set_intersects(InputIter1 first1, InputIter1 last1,
+                             InputIter2 first2, InputIter2 last2)
+{
+    for(auto i = first1; i != last1; ++i)
+    {
+        for(auto j = first2; j != last2; ++j)
+        {
+            if(*i == *j)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+template<class Range1, class Range2>
+bool unsorted_set_intersects(const Range1& r1, const Range2& r2)
+{
+    return unsorted_set_intersects(std::begin(r1), std::end(r1),
+                                   std::begin(r2), std::end(r2));
+}

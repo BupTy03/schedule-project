@@ -1,6 +1,7 @@
 #include "ScheduleUtils.h"
 
 #include <array>
+#include <iostream>
 #include <catch2/catch.hpp>
 
 
@@ -76,5 +77,43 @@ TEST_CASE("Indexing bit vector", "[bit_vector]")
             REQUIRE(vec.get_bit(i));
         else
             REQUIRE_FALSE(vec.get_bit(i));
+    }
+}
+
+TEST_CASE("Removing duplicates preserving unsorted order")
+{
+    SECTION("Empty array")
+    {
+        std::vector<std::size_t> arr;
+        arr.erase(remove_duplicates(arr.begin(), arr.end()), arr.end());
+        REQUIRE(arr == std::vector<std::size_t>{});
+    }
+    
+    SECTION("Single value array")
+    {
+        std::vector<std::size_t> arr{3};
+        arr.erase(remove_duplicates(arr.begin(), arr.end()), arr.end());
+        REQUIRE(arr == std::vector<std::size_t>{3});
+    }
+
+    SECTION("Array of identical numbers")
+    {
+        std::vector<std::size_t> arr{3, 3, 3, 3, 3, 3, 3, 3};
+        arr.erase(remove_duplicates(arr.begin(), arr.end()), arr.end());
+        REQUIRE(arr == std::vector<std::size_t>{3});
+    }
+
+    SECTION("Unsorted array with duplicates")
+    {
+        std::vector<std::size_t> arr{2, 1, 4, 1, 5, 3, 5, 4, 5, 4, 2, 1};
+        arr.erase(remove_duplicates(arr.begin(), arr.end()), arr.end());
+        REQUIRE(arr == std::vector<std::size_t>{3, 5, 4, 2, 1});
+    }
+
+    SECTION("Sorted array with duplicates")
+    {
+        std::vector<std::size_t> arr{1, 1, 2, 2, 2, 3, 4, 4, 4, 5, 6, 7, 7, 8, 8, 8};
+        arr.erase(remove_duplicates(arr.begin(), arr.end()), arr.end());
+        REQUIRE(arr == std::vector<std::size_t>{1, 2, 3, 4, 5, 6, 7, 8});
     }
 }

@@ -112,9 +112,9 @@ void InsertRequest(ScheduleChromosomes& chromosomes,
         if(chromosomes.GroupsOrProfessorsIntersects(data, requestIndex, lesson))
             continue;
 
-        chromosomes.Lesson(requestIndex) = lesson;
         if(classrooms.empty())
         {
+            chromosomes.Lesson(requestIndex) = lesson;
             chromosomes.Classroom(requestIndex) = ClassroomAddress::Any();
             return;
         }
@@ -123,9 +123,77 @@ void InsertRequest(ScheduleChromosomes& chromosomes,
         {
             if(!chromosomes.ClassroomsIntersects(lesson, classroom))
             {
+                chromosomes.Lesson(requestIndex) = lesson;
                 chromosomes.Classroom(requestIndex) = classroom;
                 return;
             }
+        }
+    }
+}
+
+void InsertBlock(ScheduleChromosomes& chromosomes,
+                 const ScheduleData& data,
+                 const SubjectsBlock& block)
+{
+    std::vector<std::size_t> blockFirstLessons;
+    for(std::size_t lesson : data.SubjectRequestAtID(block.front()).Lessons())
+    {
+        bool matches = true;
+        for(std::size_t i = 1, l = lesson; i < block.size(); ++i, ++l)
+        {
+            const std::size_t subjectRequestID = block[i];
+            const auto& lessons = data.SubjectRequestAtID(subjectRequestID).Lessons();
+            matches = std::binary_search(lessons.begin(), lessons.end(), l);
+            if(!matches)
+                break;
+        }
+
+        if(matches)
+            blockFirstLessons.emplace_back(lesson);
+    }
+
+    const bool success = std::any_of(blockFirstLessons.begin(), blockFirstLessons.end(), [&](std::size_t lesson)
+    {
+        for(std::size_t subjectRequestID : block)
+        {
+            const std::size_t requestIndex = data.IndexOfSubjectRequestWithID(subjectRequestID);
+            const SubjectRequest& request = data.SubjectRequests().at(requestIndex);
+            const auto& lessons = request.Lessons();
+            const auto& classrooms = request.Classrooms();
+            if(chromosomes.GroupsOrProfessorsIntersects(data, requestIndex, lesson))
+                return false;
+
+            if(classrooms.empty())
+            {
+                chromosomes.Lesson(requestIndex) = lesson;
+                chromosomes.Classroom(requestIndex) = ClassroomAddress::Any();
+            }
+            else
+            {
+                auto classroomIt = std::find_if(classrooms.begin(), classrooms.end(), [&](const ClassroomAddress& classroom){
+                    return !chromosomes.ClassroomsIntersects(lesson, classroom);
+                });
+
+                if(classroomIt == classrooms.end())
+                    return false;
+
+                chromosomes.Lesson(requestIndex) = lesson;
+                chromosomes.Classroom(requestIndex) = *classroomIt;
+            }
+
+            ++lesson;
+        }
+
+        return true;
+    });
+
+    if(!success)
+    {
+        for(std::size_t subjectRequestID : block)
+        {
+            const std::size_t requestIndex = data.IndexOfSubjectRequestWithID(subjectRequestID);
+            chromosomes.Lesson(requestIndex) = NO_LESSON;
+            chromosomes.Classroom(requestIndex) = ClassroomAddress::NoClassroom();
         }
     }
 }
@@ -137,16 +205,22 @@ ScheduleChromosomes InitializeChromosomes(const ScheduleData& data)
 
     std::vector<std::size_t> requestsIndexes(requests.size());
     std::iota(requestsIndexes.begin(), requestsIndexes.end(), 0);
+
+    ScheduleChromosomes result(requests.size());
+    for(auto&& block : data.Blocks())
+        InsertBlock(result, data, block);
+
+    auto partitionPoint = std::partition(requestsIndexes.begin(), requestsIndexes.end(), [&](std::size_t index){
+        return data.IsInBlock(requests.at(index).ID());
+    });
+
     std::sort(
-        requestsIndexes.begin(),
+        partitionPoint,
         requestsIndexes.end(),
         [&](std::size_t lhs, std::size_t rhs)
         { return std::size(requests.at(lhs).Lessons()) < std::size(requests.at(rhs).Lessons()); });
 
-    ScheduleChromosomes result(requests.size());
-    for(std::size_t r : requestsIndexes)
-        InsertRequest(result, data, r);
-
+    std::for_each(partitionPoint, requestsIndexes.end(), [&](std::size_t r){ InsertRequest(result, data, r); });
     return result;
 }
 

@@ -67,13 +67,16 @@ struct SubjectRequestIDEqual
     }
 };
 
+using SubjectsBlock = std::vector<std::size_t>;
+
 class ScheduleData
 {
 public:
     ScheduleData() = default;
-    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests);
+    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests, std::vector<SubjectsBlock> blocks = {});
 
     const std::vector<SubjectRequest>& SubjectRequests() const { return subjectRequests_; }
+    const std::vector<SubjectsBlock>& Blocks() const { return blocks_; }
 
     const SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID) const;
     SubjectRequest& SubjectRequestAtID(std::size_t subjectRequestID);
@@ -91,9 +94,12 @@ public:
         return groupRequests_;
     }
 
+    bool IsInBlock(std::size_t subjectRequestID) const;
+
 private:
     std::vector<SubjectRequest> subjectRequests_;
     BitIntersectionsMatrix intersectionsTable_;
+    std::vector<SubjectsBlock> blocks_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> professorRequests_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> groupRequests_;
 };

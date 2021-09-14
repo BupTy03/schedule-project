@@ -44,9 +44,10 @@ void SubjectRequest::SetLessons(std::vector<std::size_t> lessons)
 }
 
 
-ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests)
+ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests, std::vector<SubjectsBlock> blocks)
     : subjectRequests_(std::move(subjectRequests))
     , intersectionsTable_(subjectRequests_.size())
+    , blocks_(std::move(blocks))
     , professorRequests_()
     , groupRequests_()
 {
@@ -76,6 +77,18 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests)
                  thisRequest.Classrooms().front() == otherRequest.Classrooms().front()));
         }
     }
+
+    blocks_.erase(std::remove_if(blocks_.begin(), blocks_.end(), [](const SubjectsBlock& b) { return b.size() < 2; }), blocks_.end());
+
+    for(auto& block : blocks_)
+        block.erase(remove_duplicates(block.begin(), block.end()), block.end());
+
+    auto it = remove_duplicates(blocks_.begin(), blocks_.end(), [](const SubjectsBlock& lhs, const SubjectsBlock& rhs) {
+        return unsorted_set_intersects(lhs, rhs);
+    });
+
+    if(it != blocks_.end())
+        throw std::invalid_argument("One subject request found in several blocks");
 }
 
 bool ScheduleData::Intersects(std::size_t lhsSubjectRequest, std::size_t rhsSubjectRequest) const
@@ -107,4 +120,11 @@ std::size_t ScheduleData::IndexOfSubjectRequestWithID(std::size_t subjectRequest
                                 + " is not found!");
 
     return std::distance(subjectRequests_.begin(), it);
+}
+
+bool ScheduleData::IsInBlock(std::size_t subjectRequestID) const
+{
+    return std::any_of(blocks_.begin(), blocks_.end(), [&](auto&& block){
+        return std::binary_search(block.begin(), block.end(), subjectRequestID);
+    });
 }
