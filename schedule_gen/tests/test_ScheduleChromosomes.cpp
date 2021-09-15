@@ -171,7 +171,7 @@ TEST_CASE("Crossover works", "[chromosomes][crossover]")
     ScheduleChromosomes first{{0, 1, 2, 3, 4}, {{0, 3}, {0, 2}, {0, 1}, {0, 3}, {0, 2}}};
     ScheduleChromosomes second{{4, 3, 2, 1, 0}, {{0, 1}, {0, 2}, {0, 3}, {0, 1}, {0, 2}}};
 
-    Crossover(first, second, 0);
+    Crossover(first, second, data, 0);
     REQUIRE(first.Lesson(0) == 4);
     REQUIRE(first.Classroom(0) == ClassroomAddress{.Building = 0, .Classroom = 1});
 

@@ -36,7 +36,8 @@ bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const Schedul
     while(it != lessons_.end())
     {
         const std::size_t requestIndex = std::distance(lessons_.begin(), it);
-        if(data.Intersects(currentRequest, requestIndex) || classrooms_.at(currentRequest) == classrooms_.at(requestIndex))
+        if(data.Intersects(currentRequest, requestIndex)
+           || classrooms_.at(currentRequest) == classrooms_.at(requestIndex))
         {
             return true;
         }
@@ -152,40 +153,45 @@ void InsertBlock(ScheduleChromosomes& chromosomes,
             blockFirstLessons.emplace_back(lesson);
     }
 
-    const bool success = std::any_of(blockFirstLessons.begin(), blockFirstLessons.end(), [&](std::size_t lesson)
-    {
-        for(std::size_t subjectRequestID : block)
+    const bool success = std::any_of(
+        blockFirstLessons.begin(),
+        blockFirstLessons.end(),
+        [&](std::size_t lesson)
         {
-            const std::size_t requestIndex = data.IndexOfSubjectRequestWithID(subjectRequestID);
-            const SubjectRequest& request = data.SubjectRequests().at(requestIndex);
-            const auto& lessons = request.Lessons();
-            const auto& classrooms = request.Classrooms();
-            if(chromosomes.GroupsOrProfessorsIntersects(data, requestIndex, lesson))
-                return false;
-
-            if(classrooms.empty())
+            for(std::size_t subjectRequestID : block)
             {
-                chromosomes.Lesson(requestIndex) = lesson;
-                chromosomes.Classroom(requestIndex) = ClassroomAddress::Any();
-            }
-            else
-            {
-                auto classroomIt = std::find_if(classrooms.begin(), classrooms.end(), [&](const ClassroomAddress& classroom){
-                    return !chromosomes.ClassroomsIntersects(lesson, classroom);
-                });
-
-                if(classroomIt == classrooms.end())
+                const std::size_t requestIndex = data.IndexOfSubjectRequestWithID(subjectRequestID);
+                const SubjectRequest& request = data.SubjectRequests().at(requestIndex);
+                const auto& lessons = request.Lessons();
+                const auto& classrooms = request.Classrooms();
+                if(chromosomes.GroupsOrProfessorsIntersects(data, requestIndex, lesson))
                     return false;
 
-                chromosomes.Lesson(requestIndex) = lesson;
-                chromosomes.Classroom(requestIndex) = *classroomIt;
+                if(classrooms.empty())
+                {
+                    chromosomes.Lesson(requestIndex) = lesson;
+                    chromosomes.Classroom(requestIndex) = ClassroomAddress::Any();
+                }
+                else
+                {
+                    auto classroomIt = std::find_if(
+                        classrooms.begin(),
+                        classrooms.end(),
+                        [&](const ClassroomAddress& classroom)
+                        { return !chromosomes.ClassroomsIntersects(lesson, classroom); });
+
+                    if(classroomIt == classrooms.end())
+                        return false;
+
+                    chromosomes.Lesson(requestIndex) = lesson;
+                    chromosomes.Classroom(requestIndex) = *classroomIt;
+                }
+
+                ++lesson;
             }
 
-            ++lesson;
-        }
-
-        return true;
-    });
+            return true;
+        });
 
     if(!success)
     {
@@ -210,9 +216,10 @@ ScheduleChromosomes InitializeChromosomes(const ScheduleData& data)
     for(auto&& block : data.Blocks())
         InsertBlock(result, data, block);
 
-    auto partitionPoint = std::partition(requestsIndexes.begin(), requestsIndexes.end(), [&](std::size_t index){
-        return data.IsInBlock(requests.at(index).ID());
-    });
+    auto partitionPoint =
+        std::partition(requestsIndexes.begin(),
+                       requestsIndexes.end(),
+                       [&](std::size_t index) { return data.IsInBlock(requests.at(index).ID()); });
 
     std::sort(
         partitionPoint,
@@ -220,7 +227,9 @@ ScheduleChromosomes InitializeChromosomes(const ScheduleData& data)
         [&](std::size_t lhs, std::size_t rhs)
         { return std::size(requests.at(lhs).Lessons()) < std::size(requests.at(rhs).Lessons()); });
 
-    std::for_each(partitionPoint, requestsIndexes.end(), [&](std::size_t r){ InsertRequest(result, data, r); });
+    std::for_each(partitionPoint,
+                  requestsIndexes.end(),
+                  [&](std::size_t r) { InsertRequest(result, data, r); });
     return result;
 }
 
@@ -243,13 +252,73 @@ bool ReadyToCrossover(const ScheduleChromosomes& first,
        || second.GroupsOrProfessorsOrClassroomsIntersects(data, r, firstLesson))
         return false;
 
+    const auto& request = data.SubjectRequests().at(r);
+    const auto& blocks = data.Blocks();
+    auto blockIt =
+        std::find_if(blocks.begin(),
+                     blocks.end(),
+                     [&](const SubjectsBlock& block) { return block.front() == request.ID(); });
+
+    if(blockIt != blocks.end())
+    {
+        const SubjectsBlock& block = *blockIt;
+        if(block.front() != request.ID())
+            return false;
+
+        for(std::size_t subjectRequestID : block)
+        {
+            const std::size_t subjectRequestIndex =
+                data.IndexOfSubjectRequestWithID(subjectRequestID);
+            if(first.ClassroomsIntersects(second.Lesson(subjectRequestIndex),
+                                          second.Classroom(subjectRequestIndex))
+               || second.ClassroomsIntersects(first.Lesson(subjectRequestIndex),
+                                              first.Classroom(subjectRequestIndex)))
+                return false;
+
+            if(first.GroupsOrProfessorsOrClassroomsIntersects(
+                   data, subjectRequestIndex, second.Lesson(subjectRequestIndex))
+               || second.GroupsOrProfessorsOrClassroomsIntersects(
+                   data, subjectRequestIndex, first.Lesson(subjectRequestIndex)))
+                return false;
+        }
+    }
+    else
+    {
+        return !data.IsInBlock(request.ID());
+    }
+
     return true;
 }
 
-void Crossover(ScheduleChromosomes& first, ScheduleChromosomes& second, std::size_t r)
+void Crossover(ScheduleChromosomes& first,
+               ScheduleChromosomes& second,
+               const ScheduleData& data,
+               std::size_t r)
 {
     using std::swap;
-    swap(first.Lesson(r), second.Lesson(r));
+    const auto& request = data.SubjectRequests().at(r);
+    const auto& blocks = data.Blocks();
+    auto blockIt =
+        std::find_if(blocks.begin(),
+                     blocks.end(),
+                     [&](const SubjectsBlock& block) { return block.front() == request.ID(); });
+
+    if(blockIt != blocks.end())
+    {
+        const SubjectsBlock& block = *blockIt;
+        for(std::size_t subjectRequestID : block)
+        {
+            const std::size_t subjectRequestIndex =
+                data.IndexOfSubjectRequestWithID(subjectRequestID);
+            swap(first.Lesson(subjectRequestIndex), second.Lesson(subjectRequestIndex));
+        }
+    }
+    else
+    {
+        assert(!data.IsInBlock(request.ID()));
+        swap(first.Lesson(r), second.Lesson(r));
+    }
+
     swap(first.Classroom(r), second.Classroom(r));
 }
 

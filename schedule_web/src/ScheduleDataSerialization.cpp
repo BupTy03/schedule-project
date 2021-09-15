@@ -89,11 +89,16 @@ void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classroom
 void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
 {
     std::vector<SubjectRequest> requests;
-    j.get_to(requests);
+    j.at("subject_requests").get_to(requests);
     if(requests.empty())
         throw std::invalid_argument("'subject_requests' array is empty");
 
-    scheduleData = ScheduleData(std::move(requests));
+    std::vector<SubjectsBlock> blocks;
+    auto it = j.find("blocks");
+    if(it != j.end())
+        it->get_to(blocks);
+
+    scheduleData = ScheduleData(std::move(requests), std::move(blocks));
 }
 
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem)

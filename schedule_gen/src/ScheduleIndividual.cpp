@@ -77,7 +77,7 @@ void ScheduleIndividual::Crossover(ScheduleIndividual& other)
     {
         evaluatedValue_ = NOT_EVALUATED;
         other.evaluatedValue_ = NOT_EVALUATED;
-        ::Crossover(chromosomes_, other.chromosomes_, requestIndex);
+        ::Crossover(chromosomes_, other.chromosomes_, *pData_, requestIndex);
     }
 }
 
