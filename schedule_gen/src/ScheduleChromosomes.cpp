@@ -106,9 +106,14 @@ void InsertRequest(ScheduleChromosomes& chromosomes,
     const auto& request = requests.at(requestIndex);
     const auto& lessons = request.Lessons();
     const auto& classrooms = request.Classrooms();
-
     assert(!lessons.empty());
-    for(auto&& lesson : lessons)
+
+    std::vector<std::size_t> sortedLessons = lessons;
+    std::sort(sortedLessons.begin(), sortedLessons.end(), [](std::size_t lhs, std::size_t rhs){
+        return lhs % MAX_LESSONS_PER_DAY < rhs % MAX_LESSONS_PER_DAY;
+    });
+
+    for(auto&& lesson : sortedLessons)
     {
         if(chromosomes.GroupsOrProfessorsIntersects(data, requestIndex, lesson))
             continue;
