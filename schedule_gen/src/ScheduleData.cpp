@@ -19,17 +19,9 @@ SubjectRequest::SubjectRequest(std::size_t id,
     , lessons_(std::move(lessons))
     , classrooms_(std::move(classrooms))
 {
-    std::ranges::sort(groups_);
-    groups_.erase(std::unique(groups_.begin(), groups_.end()), groups_.end());
-
-    std::ranges::sort(lessons_);
-    lessons_.erase(std::unique(lessons_.begin(), lessons_.end()), lessons_.end());
-
-    if(lessons_.empty())
-        lessons_ = AllLessons();
-
-    std::ranges::sort(classrooms_);
-    classrooms_.erase(std::unique(classrooms_.begin(), classrooms_.end()), classrooms_.end());
+    assert(std::ranges::is_sorted(groups_));
+    assert(std::ranges::is_sorted(lessons_));
+    assert(std::ranges::is_sorted(classrooms_));
 }
 
 const std::vector<std::size_t>& SubjectRequest::Lessons() const
@@ -48,8 +40,9 @@ void SubjectRequest::SetLessons(std::vector<std::size_t> lessons)
 ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
                            std::vector<SubjectsBlock> blocks)
     : subjectRequests_(std::move(subjectRequests))
-    , intersectionsTable_(subjectRequests_.size())
+    , intersectionsTable_(FillIntersectionsMatrix(subjectRequests_))
     , blocks_(std::move(blocks))
+    , requestsBlocks_(FillRequestsBlocksTable(blocks_))
     , professorRequests_()
     , groupRequests_()
 {
@@ -62,39 +55,6 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
         for(std::size_t g : request.Groups())
             groupRequests_[g].insert(r);
     }
-
-    for(std::size_t b = 0; b < blocks_.size(); ++b)
-    {
-        const SubjectsBlock& block = blocks_.at(b);
-        for(std::size_t r : block.Requests())
-            requestsBlocks_.emplace(r, b);
-    }
-
-    for(std::size_t i = 1; i < subjectRequests_.size(); ++i)
-    {
-        for(std::size_t j = 0; j < i; ++j)
-        {
-            const auto& thisRequest = subjectRequests_[i];
-            const auto& otherRequest = subjectRequests_[j];
-            intersectionsTable_.set_bit(
-                i,
-                j,
-                thisRequest.Professor() == otherRequest.Professor()
-                    || set_intersects(thisRequest.Groups(), otherRequest.Groups())
-                    || (thisRequest.Classrooms().size() == 1
-                        && otherRequest.Classrooms().size() == 1
-                        && thisRequest.Classrooms().front() == otherRequest.Classrooms().front()));
-        }
-    }
-
-    auto it = remove_duplicates(blocks_.begin(),
-                                blocks_.end(),
-                                [](const SubjectsBlock& lhs, const SubjectsBlock& rhs) {
-                                    return unsorted_set_intersects(lhs.Requests(), rhs.Requests());
-                                });
-
-    if(it != blocks_.end())
-        throw std::invalid_argument("One subject request found in several blocks");
 }
 
 bool ScheduleData::Intersects(std::size_t lhsSubjectRequest, std::size_t rhsSubjectRequest) const
@@ -164,6 +124,7 @@ std::vector<std::size_t> SelectBlockFirstLessons(const std::vector<SubjectReques
             blockFirstLessons.emplace_back(lesson);
     }
 
+    blockFirstLessons.shrink_to_fit();
     return blockFirstLessons;
 }
 
@@ -185,7 +146,8 @@ SubjectsBlock ToSubjectsBlock(const std::vector<SubjectRequest>& requests,
                        return std::distance(requests.begin(), it);
                    });
 
-    return SubjectsBlock{block, SelectBlockFirstLessons(requests, block)};
+    auto lessons = SelectBlockFirstLessons(requests, block);
+    return SubjectsBlock{std::move(block), std::move(lessons)};
 }
 
 std::vector<SubjectsBlock> ToSubjectsBlocks(const std::vector<SubjectRequest>& requests,
@@ -199,4 +161,44 @@ std::vector<SubjectsBlock> ToSubjectsBlocks(const std::vector<SubjectRequest>& r
                    [&](const std::vector<std::size_t>& b) { return ToSubjectsBlock(requests, b); });
 
     return subjectsBlocks;
+}
+
+BitIntersectionsMatrix FillIntersectionsMatrix(const std::vector<SubjectRequest>& requests)
+{
+    BitIntersectionsMatrix mtx(requests.size());
+    for(std::size_t i = 1; i < requests.size(); ++i)
+    {
+        for(std::size_t j = 0; j < i; ++j)
+        {
+            const auto& thisRequest = requests[i];
+            const auto& otherRequest = requests[j];
+            mtx.set_bit(
+                i,
+                j,
+                thisRequest.Professor() == otherRequest.Professor()
+                    || set_intersects(thisRequest.Groups(), otherRequest.Groups())
+                    || (thisRequest.Classrooms().size() == 1
+                        && otherRequest.Classrooms().size() == 1
+                        && thisRequest.Classrooms().front() == otherRequest.Classrooms().front()));
+        }
+    }
+
+    return mtx;
+}
+
+std::unordered_map<std::size_t, std::size_t> FillRequestsBlocksTable(const std::vector<SubjectsBlock>& blocks)
+{
+    std::unordered_map<std::size_t, std::size_t> requestsBlocks;
+    for(std::size_t b = 0; b < blocks.size(); ++b)
+    {
+        const SubjectsBlock& block = blocks.at(b);
+        for(std::size_t r : block.Requests())
+        {
+            if(requestsBlocks.count(r) != 0)
+                throw std::invalid_argument("One subject request found in several blocks");
+
+            requestsBlocks.emplace(r, b);
+        }
+    }
+    return requestsBlocks;
 }

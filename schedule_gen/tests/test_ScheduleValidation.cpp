@@ -121,8 +121,8 @@ SCENARIO("Check if groups overlaps", "[validation]")
         const std::vector<ClassroomAddress> classrooms{{0, 0}, {0, 1}, {0, 2}, {0, 3}};
         // [id, professor, complexity, groups, lessons, classrooms]
         const ScheduleData scheduleData{{SubjectRequest{0, 1, 1, {1, 3, 5}, {}, classrooms},
-                                         SubjectRequest{1, 2, 1, {21, 4}, {}, classrooms},
-                                         SubjectRequest{2, 3, 2, {0, 3, 2, 5}, {}, classrooms},
+                                         SubjectRequest{1, 2, 1, {4, 21}, {}, classrooms},
+                                         SubjectRequest{2, 3, 2, {0, 2, 3, 5}, {}, classrooms},
                                          SubjectRequest{3, 4, 3, {9, 10}, {}, classrooms},
                                          SubjectRequest{4, 5, 4, {11, 12}, {}, classrooms}}};
 

@@ -52,12 +52,19 @@ std::vector<std::size_t> ParseLessonsSet(const nlohmann::json& arr)
 
 void from_json(const nlohmann::json& j, SubjectRequest& subjectRequest)
 {
+    std::vector<ClassroomAddress> classrooms;
+    j.at("classrooms").get_to(classrooms);
+
+    std::ranges::sort(classrooms);
+    classrooms.erase(std::unique(classrooms.begin(), classrooms.end()), classrooms.end());
+    classrooms.shrink_to_fit();
+
     subjectRequest = SubjectRequest(j.at("id").get<std::size_t>(),
                                     j.at("professor").get<std::size_t>(),
                                     j.at("complexity").get<std::size_t>(),
                                     ParseIDsSet(j.at("groups")),
                                     ParseLessonsSet(j.at("lessons")),
-                                    j.at("classrooms"));
+                                    std::move(classrooms));
 }
 
 void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classrooms)
@@ -96,6 +103,8 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
     std::ranges::sort(requests, {}, &SubjectRequest::ID);
     requests.erase(std::unique(requests.begin(), requests.end(), SubjectRequestIDEqual()),
                    requests.end());
+
+    requests.shrink_to_fit();
 
     std::vector<SubjectsBlock> blocks;
     auto it = j.find("blocks");

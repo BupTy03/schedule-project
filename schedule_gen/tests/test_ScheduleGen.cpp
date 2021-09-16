@@ -7,18 +7,6 @@
 #include <catch2/catch.hpp>
 
 
-TEST_CASE("SubjectRequest constructs correctly", "[subject_request]")
-{
-    SECTION("Sorting and removing duplicates from groups list while constructing")
-    {
-        // set_intersects algorithm REQUIRES sorted groups
-
-        // [id, professor, complexity, groups, lessons, classrooms]
-        const SubjectRequest sut{0, 1, 1, {3, 1, 2, 2, 5, 0, 10, 5, 1, 3, 3}, {}, {}};
-        REQUIRE(sut.Groups() == std::vector<std::size_t>{0, 1, 2, 3, 5, 10});
-    }
-}
-
 TEST_CASE("Search by subject id performs correctly", "[schedule_data]")
 {
     // [id, professor, complexity, groups, lessons, classrooms]

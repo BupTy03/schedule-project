@@ -86,14 +86,6 @@ private:
     std::vector<std::size_t> lessons_;
 };
 
-SubjectsBlock ToSubjectsBlock(const std::vector<SubjectRequest>& requests,
-                              const std::vector<std::size_t>& requestIDs);
-
-std::vector<std::size_t> SelectBlockFirstLessons(const std::vector<SubjectRequest>& requests,
-                                                 const std::vector<std::size_t>& block);
-
-std::vector<SubjectsBlock> ToSubjectsBlocks(const std::vector<SubjectRequest>& requests,
-                                            const std::vector<std::vector<std::size_t>>& blocksIds);
 
 class ScheduleData
 {
@@ -132,3 +124,17 @@ private:
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> professorRequests_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> groupRequests_;
 };
+
+
+SubjectsBlock ToSubjectsBlock(const std::vector<SubjectRequest>& requests,
+                              const std::vector<std::size_t>& requestIDs);
+
+std::vector<std::size_t> SelectBlockFirstLessons(const std::vector<SubjectRequest>& requests,
+                                                 const std::vector<std::size_t>& block);
+
+std::vector<SubjectsBlock> ToSubjectsBlocks(const std::vector<SubjectRequest>& requests,
+                                            const std::vector<std::vector<std::size_t>>& blocksIds);
+
+BitIntersectionsMatrix FillIntersectionsMatrix(const std::vector<SubjectRequest>& requests);
+
+std::unordered_map<std::size_t, std::size_t> FillRequestsBlocksTable(const std::vector<SubjectsBlock>& blocks);
