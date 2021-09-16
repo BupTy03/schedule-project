@@ -1,6 +1,6 @@
 #pragma once
-#include "ScheduleUtils.h"
 #include "ScheduleCommon.h"
+#include "ScheduleUtils.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -67,13 +67,40 @@ struct SubjectRequestIDEqual
     }
 };
 
-using SubjectsBlock = std::vector<std::size_t>;
+
+class SubjectsBlock
+{
+public:
+    explicit SubjectsBlock(std::vector<std::size_t> requestIndexes,
+                           std::vector<std::size_t> addresses)
+        : requests_(std::move(requestIndexes))
+        , lessons_(std::move(addresses))
+    {
+    }
+
+    const std::vector<std::size_t>& Requests() const { return requests_; }
+    const std::vector<std::size_t>& Addresses() const { return lessons_; }
+
+private:
+    std::vector<std::size_t> requests_;
+    std::vector<std::size_t> lessons_;
+};
+
+SubjectsBlock ToSubjectsBlock(const std::vector<SubjectRequest>& requests,
+                              const std::vector<std::size_t>& requestIDs);
+
+std::vector<std::size_t> SelectBlockFirstLessons(const std::vector<SubjectRequest>& requests,
+                                                 const std::vector<std::size_t>& block);
+
+std::vector<SubjectsBlock> ToSubjectsBlocks(const std::vector<SubjectRequest>& requests,
+                                            const std::vector<std::vector<std::size_t>>& blocksIds);
 
 class ScheduleData
 {
 public:
     ScheduleData() = default;
-    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests, std::vector<SubjectsBlock> blocks = {});
+    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests,
+                          std::vector<SubjectsBlock> blocks = {});
 
     const std::vector<SubjectRequest>& SubjectRequests() const { return subjectRequests_; }
     const std::vector<SubjectsBlock>& Blocks() const { return blocks_; }
@@ -94,12 +121,14 @@ public:
         return groupRequests_;
     }
 
-    bool IsInBlock(std::size_t subjectRequestID) const;
+    bool IsInBlock(std::size_t subjectRequestIndex) const;
+    const SubjectsBlock* FindBlockByRequestIndex(std::size_t subjectRequestIndex) const;
 
 private:
     std::vector<SubjectRequest> subjectRequests_;
     BitIntersectionsMatrix intersectionsTable_;
     std::vector<SubjectsBlock> blocks_;
+    std::unordered_map<std::size_t, std::size_t> requestsBlocks_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> professorRequests_;
     std::unordered_map<std::size_t, std::unordered_set<std::size_t>> groupRequests_;
 };

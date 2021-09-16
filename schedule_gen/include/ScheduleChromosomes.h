@@ -78,36 +78,22 @@ void ChangeLessonsBlock(ScheduleChromosomes& chromosomes,
                         std::size_t requestIndex,
                         RandomGenerator& randomGenerator)
 {
-    assert(data.IndexOfSubjectRequestWithID(block.front()) == requestIndex);
+    assert(block.Addresses().size() > 1);
 
-    std::vector<std::size_t> blockFirstLessons;
-    for(std::size_t lesson : data.SubjectRequestAtID(block.front()).Lessons())
-    {
-        bool matches = true;
-        for(std::size_t i = 1, l = lesson; i < block.size(); ++i, ++l)
-        {
-            const std::size_t subjectRequestID = block[i];
-            const auto& lessons = data.SubjectRequestAtID(subjectRequestID).Lessons();
-            matches = std::binary_search(lessons.begin(), lessons.end(), l);
-            if(!matches)
-                break;
-        }
-
-        if(matches)
-            blockFirstLessons.emplace_back(lesson);
-    }
-
-    if(blockFirstLessons.size() < 2)
+    if(block.Requests().front() != requestIndex)
         return;
+
+    const auto& blockFirstLessons = block.Addresses();
+    const auto& blockRequests = block.Requests();
 
     std::uniform_int_distribution<std::size_t> lessonsDistrib(0, blockFirstLessons.size() - 1);
     for(std::size_t tryNum = 0; tryNum < blockFirstLessons.size(); ++tryNum)
     {
         const std::size_t lesson = blockFirstLessons.at(lessonsDistrib(randomGenerator));
         bool flag = true;
-        for(std::size_t b = 0; b < block.size(); ++b)
+        for(std::size_t b = 0; b < blockRequests.size(); ++b)
         {
-            const std::size_t subjectRequestIndex = data.IndexOfSubjectRequestWithID(block.at(b));
+            const std::size_t subjectRequestIndex = blockRequests.at(b);
             if(chromosomes.GroupsOrProfessorsOrClassroomsIntersects(
                    data, subjectRequestIndex, lesson + b))
             {
@@ -116,16 +102,16 @@ void ChangeLessonsBlock(ScheduleChromosomes& chromosomes,
             }
         }
 
-        if(!flag)
-            continue;
-
-        for(std::size_t b = 0; b < block.size(); ++b)
+        if(flag)
         {
-            const std::size_t subjectRequestIndex = data.IndexOfSubjectRequestWithID(block.at(b));
-            chromosomes.Lesson(subjectRequestIndex) = lesson + b;
-        }
+            for(std::size_t b = 0; b < blockRequests.size(); ++b)
+            {
+                const std::size_t subjectRequestIndex = blockRequests.at(b);
+                chromosomes.Lesson(subjectRequestIndex) = lesson + b;
+            }
 
-        return;
+            return;
+        }
     }
 }
 
@@ -137,16 +123,14 @@ void ChangeLesson(ScheduleChromosomes& chromosomes,
 {
     const auto& request = data.SubjectRequests().at(requestIndex);
     const auto& lessons = request.Lessons();
-    const auto& blocks = data.Blocks();
     assert(lessons.size() > 1);
 
-    auto blockIt =
-        std::find_if(blocks.begin(),
-                     blocks.end(),
-                     [&](const SubjectsBlock& block) { return block.front() == request.ID(); });
-
-    if(blockIt != blocks.end())
-        return ChangeLessonsBlock(chromosomes, data, *blockIt, requestIndex, randomGenerator);
+    auto block = data.FindBlockByRequestIndex(requestIndex);
+    if(block)
+    {
+        ChangeLessonsBlock(chromosomes, data, *block, requestIndex, randomGenerator);
+        return;
+    }
 
     std::uniform_int_distribution<std::size_t> lessonsDistrib(0, lessons.size() - 1);
     for(std::size_t tryNum = 0; tryNum < lessons.size(); ++tryNum)

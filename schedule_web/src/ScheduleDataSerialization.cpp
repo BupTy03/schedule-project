@@ -93,10 +93,25 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
     if(requests.empty())
         throw std::invalid_argument("'subject_requests' array is empty");
 
+    std::ranges::sort(requests, {}, &SubjectRequest::ID);
+    requests.erase(std::unique(requests.begin(), requests.end(), SubjectRequestIDEqual()),
+                   requests.end());
+
     std::vector<SubjectsBlock> blocks;
     auto it = j.find("blocks");
     if(it != j.end())
-        it->get_to(blocks);
+    {
+        std::vector<std::vector<std::size_t>> blocksIds;
+        it->get_to(blocksIds);
+
+        blocksIds.erase(std::remove_if(blocksIds.begin(),
+                                       blocksIds.end(),
+                                       [](const std::vector<std::size_t>& b)
+                                       { return b.size() < 2; }),
+                        blocksIds.end());
+
+        blocks = ToSubjectsBlocks(requests, blocksIds);
+    }
 
     scheduleData = ScheduleData(std::move(requests), std::move(blocks));
 }

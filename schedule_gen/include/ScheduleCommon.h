@@ -22,9 +22,6 @@ constexpr std::size_t NO_BUILDING = std::numeric_limits<std::size_t>::max();
 constexpr std::size_t NOT_EVALUATED = std::numeric_limits<std::size_t>::max();
 
 
-const std::vector<std::size_t>& AllLessons();
-
-
 struct ClassroomAddress
 {
     static ClassroomAddress NoClassroom()
@@ -65,3 +62,7 @@ struct ClassroomAddress
     std::size_t Building = 0;
     std::size_t Classroom = 0;
 };
+
+
+const std::vector<std::size_t>& AllLessons();
+std::vector<std::size_t> LessonsSortedByOrderInDay(std::vector<std::size_t> lessons);
