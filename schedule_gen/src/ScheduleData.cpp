@@ -29,13 +29,6 @@ const std::vector<std::size_t>& SubjectRequest::Lessons() const
     return lessons_.empty() ? AllLessons() : lessons_;
 }
 
-void SubjectRequest::SetLessons(std::vector<std::size_t> lessons)
-{
-    std::ranges::sort(lessons);
-    lessons.erase(std::unique(lessons.begin(), lessons.end()), lessons.end());
-    lessons_ = std::move(lessons);
-}
-
 
 ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
                            std::vector<SubjectsBlock> blocks)
