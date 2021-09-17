@@ -4,33 +4,28 @@
 #include <execution>
 
 
-ScheduleGA::ScheduleGA()
-    : ScheduleGA(ScheduleGA::DefaultParams())
+void ScheduleGA::SetParams(const ScheduleGAParams& params)
 {
-}
-
-ScheduleGA::ScheduleGA(const ScheduleGAParams& params)
-    : params_(params)
-    , individuals_()
-{
-    if(params_.IndividualsCount <= 0)
+    if(params.IndividualsCount <= 0)
         throw std::invalid_argument("Invalid IndividualsCount option: must be greater than zero");
 
-    if(params_.IterationsCount < 0)
+    if(params.IterationsCount < 0)
         throw std::invalid_argument(
             "Invalid IterationsCount option: must be greater or equal to zero");
 
-    if(params_.SelectionCount < 0 || params_.SelectionCount >= params_.IndividualsCount)
+    if(params.SelectionCount < 0 || params.SelectionCount >= params.IndividualsCount)
         throw std::invalid_argument(
             "Invalid SelectionCount option: must be greater or equal to zero and less than "
             "IndividualsCount");
 
-    if(params_.CrossoverCount < 0)
+    if(params.CrossoverCount < 0)
         throw std::invalid_argument(
             "Invalid CrossoverCount option: must be greater or equal to zero");
 
-    if(params_.MutationChance < 0 || params_.MutationChance > 100)
+    if(params.MutationChance < 0 || params.MutationChance > 100)
         throw std::invalid_argument("Invalid MutationChance option: must be in range [0, 100]");
+
+    params_ = params;
 }
 
 ScheduleGAParams ScheduleGA::DefaultParams()
@@ -42,37 +37,32 @@ ScheduleGAParams ScheduleGA::DefaultParams()
                             .MutationChance = 49};
 }
 
-ScheduleGAStatistics ScheduleGA::Start(const ScheduleData& scheduleData)
+ScheduleIndividual ScheduleGA::operator()(const ScheduleData& scheduleData) const
 {
     std::random_device randomDevice;
     const ScheduleIndividual firstIndividual(randomDevice, &scheduleData);
     firstIndividual.Evaluate();
 
-    individuals_.clear();
-    individuals_.resize(params_.IndividualsCount, firstIndividual);
+    std::vector<ScheduleIndividual> individuals(params_.IndividualsCount, firstIndividual);
 
     std::mt19937 randGen(randomDevice());
-
     std::uniform_int_distribution<std::size_t> selectionBestDist(0, params_.SelectionCount - 1);
-    std::uniform_int_distribution<std::size_t> individualsDist(0, individuals_.size() - 1);
+    std::uniform_int_distribution<std::size_t> individualsDist(0, individuals.size() - 1);
 
-    const auto beginTime = std::chrono::steady_clock::now();
-
-    ScheduleGAStatistics result{};
     for(std::size_t iteration = 0; iteration < params_.IterationsCount; ++iteration)
     {
         // mutate
         std::for_each(std::execution::par_unseq,
-                      individuals_.begin(),
-                      individuals_.end(),
+                      individuals.begin(),
+                      individuals.end(),
                       ScheduleIndividualMutator(params_.MutationChance));
 
         // select best
         std::ranges::nth_element(
-            individuals_, individuals_.begin() + params_.SelectionCount, ScheduleIndividualLess());
+            individuals, individuals.begin() + params_.SelectionCount, ScheduleIndividualLess());
         /*std::cout << "Iteration: " << iteration << "; Best: " <<
-        std::min_element(individuals_.begin(),
-                                                                                  individuals_.begin()
+        std::min_element(individuals.begin(),
+                                                                                  individuals.begin()
                                                                                   +
                                                                                   params_.SelectionCount,
                                                                                   ScheduleIndividualLess())->Evaluate()
@@ -81,34 +71,26 @@ ScheduleGAStatistics ScheduleGA::Start(const ScheduleData& scheduleData)
         // crossover
         for(std::size_t i = 0; i < params_.CrossoverCount; ++i)
         {
-            auto& firstInd = individuals_.at(selectionBestDist(randGen));
-            auto& secondInd = individuals_.at(individualsDist(randGen));
+            auto& firstInd = individuals.at(selectionBestDist(randGen));
+            auto& secondInd = individuals.at(individualsDist(randGen));
             firstInd.Crossover(secondInd);
         }
 
         std::for_each(std::execution::par_unseq,
-                      individuals_.begin(),
-                      individuals_.end(),
+                      individuals.begin(),
+                      individuals.end(),
                       ScheduleIndividualEvaluator());
 
         // natural selection
         std::ranges::nth_element(
-            individuals_, individuals_.end() - params_.SelectionCount, ScheduleIndividualLess());
-        std::copy_n(individuals_.begin(),
+            individuals, individuals.end() - params_.SelectionCount, ScheduleIndividualLess());
+        std::copy_n(individuals.begin(),
                     params_.SelectionCount,
-                    individuals_.end() - params_.SelectionCount);
+                    individuals.end() - params_.SelectionCount);
     }
 
-    std::ranges::sort(individuals_, ScheduleIndividualLess());
-    result.Time = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - beginTime);
-    return result;
-}
-
-const std::vector<ScheduleIndividual>& ScheduleGA::Individuals() const
-{
-    assert(std::ranges::is_sorted(individuals_, ScheduleIndividualLess()));
-    return individuals_;
+    auto it = std::min_element(individuals.begin(), individuals.end(), ScheduleIndividualLess());
+    return *it;
 }
 
 std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
@@ -119,4 +101,11 @@ std::ostream& operator<<(std::ostream& os, const ScheduleGAParams& params)
     os << "CrossoverCount: " << params.CrossoverCount << '\n';
     os << "MutationChance: " << params.MutationChance << '\n';
     return os;
+}
+
+
+ScheduleResult Generate(const ScheduleGA& generator, const ScheduleData& data)
+{
+    const auto bestIndividual = generator(data);
+    return MakeScheduleResult(bestIndividual.Chromosomes(), data);
 }

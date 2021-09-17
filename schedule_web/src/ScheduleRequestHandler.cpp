@@ -1,6 +1,4 @@
 #include "ScheduleRequestHandler.h"
-
-#include "GAScheduleGenerator.h"
 #include "ScheduleDataSerialization.h"
 #include "ScheduleServer.h"
 #include "ScheduleValidation.h"
@@ -14,28 +12,25 @@ using namespace Poco;
 using namespace Poco::Net;
 
 
-MakeScheduleRequestHandler::MakeScheduleRequestHandler(std::unique_ptr<ScheduleGenerator> generator)
-    : generator_(std::move(generator))
+MakeScheduleRequestHandler::MakeScheduleRequestHandler(ScheduleGA generator, std::shared_ptr<spdlog::logger> logger)
+    : logger_{std::move(logger)}
+    , generator_{std::move(generator)}
 {
-    assert(generator_ != nullptr);
+    assert(logger_ != nullptr);
 }
 
 void MakeScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
                                                Poco::Net::HTTPServerResponse& response)
 {
-    std::istream& in = request.stream();
-    std::vector<char> requestBody(request.getContentLength(), '\0');
-    in.read(requestBody.data(), requestBody.size());
-
     nlohmann::json jsonResponse;
     try
     {
-        const auto jsonRequest = nlohmann::json::parse(requestBody);
+        nlohmann::json jsonRequest;
+        request.stream() >> jsonRequest;
 
-        auto logger = spdlog::get("server");
-        logger->info("Start generate schedule...");
-        jsonResponse = generator_->Generate(jsonRequest);
-        logger->info(
+        logger_->info("Start generate schedule...");
+        jsonResponse = Generate(generator_, jsonRequest);
+        logger_->info(
             "Schedule done: requests: {}, responses: {}", jsonRequest.size(), jsonResponse.size());
 
         response.setStatus(HTTPResponse::HTTP_OK);
@@ -47,25 +42,20 @@ void MakeScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& req
     }
 
     response.setContentType("text/json");
-    std::ostream& out = response.send();
-    out << jsonResponse.dump(4);
-    out.flush();
+    response.send() << jsonResponse.dump(4) << std::flush;
 }
 
 
 void CheckScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request,
                                                 Poco::Net::HTTPServerResponse& response)
 {
-    std::istream& in = request.stream();
-    std::vector<char> requestBody(request.getContentLength(), '\0');
-    in.read(requestBody.data(), requestBody.size());
-
     nlohmann::json jsonResponse;
     try
     {
-        const auto jsonRequest = nlohmann::json::parse(requestBody);
-        const ScheduleData scheduleData = jsonRequest;
-        jsonResponse = CheckSchedule(scheduleData, jsonRequest.at("placed_lessons"));
+        nlohmann::json jsonRequest;
+        request.stream() >> jsonRequest;
+
+        jsonResponse = CheckSchedule(jsonRequest, jsonRequest.at("placed_lessons"));
         response.setStatus(HTTPResponse::HTTP_OK);
     }
     catch(std::exception& e)
@@ -75,17 +65,15 @@ void CheckScheduleRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& re
     }
 
     response.setContentType("text/json");
-    std::ostream& out = response.send();
-    out << jsonResponse.dump(4);
-    out.flush();
+    response.send() << jsonResponse.dump(4) << std::flush;
 }
 
 
-ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(
-    std::unique_ptr<ScheduleGenerator> generator)
-    : generator_(std::move(generator))
+ScheduleRequestHandlerFactory::ScheduleRequestHandlerFactory(ScheduleGA generator, std::shared_ptr<spdlog::logger> logger)
+    : logger_{std::move(logger)}
+    , generator_{std::move(generator)}
 {
-    assert(generator_ != nullptr);
+    assert(logger_ != nullptr);
 }
 
 Poco::Net::HTTPRequestHandler*
@@ -94,17 +82,11 @@ Poco::Net::HTTPRequestHandler*
     if(!request.serverAddress().host().isLoopback())
         return nullptr;
 
-    URI uri(request.getURI());
+    const URI uri{request.getURI()};
     if(uri.getPath() == "/makeSchedule")
-    {
-        return new MakeScheduleRequestHandler(generator_->Clone());
-    }
+        return new MakeScheduleRequestHandler(generator_, logger_);
     else if(uri.getPath() == "/checkSchedule")
-    {
         return new CheckScheduleRequestHandler;
-    }
     else
-    {
         return nullptr;
-    }
 }

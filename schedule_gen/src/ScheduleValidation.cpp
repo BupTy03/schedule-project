@@ -1,6 +1,13 @@
 #include "ScheduleValidation.h"
 
 
+bool empty(const CheckScheduleResult& r)
+{
+    return std::empty(r.OverlappedClassroomsList) &&
+        std::empty(r.OverlappedProfessorsList) &&
+        std::empty(r.OverlappedGroupsList);
+}
+
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
                                                           const ScheduleResult& result)
 {

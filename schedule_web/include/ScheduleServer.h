@@ -1,5 +1,5 @@
 #pragma once
-#include "ScheduleGenerator.h"
+#include "ScheduleGA.h"
 
 #include <iostream>
 #include <memory>
@@ -8,22 +8,21 @@
 
 #include <Poco/Util/ServerApplication.h>
 #include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 
 
 class ScheduleServer : public Poco::Util::ServerApplication
 {
 public:
-    ScheduleServer();
+    explicit ScheduleServer(std::shared_ptr<spdlog::logger> logger);
 
 protected:
     int main(const std::vector<std::string>&) override;
 
 private:
-    std::unique_ptr<ScheduleGenerator> generator_;
+    std::shared_ptr<spdlog::logger> logger_;
+    ScheduleGA generator_;
 };
 
-nlohmann::json OptionsToJson(const ScheduleGenOptions& options);
-void CreateDefaultOptionsFile(const std::string& filename,
-                              const ScheduleGenOptions& defaultOptions);
-ScheduleGenOptions LoadOptions(const std::string& filename,
-                               const ScheduleGenOptions& defaultOptions);
+void CreateDefaultOptionsFile(const std::string& filename, spdlog::logger& logger);
+ScheduleGAParams LoadOptions(const std::string& filename, spdlog::logger& logger);

@@ -1,4 +1,4 @@
-#include "GAScheduleGenerator.h"
+#include "ScheduleGA.h"
 #include "ScheduleChromosomes.h"
 #include "ScheduleData.h"
 #include "ScheduleUtils.h"

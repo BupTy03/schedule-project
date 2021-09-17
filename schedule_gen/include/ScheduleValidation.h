@@ -79,6 +79,7 @@ struct CheckScheduleResult
     std::vector<OverlappedGroups> OverlappedGroupsList;
 };
 
+bool empty(const CheckScheduleResult& r);
 
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
                                                           const ScheduleResult& result);

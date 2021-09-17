@@ -1,7 +1,6 @@
 #include "ScheduleServer.h"
-
-#include "GAScheduleGenerator.h"
 #include "ScheduleRequestHandler.h"
+#include "ScheduleDataSerialization.h"
 
 #include <Poco/Net/HTTPServer.h>
 #include <nlohmann/json.hpp>
@@ -10,20 +9,22 @@
 
 
 static const std::string OPTIONS_FILENAME = "options.json";
+static constexpr std::uint16_t SERVER_DEFAULT_PORT = 9304;
 
 
-ScheduleServer::ScheduleServer()
-    : generator_(std::make_unique<GAScheduleGenerator>())
+ScheduleServer::ScheduleServer(std::shared_ptr<spdlog::logger> logger)
+    : logger_(std::move(logger))
 {
-    auto options = generator_->DefaultOptions();
+    assert(logger_ != nullptr);
+    logger_->info("Starting server...");
+
     try
     {
-        options = LoadOptions(OPTIONS_FILENAME, options);
-        generator_->SetOptions(options);
+        generator_.SetParams(LoadOptions(OPTIONS_FILENAME, *logger_));
     }
     catch(std::exception& e)
     {
-        spdlog::get("server")->error("Error while loading options: {}", e.what());
+        logger_->error("Error while loading options: {}", e.what());
     }
 }
 
@@ -31,8 +32,8 @@ int ScheduleServer::main(const std::vector<std::string>&)
 {
     using namespace Poco::Net;
 
-    HTTPServer s(new ScheduleRequestHandlerFactory(generator_->Clone()),
-                 ServerSocket(9304),
+    HTTPServer s(new ScheduleRequestHandlerFactory(generator_, logger_),
+                 ServerSocket(SERVER_DEFAULT_PORT),
                  new HTTPServerParams);
     s.start();
 
@@ -44,57 +45,28 @@ int ScheduleServer::main(const std::vector<std::string>&)
 }
 
 
-nlohmann::json OptionsToJson(const ScheduleGenOptions& options)
+void CreateDefaultOptionsFile(const std::string& filename, spdlog::logger& logger)
 {
-    nlohmann::json result;
-    for(auto&& [key, value] : options)
-    {
-        if(std::holds_alternative<int>(value))
-            result.emplace(key, std::get<int>(value));
-        else if(std::holds_alternative<bool>(value))
-            result.emplace(key, std::get<bool>(value));
-    }
-
-    return result;
-}
-
-
-void CreateDefaultOptionsFile(const std::string& filename, const ScheduleGenOptions& defaultOptions)
-{
-    spdlog::get("server")->info("Creating '{}' file with default options", filename);
+    logger.info("Creating '{}' file with default options", filename);
     std::ofstream optionsFile(OPTIONS_FILENAME, std::ios::out);
     if(!optionsFile)
         throw std::runtime_error("Unable to create '" + filename + "' file");
 
-    optionsFile << OptionsToJson(defaultOptions).dump(4);
+    nlohmann::json j = ScheduleGA::DefaultParams();
+    optionsFile << j.dump(4);
 }
 
-ScheduleGenOptions LoadOptions(const std::string& filename,
-                               const ScheduleGenOptions& defaultOptions)
+ScheduleGAParams LoadOptions(const std::string& filename, spdlog::logger& logger)
 {
     std::fstream optionsFile(filename, std::ios::in);
     if(!optionsFile)
     {
-        spdlog::get("server")->warn("'{}' file is not found!", filename);
-        CreateDefaultOptionsFile(filename, defaultOptions);
-        return defaultOptions;
+        logger.warn("'{}' file is not found!", filename);
+        CreateDefaultOptionsFile(filename, logger);
+        return ScheduleGA::DefaultParams();
     }
 
     nlohmann::json jsonOptions;
     optionsFile >> jsonOptions;
-    if(!jsonOptions.is_object())
-        throw std::invalid_argument("Json object expected");
-
-    ScheduleGenOptions options;
-    for(auto&& [key, value] : jsonOptions.items())
-    {
-        if(value.is_number())
-            options[key] = value.get<int>();
-        else if(value.is_boolean())
-            options[key] = value.get<bool>();
-        else
-            throw std::invalid_argument("Unexpected type of '" + key + "' option");
-    }
-
-    return options;
+    return jsonOptions;
 }

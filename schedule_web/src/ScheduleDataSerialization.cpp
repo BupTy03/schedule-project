@@ -125,11 +125,20 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
     scheduleData = ScheduleData(std::move(requests), std::move(blocks));
 }
 
+void from_json(const nlohmann::json& j, ScheduleGAParams& params)
+{
+    j.at("individuals_count").get_to(params.IndividualsCount);
+    j.at("iterations_count").get_to(params.IterationsCount);
+    j.at("selection_count").get_to(params.SelectionCount);
+    j.at("crossover_count").get_to(params.CrossoverCount);
+    j.at("mutation_chance").get_to(params.MutationChance);
+}
+
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem)
 {
-    j = nlohmann::json::object({{"address", scheduleItem.Address},
-                                {"subject_request_id", scheduleItem.SubjectRequestID},
-                                {"classroom", scheduleItem.Classroom}});
+    j = {{"address", scheduleItem.Address},
+         {"subject_request_id", scheduleItem.SubjectRequestID},
+         {"classroom", scheduleItem.Classroom}};
 }
 
 void to_json(nlohmann::json& j, const ScheduleResult& scheduleResult)
@@ -139,36 +148,45 @@ void to_json(nlohmann::json& j, const ScheduleResult& scheduleResult)
 
 void to_json(nlohmann::json& j, const OverlappedClassroom& overlappedClassroom)
 {
-    j = nlohmann::json{{"address", overlappedClassroom.Address},
-                       {"classroom", overlappedClassroom.Classroom},
-                       {"subject_ids", overlappedClassroom.SubjectRequestsIDs}};
+    j = {{"address", overlappedClassroom.Address},
+         {"classroom", overlappedClassroom.Classroom},
+         {"subject_ids", overlappedClassroom.SubjectRequestsIDs}};
 }
 
 void to_json(nlohmann::json& j, const OverlappedProfessor& overlappedProfessor)
 {
-    j = nlohmann::json{{"address", overlappedProfessor.Address},
-                       {"professor", overlappedProfessor.Professor},
-                       {"subject_ids", overlappedProfessor.SubjectRequestsIDs}};
+    j = {{"address", overlappedProfessor.Address},
+         {"professor", overlappedProfessor.Professor},
+         {"subject_ids", overlappedProfessor.SubjectRequestsIDs}};
 }
 
 void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups)
 {
-    j = nlohmann::json{{"address", overlappedGroups.Address},
-                       {"groups", overlappedGroups.Groups},
-                       {"subject_ids", overlappedGroups.SubjectRequestsIDs}};
+    j = {{"address", overlappedGroups.Address},
+         {"groups", overlappedGroups.Groups},
+         {"subject_ids", overlappedGroups.SubjectRequestsIDs}};
 }
 
 void to_json(nlohmann::json& j, const ViolatedWeekdayRequest& violatedWeekdayRequest)
 {
-    j = nlohmann::json{{"address", violatedWeekdayRequest.Address},
-                       {"subject_id", violatedWeekdayRequest.SubjectRequestID}};
+    j = {{"address", violatedWeekdayRequest.Address},
+         {"subject_id", violatedWeekdayRequest.SubjectRequestID}};
 }
 
 void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult)
 {
-    j = nlohmann::json{{"overlapped_classrooms", checkScheduleResult.OverlappedClassroomsList},
-                       {"overlapped_professors", checkScheduleResult.OverlappedProfessorsList},
-                       {"overlapped_groups", checkScheduleResult.OverlappedGroupsList}};
+    j = {{"overlapped_classrooms", checkScheduleResult.OverlappedClassroomsList},
+         {"overlapped_professors", checkScheduleResult.OverlappedProfessorsList},
+         {"overlapped_groups", checkScheduleResult.OverlappedGroupsList}};
+}
+
+void to_json(nlohmann::json& j, const ScheduleGAParams& params)
+{
+    j = {{"individuals_count", params.IndividualsCount},
+         {"iterations_count", params.IterationsCount},
+         {"selection_count", params.SelectionCount},
+         {"crossover_count", params.CrossoverCount},
+         {"mutation_chance", params.MutationChance}};
 }
 
 void from_json(const nlohmann::json& j, ScheduleItem& scheduleItem)

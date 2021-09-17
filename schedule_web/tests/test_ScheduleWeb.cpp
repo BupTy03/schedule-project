@@ -1,4 +1,4 @@
-#include "GAScheduleGenerator.h"
+#include "ScheduleGA.h"
 #include "ScheduleDataSerialization.h"
 
 #include <catch2/catch.hpp>
@@ -905,21 +905,21 @@ TEST_CASE("Integration test #1", "[integration]")
     }
     )"_json;
 
-    GAScheduleGenerator generator;
-    generator.SetOptions(ScheduleGenOptions{{"individuals_count", 50},
-                                            {"iterations_count", 20},
-                                            {"selection_count", 16},
-                                            {"crossover_count", 12},
-                                            {"mutation_chance", 39}});
+    ScheduleGA generator;
+    generator.SetParams(ScheduleGAParams{
+        .IndividualsCount = 50,
+        .IterationsCount = 20,
+        .SelectionCount = 16,
+        .CrossoverCount = 12,
+        .MutationChance = 39
+    });
 
     const ScheduleData scheduleData = jsonData;
-    const ScheduleResult scheduleResult = generator.Generate(scheduleData);
+    const ScheduleResult scheduleResult = Generate(generator, scheduleData);
     const nlohmann::json jsonResult = scheduleResult;
 
     const CheckScheduleResult checkResult = CheckSchedule(scheduleData, jsonResult);
-    REQUIRE(std::empty(checkResult.OverlappedClassroomsList));
-    REQUIRE(std::empty(checkResult.OverlappedProfessorsList));
-    REQUIRE(std::empty(checkResult.OverlappedGroupsList));
+    REQUIRE(empty(checkResult));
 }
 
 TEST_CASE("Integration test with blocks", "[integration]")
@@ -990,15 +990,17 @@ TEST_CASE("Integration test with blocks", "[integration]")
         }
     )"_json;
 
-    GAScheduleGenerator generator;
-    generator.SetOptions(ScheduleGenOptions{{"individuals_count", 50},
-                                            {"iterations_count", 20},
-                                            {"selection_count", 16},
-                                            {"crossover_count", 12},
-                                            {"mutation_chance", 39}});
+    ScheduleGA generator;
+    generator.SetParams(ScheduleGAParams{
+        .IndividualsCount = 50,
+        .IterationsCount = 20,
+        .SelectionCount = 16,
+        .CrossoverCount = 12,
+        .MutationChance = 39
+    });
 
     const ScheduleData scheduleData = jsonData;
-    const ScheduleResult scheduleResult = generator.Generate(scheduleData);
+    const ScheduleResult scheduleResult = Generate(generator, scheduleData);
 
     const auto& items = scheduleResult.items();
     const auto firstIt =
@@ -1016,7 +1018,5 @@ TEST_CASE("Integration test with blocks", "[integration]")
 
     const nlohmann::json jsonResult = scheduleResult;
     const CheckScheduleResult checkResult = CheckSchedule(scheduleData, jsonResult);
-    REQUIRE(std::empty(checkResult.OverlappedClassroomsList));
-    REQUIRE(std::empty(checkResult.OverlappedProfessorsList));
-    REQUIRE(std::empty(checkResult.OverlappedGroupsList));
+    REQUIRE(empty(checkResult));
 }
