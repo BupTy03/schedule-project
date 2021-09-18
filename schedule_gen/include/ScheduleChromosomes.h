@@ -81,7 +81,8 @@ public:
         , requestIndex_{requestIndex}
         , chromosomes_{chromosomes}
         , data_{data}
-    {}
+    {
+    }
 
     bool Mutated() const { return mutated_; }
 
@@ -105,7 +106,7 @@ public:
             {
                 const std::size_t subjectRequestIndex = blockRequests.at(b);
                 if(chromosomes_.GroupsOrProfessorsOrClassroomsIntersects(
-                    data_, subjectRequestIndex, lesson + b))
+                       data_, subjectRequestIndex, lesson + b))
                 {
                     flag = false;
                     break;
@@ -126,8 +127,7 @@ public:
         }
     }
 
-    template<class RandomGenerator>
-    void ChangeLesson(RandomGenerator& randomGenerator)
+    template<class RandomGenerator> void ChangeLesson(RandomGenerator& randomGenerator)
     {
         const auto& request = data_.SubjectRequests().at(requestIndex_);
         const auto& lessons = request.Lessons();
@@ -144,7 +144,9 @@ public:
         for(std::size_t tryNum = 0; tryNum < lessons.size(); ++tryNum)
         {
             const std::size_t lesson = lessons.at(lessonsDistrib(randomGenerator));
-            if(!(lesson == chromosomes_.Lesson(requestIndex_) || chromosomes_.GroupsOrProfessorsOrClassroomsIntersects(data_, requestIndex_, lesson)))
+            if(!(lesson == chromosomes_.Lesson(requestIndex_)
+                 || chromosomes_.GroupsOrProfessorsOrClassroomsIntersects(
+                     data_, requestIndex_, lesson)))
             {
                 mutated_ = true;
                 chromosomes_.Lesson(requestIndex_) = lesson;
@@ -153,8 +155,7 @@ public:
         }
     }
 
-    template<class RandomGenerator>
-    void ChangeClassroom(RandomGenerator& randomGenerator)
+    template<class RandomGenerator> void ChangeClassroom(RandomGenerator& randomGenerator)
     {
         const auto& request = data_.SubjectRequests().at(requestIndex_);
         const auto& classrooms = request.Classrooms();
@@ -164,7 +165,9 @@ public:
         for(std::size_t tryNum = 0; tryNum < classrooms.size(); ++tryNum)
         {
             const auto scheduleClassroom = classrooms.at(classroomDistrib(randomGenerator));
-            if(!(chromosomes_.Classroom(requestIndex_) == scheduleClassroom || chromosomes_.ClassroomsIntersects(chromosomes_.Lesson(requestIndex_), scheduleClassroom)))
+            if(!(chromosomes_.Classroom(requestIndex_) == scheduleClassroom
+                 || chromosomes_.ClassroomsIntersects(chromosomes_.Lesson(requestIndex_),
+                                                      scheduleClassroom)))
             {
                 mutated_ = true;
                 chromosomes_.Classroom(requestIndex_) = scheduleClassroom;
