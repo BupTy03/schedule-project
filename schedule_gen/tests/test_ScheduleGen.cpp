@@ -36,3 +36,28 @@ TEST_CASE("Search by subject id performs correctly", "[schedule_data]")
         REQUIRE_THROWS(sut.IndexOfSubjectRequestWithID(100));
     }
 }
+
+TEST_CASE("Sorting lessons by order in day")
+{
+    SECTION("Empty lessons")
+    {
+        REQUIRE(LessonsSortedByOrderInDay({}) == std::vector<std::size_t>{});
+    }
+
+    SECTION("One lesson")
+    {
+        REQUIRE(LessonsSortedByOrderInDay({1}) == std::vector<std::size_t>{1});
+    }
+
+    SECTION("One day lessons")
+    {
+        REQUIRE(LessonsSortedByOrderInDay({0, 1, 2, 3, 4, 5, 6})
+                == std::vector<std::size_t>{0, 1, 2, 3, 4, 5, 6});
+    }
+
+    SECTION("Sorting lessons")
+    {
+        REQUIRE(LessonsSortedByOrderInDay({0, 1, 3, 5, 6, 7, 8, 15, 17, 21})
+                == std::vector<std::size_t>{0, 7, 21, 1, 8, 15, 3, 17, 5, 6});
+    }
+}

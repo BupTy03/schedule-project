@@ -203,3 +203,101 @@ TEST_CASE("MakeScheduleResult works correctly", "[chromosomes][conversions]")
     REQUIRE(contains(scheduleResult.items(),
                      ScheduleItem{.Address = 4, .SubjectRequestID = 1, .Classroom = 1}));
 }
+
+
+struct OneValueGenerator
+{
+    using result_type = std::size_t;
+
+    explicit OneValueGenerator(result_type value)
+        : value_{value}
+    {}
+
+    result_type operator()() const { return value_; }
+
+    static constexpr result_type min() { return std::numeric_limits<result_type>::min(); }
+    static constexpr result_type max() { return std::numeric_limits<result_type>::max(); }
+
+private:
+    result_type value_ = 0;
+};
+
+struct IndexesGenerator
+{
+    using result_type = std::size_t;
+
+    result_type operator()() { return index_++; }
+
+    static constexpr result_type min() { return std::numeric_limits<result_type>::min(); }
+    static constexpr result_type max() { return std::numeric_limits<result_type>::max(); }
+
+private:
+    result_type index_ = 0;
+};
+
+struct ValuesRangeGenerator
+{
+    using result_type = std::size_t;
+
+    explicit ValuesRangeGenerator(std::vector<result_type> values)
+        : index_{0}
+        , values_{std::move(values)}
+    {}
+
+    result_type operator()() { return values_.at(index_++); }
+
+    static constexpr result_type min() { return std::numeric_limits<result_type>::min(); }
+    static constexpr result_type max() { return std::numeric_limits<result_type>::max(); }
+
+private:
+    std::size_t index_;
+    std::vector<result_type> values_;
+};
+
+TEST_CASE("Mutate lessons", "[chromosomes_mutator][lessons]")
+{
+    // [id, professor, complexity, groups, lessons, classrooms]
+    const ScheduleData data{{SubjectRequest{0, 1, 1, {0},    {},        {{0, 1}}},
+                             SubjectRequest{1, 1, 1, {1},    {},        {{0, 2}}},
+                             SubjectRequest{2, 3, 1, {0, 2}, {},        {{0, 3}}},
+                             SubjectRequest{3, 4, 1, {3},    {},        {{0, 1}, {0, 4}}},
+                             SubjectRequest{4, 3, 1, {3},    {0, 1, 2, 3}, {{0, 2}}}}};
+
+    ScheduleChromosomes chromosomes{{0, 1, 2, 3, 4},
+                                    {{0, 1}, {0, 2}, {0, 3}, {0, 1}, {0, 5}}};
+
+    SECTION("Do not mutate if professors intersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 1};
+        mutator.ChangeLesson(OneValueGenerator{0});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Do not mutate if groups intersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 2};
+        mutator.ChangeLesson(OneValueGenerator{0});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Do not mutate if classroom intersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 3};
+        mutator.ChangeLesson(OneValueGenerator{0});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Do not mutate if there is no appropriate lesson")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 4};
+        mutator.ChangeLesson(ValuesRangeGenerator{{1, 2, 3, 3}});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Mutate if can")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 4};
+        mutator.ChangeLesson(ValuesRangeGenerator{{1, 2, 3, 0}});
+        REQUIRE(mutator.Mutated());
+    }
+}

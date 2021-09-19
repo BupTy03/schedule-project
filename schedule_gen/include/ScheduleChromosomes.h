@@ -87,7 +87,7 @@ public:
     bool Mutated() const { return mutated_; }
 
     template<class RandomGenerator>
-    void ChangeLessonsBlock(const SubjectsBlock& block, RandomGenerator& randomGenerator)
+    void ChangeLessonsBlock(const SubjectsBlock& block, RandomGenerator&& randomGenerator)
     {
         const auto& blockFirstLessons = block.Addresses();
         const auto& blockRequests = block.Requests();
@@ -127,7 +127,7 @@ public:
         }
     }
 
-    template<class RandomGenerator> void ChangeLesson(RandomGenerator& randomGenerator)
+    template<class RandomGenerator> void ChangeLesson(RandomGenerator&& randomGenerator)
     {
         const auto& request = data_.SubjectRequests().at(requestIndex_);
         const auto& lessons = request.Lessons();
@@ -155,7 +155,7 @@ public:
         }
     }
 
-    template<class RandomGenerator> void ChangeClassroom(RandomGenerator& randomGenerator)
+    template<class RandomGenerator> void ChangeClassroom(RandomGenerator&& randomGenerator)
     {
         const auto& request = data_.SubjectRequests().at(requestIndex_);
         const auto& classrooms = request.Classrooms();
