@@ -1,6 +1,6 @@
-#include "ScheduleGA.h"
 #include "ScheduleChromosomes.h"
 #include "ScheduleData.h"
+#include "ScheduleGA.h"
 #include "ScheduleUtils.h"
 
 #include <catch2/catch.hpp>
@@ -211,7 +211,8 @@ struct OneValueGenerator
 
     explicit OneValueGenerator(result_type value)
         : value_{value}
-    {}
+    {
+    }
 
     result_type operator()() const { return value_; }
 
@@ -242,7 +243,8 @@ struct ValuesRangeGenerator
     explicit ValuesRangeGenerator(std::vector<result_type> values)
         : index_{0}
         , values_{std::move(values)}
-    {}
+    {
+    }
 
     result_type operator()() { return values_.at(index_++); }
 
@@ -257,14 +259,13 @@ private:
 TEST_CASE("Mutate lessons", "[chromosomes_mutator][lessons]")
 {
     // [id, professor, complexity, groups, lessons, classrooms]
-    const ScheduleData data{{SubjectRequest{0, 1, 1, {0},    {},        {{0, 1}}},
-                             SubjectRequest{1, 1, 1, {1},    {},        {{0, 2}}},
-                             SubjectRequest{2, 3, 1, {0, 2}, {},        {{0, 3}}},
-                             SubjectRequest{3, 4, 1, {3},    {},        {{0, 1}, {0, 4}}},
-                             SubjectRequest{4, 3, 1, {3},    {0, 1, 2, 3}, {{0, 2}}}}};
+    const ScheduleData data{{SubjectRequest{0, 1, 1, {0}, {}, {{0, 1}}},
+                             SubjectRequest{1, 1, 1, {1}, {}, {{0, 2}}},
+                             SubjectRequest{2, 3, 1, {0, 2}, {}, {{0, 3}}},
+                             SubjectRequest{3, 4, 1, {3}, {}, {{0, 1}, {0, 4}}},
+                             SubjectRequest{4, 3, 1, {3}, {0, 1, 2, 3}, {{0, 2}}}}};
 
-    ScheduleChromosomes chromosomes{{0, 1, 2, 3, 4},
-                                    {{0, 1}, {0, 2}, {0, 3}, {0, 1}, {0, 5}}};
+    ScheduleChromosomes chromosomes{{0, 1, 2, 3, 4}, {{0, 1}, {0, 2}, {0, 3}, {0, 1}, {0, 5}}};
 
     SECTION("Do not mutate if professors intersects")
     {
@@ -298,6 +299,81 @@ TEST_CASE("Mutate lessons", "[chromosomes_mutator][lessons]")
     {
         ChromosomesMutator mutator{chromosomes, data, 4};
         mutator.ChangeLesson(ValuesRangeGenerator{{1, 2, 3, 0}});
+        REQUIRE(mutator.Mutated());
+    }
+}
+
+TEST_CASE("Mutate lessons block", "[chromosomes_mutator][lessons][blocks]")
+{
+    // [id, professor, complexity, groups, lessons, classrooms]
+    const ScheduleData data{{SubjectRequest{0, 1, 1, {0}, {}, {{0, 1}}},
+                             SubjectRequest{1, 1, 1, {1}, {}, {{0, 2}}},
+                             SubjectRequest{2, 3, 1, {0, 2}, {}, {{0, 3}}},
+                             SubjectRequest{3, 4, 1, {3}, {}, {{0, 1}, {0, 4}}},
+                             SubjectRequest{4, 3, 1, {3}, {0, 1, 2, 3}, {{0, 2}}},
+                             SubjectRequest{5, 5, 1, {4}, {}, {{0, 5}}}},
+                            {{SubjectsBlock{{0, 1}, {0, 1, 2, 3, 4}}}}};
+
+    ScheduleChromosomes chromosomes{{0, 1, 2, 3, 4, 5},
+                                    {{0, 1}, {0, 2}, {0, 3}, {0, 1}, {0, 2}, {0, 5}}};
+
+    SECTION("Do not mutate if professors intersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 0};
+        mutator.ChangeLessonsBlock(data.Blocks().front(), OneValueGenerator{1});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Do not mutate if groups intersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 0};
+        mutator.ChangeLessonsBlock(data.Blocks().front(), OneValueGenerator{2});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Do not mutate if classroom intersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 0};
+        mutator.ChangeLessonsBlock(data.Blocks().front(), OneValueGenerator{3});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Do not mutate if there is no appropriate lesson")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 0};
+        mutator.ChangeLessonsBlock(data.Blocks().front(), ValuesRangeGenerator{{1, 2, 3, 3, 2}});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Mutate if can")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 0};
+        mutator.ChangeLessonsBlock(data.Blocks().front(), ValuesRangeGenerator{{1, 2, 3, 4}});
+        REQUIRE(mutator.Mutated());
+    }
+}
+
+TEST_CASE("Mutate classrooms", "[chromosomes_mutator][classrooms]")
+{
+    // [id, professor, complexity, groups, lessons, classrooms]
+    const ScheduleData data{{SubjectRequest{0, 1, 1, {0}, {}, {{0, 1}, {0, 2}}},
+                             SubjectRequest{1, 2, 1, {1}, {}, {{0, 2}}},
+                             SubjectRequest{2, 3, 1, {2}, {}, {{0, 1}, {0, 2}, {0, 3}}},
+                             SubjectRequest{3, 4, 1, {3}, {}, {{0, 1}, {0, 3}, {0, 4}}}}};
+
+    ScheduleChromosomes chromosomes{{0, 0, 1, 1}, {{0, 1}, {0, 2}, {0, 1}, {0, 3}}};
+
+    SECTION("Do not mutate if classrooms itersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 0};
+        mutator.ChangeClassroom(ValuesRangeGenerator{{0, 1}});
+        REQUIRE_FALSE(mutator.Mutated());
+    }
+
+    SECTION("Mutate if classrooms not itersects")
+    {
+        ChromosomesMutator mutator{chromosomes, data, 2};
+        mutator.ChangeClassroom(ValuesRangeGenerator{{2, 0, 1}});
         REQUIRE(mutator.Mutated());
     }
 }
