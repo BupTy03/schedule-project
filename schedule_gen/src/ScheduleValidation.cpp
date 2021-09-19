@@ -166,6 +166,7 @@ std::vector<std::size_t> FindOutOfBlockRequests(const ScheduleData& data,
             continue;
 
         const auto firstLesson = firstIt->Address;
+        bool found = false;
         for(std::size_t b = 1; b < blockRequests.size(); ++b)
         {
             const auto& request = data.SubjectRequests().at(blockRequests.at(b));
@@ -177,9 +178,16 @@ std::vector<std::size_t> FindOutOfBlockRequests(const ScheduleData& data,
             if(it == std::end(result))
                 continue;
 
-            if(firstLesson + b != it->Address)
+            const auto currentLesson = firstLesson + b;
+            if(!(it->Address == currentLesson && LessonsAreInSameDay(firstLesson, currentLesson)))
+            {
                 outOfBlockRequests.emplace_back(it->SubjectRequestID);
+                found = true;
+            }
         }
+
+        if(found)
+            outOfBlockRequests.emplace_back(firstIt->SubjectRequestID);
     }
 
     std::ranges::sort(outOfBlockRequests);

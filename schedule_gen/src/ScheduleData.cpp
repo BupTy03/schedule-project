@@ -102,19 +102,19 @@ std::vector<std::size_t> SelectBlockFirstLessons(const std::vector<SubjectReques
     assert(std::ranges::is_sorted(requests, {}, &SubjectRequest::ID));
 
     std::vector<std::size_t> blockFirstLessons;
-    for(std::size_t lesson : requests.at(block.front()).Lessons())
+    for(std::size_t firstLesson : requests.at(block.front()).Lessons())
     {
         bool matches = true;
-        for(std::size_t i = 1, l = lesson; i < block.size(); ++i, ++l)
+        for(std::size_t i = 1, l = firstLesson; i < block.size(); ++i, ++l)
         {
             const auto& lessons = requests.at(block.at(i)).Lessons();
-            matches = std::binary_search(lessons.begin(), lessons.end(), l);
+            matches = LessonsAreInSameDay(firstLesson, l) && std::binary_search(lessons.begin(), lessons.end(), l);
             if(!matches)
                 break;
         }
 
         if(matches)
-            blockFirstLessons.emplace_back(lesson);
+            blockFirstLessons.emplace_back(firstLesson);
     }
 
     blockFirstLessons.shrink_to_fit();

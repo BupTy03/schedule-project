@@ -66,3 +66,4 @@ struct ClassroomAddress
 
 const std::vector<std::size_t>& AllLessons();
 std::vector<std::size_t> LessonsSortedByOrderInDay(std::vector<std::size_t> lessons);
+bool LessonsAreInSameDay(std::size_t firstLesson, std::size_t secondLesson);

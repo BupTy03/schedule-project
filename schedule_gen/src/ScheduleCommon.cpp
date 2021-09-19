@@ -24,3 +24,8 @@ std::vector<std::size_t> LessonsSortedByOrderInDay(std::vector<std::size_t> less
 
     return lessons;
 }
+
+bool LessonsAreInSameDay(std::size_t firstLesson, std::size_t secondLesson)
+{
+    return firstLesson / MAX_LESSONS_PER_DAY == secondLesson / MAX_LESSONS_PER_DAY;
+}

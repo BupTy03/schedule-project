@@ -31,8 +31,7 @@ struct ScheduleItem
 class ScheduleResult
 {
 public:
-    ScheduleResult() = default;
-    explicit ScheduleResult(std::vector<ScheduleItem> items);
+    explicit ScheduleResult(std::vector<ScheduleItem> items = {});
 
     const std::vector<ScheduleItem>& items() const { return items_; }
     std::vector<ScheduleItem>::iterator insert(const ScheduleItem& item);
