@@ -56,13 +56,13 @@ struct OverlappedGroups
     std::vector<std::size_t> SubjectRequestsIDs;
 };
 
-struct ViolatedWeekdayRequest
+struct ViolatedLessonRequest
 {
-    friend bool operator==(const ViolatedWeekdayRequest& lhs, const ViolatedWeekdayRequest& rhs)
+    friend bool operator==(const ViolatedLessonRequest& lhs, const ViolatedLessonRequest& rhs)
     {
         return lhs.Address == rhs.Address && lhs.SubjectRequestID == rhs.SubjectRequestID;
     }
-    friend bool operator!=(const ViolatedWeekdayRequest& lhs, const ViolatedWeekdayRequest& rhs)
+    friend bool operator!=(const ViolatedLessonRequest& lhs, const ViolatedLessonRequest& rhs)
     {
         return !(lhs == rhs);
     }
@@ -71,12 +71,13 @@ struct ViolatedWeekdayRequest
     std::size_t SubjectRequestID = 0;
 };
 
-
 struct CheckScheduleResult
 {
     std::vector<OverlappedClassroom> OverlappedClassroomsList;
     std::vector<OverlappedProfessor> OverlappedProfessorsList;
     std::vector<OverlappedGroups> OverlappedGroupsList;
+    std::vector<ViolatedLessonRequest> ViolatedLessons;
+    std::vector<std::size_t> OutOfBlockRequests;
 };
 
 bool empty(const CheckScheduleResult& r);
@@ -89,5 +90,11 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
 
 std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
                                                    const ScheduleResult& result);
+
+std::vector<ViolatedLessonRequest> FindViolatedLessons(const ScheduleData& data,
+                                                       const ScheduleResult& result);
+
+std::vector<std::size_t> FindOutOfBlockRequests(const ScheduleData& data,
+                                                const ScheduleResult& result);
 
 CheckScheduleResult CheckSchedule(const ScheduleData& data, const ScheduleResult& result);

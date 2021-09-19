@@ -3,9 +3,9 @@
 
 bool empty(const CheckScheduleResult& r)
 {
-    return std::empty(r.OverlappedClassroomsList) &&
-        std::empty(r.OverlappedProfessorsList) &&
-        std::empty(r.OverlappedGroupsList);
+    return std::empty(r.OverlappedClassroomsList) && std::empty(r.OverlappedProfessorsList)
+           && std::empty(r.OverlappedGroupsList) && std::empty(r.ViolatedLessons)
+           && std::empty(r.OutOfBlockRequests);
 }
 
 std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& data,
@@ -127,9 +127,73 @@ std::vector<OverlappedGroups> FindOverlappedGroups(const ScheduleData& data,
     return overlapped;
 }
 
+std::vector<ViolatedLessonRequest> FindViolatedLessons(const ScheduleData& data,
+                                                       const ScheduleResult& result)
+{
+    std::vector<ViolatedLessonRequest> violatedLessons;
+    for(auto&& item : result.items())
+    {
+        const auto& lessons = data.SubjectRequestAtID(item.SubjectRequestID).Lessons();
+        assert(std::ranges::is_sorted(lessons));
+        if(!std::binary_search(std::begin(lessons), std::end(lessons), item.Address))
+        {
+            violatedLessons.emplace_back(ViolatedLessonRequest{
+                .Address = item.Address, .SubjectRequestID = item.SubjectRequestID});
+        }
+    }
+
+    return violatedLessons;
+}
+
+std::vector<std::size_t> FindOutOfBlockRequests(const ScheduleData& data,
+                                                const ScheduleResult& result)
+{
+    std::vector<std::size_t> outOfBlockRequests;
+    for(auto&& block : data.Blocks())
+    {
+        const auto& blockRequests = block.Requests();
+        assert(blockRequests.size() > 1);
+
+        const auto firstRequestInBlock = blockRequests.front();
+        const auto& firstRequest = data.SubjectRequests().at(firstRequestInBlock);
+
+        const auto firstIt =
+            std::find_if(std::begin(result),
+                         std::end(result),
+                         [&](auto&& item) { return item.SubjectRequestID == firstRequest.ID(); });
+
+        if(firstIt == std::end(result))
+            continue;
+
+        const auto firstLesson = firstIt->Address;
+        for(std::size_t b = 1; b < blockRequests.size(); ++b)
+        {
+            const auto& request = data.SubjectRequests().at(blockRequests.at(b));
+            const auto it =
+                std::find_if(std::begin(result),
+                             std::end(result),
+                             [&](auto&& item) { return item.SubjectRequestID == request.ID(); });
+
+            if(it == std::end(result))
+                continue;
+
+            if(firstLesson + b != it->Address)
+                outOfBlockRequests.emplace_back(it->SubjectRequestID);
+        }
+    }
+
+    std::ranges::sort(outOfBlockRequests);
+    outOfBlockRequests.erase(
+        std::unique(std::begin(outOfBlockRequests), std::end(outOfBlockRequests)),
+        std::end(outOfBlockRequests));
+    return outOfBlockRequests;
+}
+
 CheckScheduleResult CheckSchedule(const ScheduleData& data, const ScheduleResult& result)
 {
     return CheckScheduleResult{.OverlappedClassroomsList = FindOverlappedClassrooms(data, result),
                                .OverlappedProfessorsList = FindOverlappedProfessors(data, result),
-                               .OverlappedGroupsList = FindOverlappedGroups(data, result)};
+                               .OverlappedGroupsList = FindOverlappedGroups(data, result),
+                               .ViolatedLessons = FindViolatedLessons(data, result),
+                               .OutOfBlockRequests = FindOutOfBlockRequests(data, result)};
 }

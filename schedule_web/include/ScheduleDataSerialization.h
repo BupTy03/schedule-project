@@ -22,6 +22,7 @@ void from_json(const nlohmann::json& j, ScheduleGAParams& params);
 void to_json(nlohmann::json& j, const OverlappedClassroom& overlappedClassroom);
 void to_json(nlohmann::json& j, const OverlappedProfessor& overlappedProfessor);
 void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups);
+void to_json(nlohmann::json& j, const ViolatedLessonRequest& violatedLessonsRequest);
 void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult);
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem);
 void to_json(nlohmann::json& j, const ScheduleResult& scheduleResult);

@@ -167,17 +167,19 @@ void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups)
          {"subject_ids", overlappedGroups.SubjectRequestsIDs}};
 }
 
-void to_json(nlohmann::json& j, const ViolatedWeekdayRequest& violatedWeekdayRequest)
+void to_json(nlohmann::json& j, const ViolatedLessonRequest& violatedLessonsRequest)
 {
-    j = {{"address", violatedWeekdayRequest.Address},
-         {"subject_id", violatedWeekdayRequest.SubjectRequestID}};
+    j = {{"address", violatedLessonsRequest.Address},
+         {"subject_id", violatedLessonsRequest.SubjectRequestID}};
 }
 
 void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult)
 {
     j = {{"overlapped_classrooms", checkScheduleResult.OverlappedClassroomsList},
          {"overlapped_professors", checkScheduleResult.OverlappedProfessorsList},
-         {"overlapped_groups", checkScheduleResult.OverlappedGroupsList}};
+         {"overlapped_groups", checkScheduleResult.OverlappedGroupsList},
+         {"violated_lessons", checkScheduleResult.ViolatedLessons},
+         {"out_of_block_requests", checkScheduleResult.OutOfBlockRequests}};
 }
 
 void to_json(nlohmann::json& j, const ScheduleGAParams& params)

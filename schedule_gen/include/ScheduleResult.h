@@ -39,6 +39,9 @@ public:
     std::ranges::subrange<std::vector<ScheduleItem>::const_iterator>
         at(std::size_t lessonAddress) const;
 
+    auto begin() const { return items_.begin(); }
+    auto end() const { return items_.end(); }
+
 private:
     std::vector<ScheduleItem> items_;
 };
