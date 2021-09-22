@@ -1,7 +1,7 @@
 #pragma once
-#include "ScheduleGA.h"
 #include "ScheduleCommon.h"
 #include "ScheduleData.h"
+#include "ScheduleGA.h"
 #include "ScheduleResult.h"
 #include "ScheduleValidation.h"
 
@@ -25,6 +25,9 @@ void to_json(nlohmann::json& j, const OverlappedGroups& overlappedGroups);
 void to_json(nlohmann::json& j, const ViolatedLessonRequest& violatedLessonsRequest);
 void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult);
 void to_json(nlohmann::json& j, const ScheduleItem& scheduleItem);
+void to_json(nlohmann::json& j, const std::vector<ClassroomAddress>& classrooms);
+void to_json(nlohmann::json& j, const SubjectRequest& subjectRequest);
+void to_json(nlohmann::json& j, const ScheduleData& scheduleData);
 void to_json(nlohmann::json& j, const ScheduleResult& scheduleResult);
 void to_json(nlohmann::json& j, const ScheduleGAParams& params);
 

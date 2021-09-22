@@ -11,6 +11,9 @@
 #include <vector>
 
 
+constexpr std::size_t MIN_COMPLEXITY = 1;
+constexpr std::size_t MAX_COMPLEXITY = 4;
+
 constexpr std::size_t SCHEDULE_DAYS_COUNT = 12;
 constexpr std::size_t MAX_LESSONS_PER_DAY = 7;
 constexpr std::size_t DAYS_IN_SCHEDULE_WEEK = 6;

@@ -43,15 +43,37 @@ template<class Container, class Value> bool contains(const Container& container,
     return contains(std::begin(container), std::end(container), value);
 }
 
+template<class T, class Arg> bool insert_unique_ordered(std::vector<T>& vec, Arg&& value)
+{
+    auto it = std::lower_bound(std::begin(vec), std::end(vec), value);
+    if(it != std::end(vec) && *it == value)
+        return false;
+
+    vec.emplace(it, std::forward<Arg>(value));
+    return true;
+}
+
+template<class T, class Arg, class Comp>
+bool insert_unique_ordered(std::vector<T>& vec, Arg&& value, Comp&& comp)
+{
+    auto it = std::lower_bound(std::begin(vec), std::end(vec), value, comp);
+    if(it != std::end(vec) && !comp(value, *it))
+        return false;
+
+    vec.emplace(it, std::forward<Arg>(value));
+    return true;
+}
 
 class BitVector
 {
     static constexpr std::uint64_t MASK_TEMPLATE = 1;
+
 public:
     BitVector() = default;
     explicit BitVector(std::size_t n)
         : chunks_(n / 64 + 1)
-    {}
+    {
+    }
 
     bool get_bit(std::size_t index) const
     {
@@ -81,7 +103,8 @@ public:
     BitIntersectionsMatrix() = default;
     explicit BitIntersectionsMatrix(std::size_t n)
         : data_((n * n) / 2 - 2)
-    {}
+    {
+    }
 
     bool get_bit(std::size_t i, std::size_t j) const
     {

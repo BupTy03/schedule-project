@@ -198,6 +198,42 @@ void from_json(const nlohmann::json& j, ScheduleItem& scheduleItem)
     j.at("subject_request_id").get_to(scheduleItem.SubjectRequestID);
 }
 
+void to_json(nlohmann::json& j, const std::vector<ClassroomAddress>& classrooms)
+{
+    for(auto&& classroom : classrooms)
+        j.push_back({classroom.Building, classroom.Classroom});
+}
+
+void to_json(nlohmann::json& j, const SubjectRequest& subjectRequest)
+{
+    j = {{"id", subjectRequest.ID()},
+         {"professor", subjectRequest.Professor()},
+         {"complexity", subjectRequest.Complexity()},
+         {"groups", subjectRequest.Groups()},
+         {"lessons", subjectRequest.Lessons()},
+         {"classrooms", subjectRequest.Classrooms()}};
+}
+
+void to_json(nlohmann::json& j, const ScheduleData& scheduleData)
+{
+    j.emplace("subject_requests", scheduleData.SubjectRequests());
+
+    nlohmann::json jBlocks;
+    for(auto&& block : scheduleData.Blocks())
+    {
+        nlohmann::json jBlock;
+        std::transform(std::begin(block.Requests()),
+                       std::end(block.Requests()),
+                       std::back_inserter(jBlock),
+                       [&](std::size_t r) { return scheduleData.SubjectRequests().at(r).ID(); });
+
+        jBlocks.emplace_back(std::move(jBlock));
+    }
+
+    if(!std::empty(jBlocks))
+        j.emplace("blocks", std::move(jBlocks));
+}
+
 void from_json(const nlohmann::json& j, ScheduleResult& scheduleResult)
 {
     std::vector<ScheduleItem> scheduleItems;
