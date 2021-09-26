@@ -49,7 +49,9 @@ ScheduleIndividual ScheduleGA::operator()(const ScheduleData& scheduleData) cons
     std::uniform_int_distribution<std::size_t> selectionBestDist(0, params_.SelectionCount - 1);
     std::uniform_int_distribution<std::size_t> individualsDist(0, individuals.size() - 1);
 
-    for(std::size_t iteration = 0; iteration < params_.IterationsCount; ++iteration)
+    const std::chrono::seconds maxTime{5};
+    const auto beginTime = std::chrono::steady_clock::now();
+    for(std::size_t iteration = 0; iteration < std::numeric_limits<std::size_t>::max(); ++iteration)
     {
         // mutate
         std::for_each(std::execution::par_unseq,
@@ -60,13 +62,13 @@ ScheduleIndividual ScheduleGA::operator()(const ScheduleData& scheduleData) cons
         // select best
         std::ranges::nth_element(
             individuals, individuals.begin() + params_.SelectionCount, ScheduleIndividualLess());
-        /*std::cout << "Iteration: " << iteration << "; Best: " <<
+        std::cout << "Iteration: " << iteration << "; Best: " <<
         std::min_element(individuals.begin(),
-                                                                                  individuals.begin()
-                                                                                  +
-                                                                                  params_.SelectionCount,
-                                                                                  ScheduleIndividualLess())->Evaluate()
-                                                                                  << '\n';*/
+                        individuals.begin()
+                        +
+                        params_.SelectionCount,
+                        ScheduleIndividualLess())->Evaluate()
+                        << '\n';
 
         // crossover
         for(std::size_t i = 0; i < params_.CrossoverCount; ++i)
@@ -87,6 +89,9 @@ ScheduleIndividual ScheduleGA::operator()(const ScheduleData& scheduleData) cons
         std::copy_n(individuals.begin(),
                     params_.SelectionCount,
                     individuals.end() - params_.SelectionCount);
+
+        if(std::chrono::steady_clock::now() - beginTime > maxTime)
+            break;
     }
 
     auto it = std::min_element(individuals.begin(), individuals.end(), ScheduleIndividualLess());
