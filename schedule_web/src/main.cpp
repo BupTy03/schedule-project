@@ -11,12 +11,27 @@
 
 
 std::shared_ptr<spdlog::logger> make_server_logger();
+void test_schedule_data_generator();
 
 int main(int argc, char** argv)
 {
-    // ScheduleServer app{make_server_logger()};
-    // return app.run(argc, argv);
+    ScheduleServer app{make_server_logger()};
+    return app.run(argc, argv);
+}
 
+
+std::shared_ptr<spdlog::logger> make_server_logger()
+{
+    // Create a file rotating logger with 5mb size max and 3 rotated files
+    constexpr auto max_size = 1048576 * 5;
+    constexpr auto max_files = 3;
+    auto logger = spdlog::rotating_logger_mt("server", "logs/log.txt", max_size, max_files);
+    spdlog::flush_every(std::chrono::seconds{3});
+    return logger;
+}
+
+void test_schedule_data_generator()
+{
     std::random_device randomDevice;
     ScheduleDataGenerator generator{randomDevice,
                                     ScheduleDataGeneratorParameters{.MinGroupsCount = 2,
@@ -34,16 +49,4 @@ int main(int argc, char** argv)
     std::cout << "\n\nBlocks:\n";
     std::cout << (jData.contains("blocks") ? jData["blocks"].dump(4) : "blocks are empty")
               << std::endl;
-    return 0;
-}
-
-
-std::shared_ptr<spdlog::logger> make_server_logger()
-{
-    // Create a file rotating logger with 5mb size max and 3 rotated files
-    constexpr auto max_size = 1048576 * 5;
-    constexpr auto max_files = 3;
-    auto logger = spdlog::rotating_logger_mt("server", "logs/log.txt", max_size, max_files);
-    spdlog::flush_every(std::chrono::seconds(3));
-    return logger;
 }
