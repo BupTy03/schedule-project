@@ -137,15 +137,34 @@ TEST_CASE("Parsing subject request", "[parsing]")
 
 TEST_CASE("Parsing schedule data", "[parsing]")
 {
-    SECTION("Schedule data includes fields 'subject_requests' ('locked_lessons' is optional)")
+    SECTION("Schedule data includes fields 'subject_requests' ('time_limit' is optional)")
     {
         ScheduleData data;
-        REQUIRE_THROWS(data = R"({"locked_lessons": []})"_json);
+        REQUIRE_THROWS(data = R"({"time_limit": []})"_json);
+    }
+    SECTION("Schedule data includes fields 'subject_requests' ('blocks' is optional)")
+    {
+        ScheduleData data;
+        REQUIRE_THROWS(data = R"({"blocks": []})"_json);
     }
     SECTION("'subject_requests' array must not be empty")
     {
         ScheduleData data;
         REQUIRE_THROWS(data = R"({"subject_requests": []})"_json);
+    }
+    SECTION("'time_limit' and 'blocks' are optional")
+    {
+        ScheduleData data;
+        REQUIRE_NOTHROW(data = R"({"subject_requests": [
+            {
+                "classrooms": [[4, 6, 8, 9, 10, 12, 13, 14], [1]],
+                "complexity": 1,
+                "groups": [1, 3, 4, 6, 9],
+                "id": 16,
+                "lessons": [0, 1, 2, 3, 4, 5, 6, 42, 43, 44, 45, 46, 47, 48],
+                "professor": 157
+            }
+        ]})"_json);
     }
 }
 
@@ -164,6 +183,7 @@ TEST_CASE("Integration test #1", "[integration]")
 {
     const auto jsonData = R"(
         {
+        "time_limit": 1000,
         "subject_requests": [
             {
                 "classrooms": [
@@ -908,7 +928,6 @@ TEST_CASE("Integration test #1", "[integration]")
     ScheduleGA generator;
     generator.SetParams(ScheduleGAParams{
         .IndividualsCount = 50,
-        .IterationsCount = 20,
         .SelectionCount = 16,
         .CrossoverCount = 12,
         .MutationChance = 39
@@ -926,6 +945,7 @@ TEST_CASE("Integration test with blocks", "[integration]")
 {
     const auto jsonData = R"(
         {
+            "time_limit": 1000,
             "subject_requests": [
                 {
                     "id": 1,
@@ -993,7 +1013,6 @@ TEST_CASE("Integration test with blocks", "[integration]")
     ScheduleGA generator;
     generator.SetParams(ScheduleGAParams{
         .IndividualsCount = 50,
-        .IterationsCount = 20,
         .SelectionCount = 16,
         .CrossoverCount = 12,
         .MutationChance = 39

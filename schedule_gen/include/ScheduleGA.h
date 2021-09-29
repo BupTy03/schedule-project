@@ -9,7 +9,6 @@
 struct ScheduleGAParams
 {
     int IndividualsCount = 0;
-    int IterationsCount = 0;
     int SelectionCount = 0;
     int CrossoverCount = 0;
     int MutationChance = 0;

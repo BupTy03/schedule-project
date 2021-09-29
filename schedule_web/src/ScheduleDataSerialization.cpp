@@ -95,6 +95,11 @@ void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classroom
 
 void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
 {
+    std::int64_t timeLimit = DEFAULT_SCHEDULE_GENERATION_TIME_LIMIT.count();
+    auto timeLimitIt = j.find("time_limit");
+    if(timeLimitIt != j.end())
+        timeLimitIt->get_to(timeLimit);
+
     std::vector<SubjectRequest> requests;
     j.at("subject_requests").get_to(requests);
     if(requests.empty())
@@ -122,13 +127,13 @@ void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
         blocks = ToSubjectsBlocks(requests, blocksIds);
     }
 
-    scheduleData = ScheduleData(std::move(requests), std::move(blocks));
+    scheduleData =
+        ScheduleData(std::move(requests), std::move(blocks), std::chrono::milliseconds{timeLimit});
 }
 
 void from_json(const nlohmann::json& j, ScheduleGAParams& params)
 {
     j.at("individuals_count").get_to(params.IndividualsCount);
-    j.at("iterations_count").get_to(params.IterationsCount);
     j.at("selection_count").get_to(params.SelectionCount);
     j.at("crossover_count").get_to(params.CrossoverCount);
     j.at("mutation_chance").get_to(params.MutationChance);
@@ -185,7 +190,6 @@ void to_json(nlohmann::json& j, const CheckScheduleResult& checkScheduleResult)
 void to_json(nlohmann::json& j, const ScheduleGAParams& params)
 {
     j = {{"individuals_count", params.IndividualsCount},
-         {"iterations_count", params.IterationsCount},
          {"selection_count", params.SelectionCount},
          {"crossover_count", params.CrossoverCount},
          {"mutation_chance", params.MutationChance}};
@@ -216,6 +220,7 @@ void to_json(nlohmann::json& j, const SubjectRequest& subjectRequest)
 
 void to_json(nlohmann::json& j, const ScheduleData& scheduleData)
 {
+    j.emplace("time_limit", scheduleData.TimeLimit().count());
     j.emplace("subject_requests", scheduleData.SubjectRequests());
 
     nlohmann::json jBlocks;

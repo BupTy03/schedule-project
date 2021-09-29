@@ -2,9 +2,13 @@
 #include "ScheduleCommon.h"
 #include "ScheduleUtils.h"
 
+#include <chrono>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+
+static const std::chrono::milliseconds DEFAULT_SCHEDULE_GENERATION_TIME_LIMIT{2000};
 
 
 class SubjectRequest
@@ -89,8 +93,12 @@ class ScheduleData
 {
 public:
     ScheduleData() = default;
-    explicit ScheduleData(std::vector<SubjectRequest> subjectRequests,
-                          std::vector<SubjectsBlock> blocks = {});
+    explicit ScheduleData(
+        std::vector<SubjectRequest> subjectRequests,
+        std::vector<SubjectsBlock> blocks = {},
+        std::chrono::milliseconds timeLimit = DEFAULT_SCHEDULE_GENERATION_TIME_LIMIT);
+
+    std::chrono::milliseconds TimeLimit() const { return timeLimit_; }
 
     const std::vector<SubjectRequest>& SubjectRequests() const { return subjectRequests_; }
     const std::vector<SubjectsBlock>& Blocks() const { return blocks_; }
@@ -115,6 +123,7 @@ public:
     const SubjectsBlock* FindBlockByRequestIndex(std::size_t subjectRequestIndex) const;
 
 private:
+    std::chrono::milliseconds timeLimit_;
     std::vector<SubjectRequest> subjectRequests_;
     BitIntersectionsMatrix intersectionsTable_;
     std::vector<SubjectsBlock> blocks_;
@@ -135,4 +144,5 @@ std::vector<SubjectsBlock> ToSubjectsBlocks(const std::vector<SubjectRequest>& r
 
 BitIntersectionsMatrix FillIntersectionsMatrix(const std::vector<SubjectRequest>& requests);
 
-std::unordered_map<std::size_t, std::size_t> FillRequestsBlocksTable(const std::vector<SubjectsBlock>& blocks);
+std::unordered_map<std::size_t, std::size_t>
+    FillRequestsBlocksTable(const std::vector<SubjectsBlock>& blocks);

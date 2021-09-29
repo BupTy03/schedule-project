@@ -31,8 +31,10 @@ const std::vector<std::size_t>& SubjectRequest::Lessons() const
 
 
 ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
-                           std::vector<SubjectsBlock> blocks)
-    : subjectRequests_(std::move(subjectRequests))
+                           std::vector<SubjectsBlock> blocks,
+                           std::chrono::milliseconds timeLimit)
+    : timeLimit_(timeLimit)
+    , subjectRequests_(std::move(subjectRequests))
     , intersectionsTable_(FillIntersectionsMatrix(subjectRequests_))
     , blocks_(std::move(blocks))
     , requestsBlocks_(FillRequestsBlocksTable(blocks_))
@@ -108,7 +110,8 @@ std::vector<std::size_t> SelectBlockFirstLessons(const std::vector<SubjectReques
         for(std::size_t i = 1, l = firstLesson; i < block.size(); ++i, ++l)
         {
             const auto& lessons = requests.at(block.at(i)).Lessons();
-            matches = LessonsAreInSameDay(firstLesson, l) && std::binary_search(lessons.begin(), lessons.end(), l);
+            matches = LessonsAreInSameDay(firstLesson, l)
+                      && std::binary_search(lessons.begin(), lessons.end(), l);
             if(!matches)
                 break;
         }
@@ -179,7 +182,8 @@ BitIntersectionsMatrix FillIntersectionsMatrix(const std::vector<SubjectRequest>
     return mtx;
 }
 
-std::unordered_map<std::size_t, std::size_t> FillRequestsBlocksTable(const std::vector<SubjectsBlock>& blocks)
+std::unordered_map<std::size_t, std::size_t>
+    FillRequestsBlocksTable(const std::vector<SubjectsBlock>& blocks)
 {
     std::unordered_map<std::size_t, std::size_t> requestsBlocks;
     for(std::size_t b = 0; b < blocks.size(); ++b)
