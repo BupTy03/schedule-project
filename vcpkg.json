@@ -1,0 +1,10 @@
+{
+    "name": "schedule-project",
+    "version-string": "0.0.1",
+    "dependencies": [
+        "catch2",
+        "nlohmann-json",
+        "spdlog",
+        "poco"
+    ]
+}
