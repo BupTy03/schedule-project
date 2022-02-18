@@ -33,14 +33,9 @@ bool set_intersects(const SortedRange1& r1, const SortedRange2& r2)
     return set_intersects(std::begin(r1), std::end(r1), std::begin(r2), std::end(r2));
 }
 
-template<class Iter, class Value> bool contains(Iter first, Iter last, const Value& value)
-{
-    return std::find(first, last, value) != last;
-}
-
 template<class Container, class Value> bool contains(const Container& container, const Value& value)
 {
-    return contains(std::begin(container), std::end(container), value);
+    return std::ranges::find(container, value) != std::end(container);
 }
 
 template<class T, class Arg> bool insert_unique_ordered(std::vector<T>& vec, Arg&& value)

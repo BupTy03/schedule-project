@@ -93,16 +93,16 @@ void Print(const ScheduleIndividual& individ, const ScheduleData& data)
     {
         std::cout << "Lesson " << l << ": ";
 
-        auto it = std::find(lessons.begin(), lessons.end(), l);
-        if(it == lessons.end())
+        auto it = std::ranges::find(lessons, l);
+        if(it == std::end(lessons))
         {
             std::cout << '-';
         }
         else
         {
-            while(it != lessons.end())
+            while(it != std::end(lessons))
             {
-                const std::size_t r = std::distance(lessons.begin(), it);
+                const std::size_t r = std::distance(std::begin(lessons), it);
                 const auto& request = requests.at(r);
                 std::cout << "[s:" << request.ID() << ", p:" << request.Professor() << ", c:("
                           << classrooms.at(r).Building << ", " << classrooms.at(r).Classroom
@@ -113,7 +113,7 @@ void Print(const ScheduleIndividual& individ, const ScheduleData& data)
 
                 std::cout << " }]";
 
-                it = std::find(std::next(it), lessons.end(), l);
+                it = std::ranges::find(std::next(it), lessons.end(), l);
             }
         }
 

@@ -17,10 +17,8 @@ const std::vector<std::size_t>& AllLessons()
 
 std::vector<std::size_t> LessonsSortedByOrderInDay(std::vector<std::size_t> lessons)
 {
-    std::sort(lessons.begin(),
-              lessons.end(),
-              [](std::size_t lhs, std::size_t rhs)
-              { return lhs % MAX_LESSONS_PER_DAY < rhs % MAX_LESSONS_PER_DAY; });
+    std::ranges::sort(lessons, [](std::size_t lhs, std::size_t rhs)
+      { return lhs % MAX_LESSONS_PER_DAY < rhs % MAX_LESSONS_PER_DAY; });
 
     return lessons;
 }

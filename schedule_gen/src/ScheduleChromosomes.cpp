@@ -32,17 +32,17 @@ bool ScheduleChromosomes::GroupsOrProfessorsOrClassroomsIntersects(const Schedul
 
     const auto& requests = data.SubjectRequests();
     const auto& thisRequest = requests.at(currentRequest);
-    auto it = std::find(lessons_.begin(), lessons_.end(), currentLesson);
-    while(it != lessons_.end())
+    auto it = std::ranges::find(lessons_, currentLesson);
+    while(it != std::end(lessons_))
     {
-        const std::size_t requestIndex = std::distance(lessons_.begin(), it);
+        const std::size_t requestIndex = std::distance(std::begin(lessons_), it);
         if(data.Intersects(currentRequest, requestIndex)
            || classrooms_.at(currentRequest) == classrooms_.at(requestIndex))
         {
             return true;
         }
 
-        it = std::find(std::next(it), lessons_.end(), currentLesson);
+        it = std::ranges::find(std::next(it), std::end(lessons_), currentLesson);
     }
 
     return false;
@@ -54,14 +54,14 @@ bool ScheduleChromosomes::GroupsOrProfessorsIntersects(const ScheduleData& data,
 {
     const auto& requests = data.SubjectRequests();
     const auto& thisRequest = requests.at(currentRequest);
-    auto it = std::find(lessons_.begin(), lessons_.end(), currentLesson);
-    while(it != lessons_.end())
+    auto it = std::ranges::find(lessons_, currentLesson);
+    while(it != std::end(lessons_))
     {
-        const std::size_t requestIndex = std::distance(lessons_.begin(), it);
+        const std::size_t requestIndex = std::distance(std::begin(lessons_), it);
         if(data.Intersects(currentRequest, requestIndex))
             return true;
 
-        it = std::find(std::next(it), lessons_.end(), currentLesson);
+        it = std::find(std::next(it), std::end(lessons_), currentLesson);
     }
 
     return false;
@@ -73,15 +73,15 @@ bool ScheduleChromosomes::ClassroomsIntersects(std::size_t currentLesson,
     if(currentClassroom == ClassroomAddress::Any())
         return false;
 
-    auto it = std::find(classrooms_.begin(), classrooms_.end(), currentClassroom);
-    while(it != classrooms_.end())
+    auto it = std::ranges::find(classrooms_, currentClassroom);
+    while(it != std::end(classrooms_))
     {
-        const std::size_t requestIndex = std::distance(classrooms_.begin(), it);
+        const std::size_t requestIndex = std::distance(std::begin(classrooms_), it);
         const std::size_t otherLesson = lessons_.at(requestIndex);
         if(currentLesson == otherLesson)
             return true;
 
-        it = std::find(std::next(it), classrooms_.end(), currentClassroom);
+        it = std::find(std::next(it), std::end(classrooms_), currentClassroom);
     }
 
     return false;
@@ -157,9 +157,8 @@ void InsertBlock(ScheduleChromosomes& chromosomes,
                             }
                             else
                             {
-                                auto classroomIt = std::find_if(
-                                    classrooms.begin(),
-                                    classrooms.end(),
+                                auto classroomIt = std::ranges::find_if(
+                                    classrooms,
                                     [&](const ClassroomAddress& classroom) {
                                         return !chromosomes.ClassroomsIntersects(lesson, classroom);
                                     });
@@ -199,8 +198,8 @@ ScheduleChromosomes InitializeChromosomes(const ScheduleData& data)
     for(auto&& block : data.Blocks())
         InsertBlock(result, data, block);
 
-    auto partitionPoint = std::partition(requestsIndexes.begin(),
-                                         requestsIndexes.end(),
+    auto partitionPoint = std::partition(std::begin(requestsIndexes),
+                                         std::end(requestsIndexes),
                                          [&](std::size_t index) { return data.IsInBlock(index); });
 
     std::sort(
@@ -423,10 +422,10 @@ ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
     ScheduleResult resultSchedule;
     for(std::size_t l = 0; l < MAX_LESSONS_COUNT; ++l)
     {
-        auto it = std::find(lessons.begin(), lessons.end(), l);
-        while(it != lessons.end())
+        auto it = std::ranges::find(lessons, l);
+        while(it != std::end(lessons))
         {
-            const std::size_t r = std::distance(lessons.begin(), it);
+            const std::size_t r = std::distance(std::begin(lessons), it);
             if(classrooms.at(r) != ClassroomAddress::NoClassroom())
             {
                 const auto& request = scheduleData.SubjectRequests().at(r);
@@ -435,7 +434,7 @@ ScheduleResult MakeScheduleResult(const ScheduleChromosomes& chromosomes,
                                                    .Classroom = classrooms.at(r).Classroom});
             }
 
-            it = std::find(std::next(it), lessons.end(), l);
+            it = std::ranges::find(std::next(it), lessons.end(), l);
         }
     }
 

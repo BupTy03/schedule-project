@@ -28,7 +28,7 @@ std::vector<OverlappedClassroom> FindOverlappedClassrooms(const ScheduleData& da
         {
             if(subjects.size() > 1)
             {
-                std::sort(subjects.begin(), subjects.end());
+                std::ranges::sort(subjects);
 
                 OverlappedClassroom overlappedClassroom;
                 overlappedClassroom.Address = l;
@@ -60,7 +60,7 @@ std::vector<OverlappedProfessor> FindOverlappedProfessors(const ScheduleData& da
         {
             if(subjects.size() > 1)
             {
-                std::sort(subjects.begin(), subjects.end());
+                std::ranges::sort(subjects);
 
                 OverlappedProfessor overlappedProfessor;
                 overlappedProfessor.Address = l;
@@ -158,9 +158,7 @@ std::vector<std::size_t> FindOutOfBlockRequests(const ScheduleData& data,
         const auto& firstRequest = data.SubjectRequests().at(firstRequestInBlock);
 
         const auto firstIt =
-            std::find_if(std::begin(result),
-                         std::end(result),
-                         [&](auto&& item) { return item.SubjectRequestID == firstRequest.ID(); });
+            std::ranges::find_if(result, [&](auto&& item) { return item.SubjectRequestID == firstRequest.ID(); });
 
         if(firstIt == std::end(result))
             continue;
@@ -171,9 +169,8 @@ std::vector<std::size_t> FindOutOfBlockRequests(const ScheduleData& data,
         {
             const auto& request = data.SubjectRequests().at(blockRequests.at(b));
             const auto it =
-                std::find_if(std::begin(result),
-                             std::end(result),
-                             [&](auto&& item) { return item.SubjectRequestID == request.ID(); });
+                std::ranges::find_if(result,
+                                     [&](auto&& item) { return item.SubjectRequestID == request.ID(); });
 
             if(it == std::end(result))
                 continue;
