@@ -48,6 +48,13 @@ ScheduleData::ScheduleData(std::vector<SubjectRequest> subjectRequests,
         for(std::size_t g : request.Groups())
             groupRequests_[g].insert(r);
     }
+
+    // effectively rehash tables (shrink to fit) - yes, it realy increases the performance when accessing them!
+    professorRequests_ =
+        std::unordered_map<std::size_t, std::unordered_set<std::size_t>>(professorRequests_);
+
+    groupRequests_ =
+        std::unordered_map<std::size_t, std::unordered_set<std::size_t>>(groupRequests_);
 }
 
 bool ScheduleData::Intersects(std::size_t lhsSubjectRequest, std::size_t rhsSubjectRequest) const
@@ -182,6 +189,7 @@ BitIntersectionsMatrix FillIntersectionsMatrix(const std::vector<SubjectRequest>
 std::unordered_map<std::size_t, std::size_t> FillRequestsBlocksTable(const std::vector<SubjectsBlock>& blocks)
 {
     std::unordered_map<std::size_t, std::size_t> requestsBlocks;
+    requestsBlocks.reserve(blocks.size());
     for(std::size_t b = 0; b < blocks.size(); ++b)
     {
         const SubjectsBlock& block = blocks.at(b);
@@ -193,5 +201,6 @@ std::unordered_map<std::size_t, std::size_t> FillRequestsBlocksTable(const std::
             requestsBlocks.emplace(r, b);
         }
     }
+
     return requestsBlocks;
 }
