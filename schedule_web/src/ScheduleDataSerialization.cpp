@@ -21,7 +21,7 @@ std::vector<std::size_t> ParseIDsSet(const nlohmann::json& arr)
         result.emplace_back(static_cast<std::size_t>(v));
     }
 
-    std::sort(result.begin(), result.end());
+    std::ranges::sort(result);
     result.erase(std::unique(result.begin(), result.end()), result.end());
     result.shrink_to_fit();
     return result;
@@ -44,7 +44,7 @@ std::vector<std::size_t> ParseLessonsSet(const nlohmann::json& arr)
         result.emplace_back(static_cast<std::size_t>(v));
     }
 
-    std::sort(result.begin(), result.end());
+    std::ranges::sort(result);
     result.erase(std::unique(result.begin(), result.end()), result.end());
     result.shrink_to_fit();
     return result;
@@ -89,8 +89,9 @@ void from_json(const nlohmann::json& j, std::vector<ClassroomAddress>& classroom
         }
     }
 
-    std::sort(classrooms.begin(), classrooms.end());
+    std::ranges::sort(classrooms);
     classrooms.erase(std::unique(classrooms.begin(), classrooms.end()), classrooms.end());
+    classrooms.shrink_to_fit();
 }
 
 void from_json(const nlohmann::json& j, ScheduleData& scheduleData)
